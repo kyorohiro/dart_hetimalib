@@ -1,0 +1,6 @@
+name: hetima
+author: kyorohiro
+description: A pub package
+dependencies:
+  chrome: any
+  js: any
