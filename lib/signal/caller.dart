@@ -1,11 +1,11 @@
-part of hetima;
+part of hetima_cl;
 
 class Caller {
   html.RtcPeerConnection _connection = null;
   html.RtcDataChannel _datachannel = null;
   core.String _myuuid;
   core.String _targetuuid;
-  SignalCient _signalclient;
+  CallerExpectSignalClient _signalclient;
   core.List<CallerEventListener> _obseverList = new core.List();
 
   core.Map _stuninfo = {
@@ -28,7 +28,7 @@ class Caller {
     return this;
   }
 
-  Caller setSignalClient(SignalCient signalclient) {
+  Caller setSignalClient(CallerExpectSignalClient signalclient) {
     _signalclient = signalclient;
     return this;
   }
@@ -167,7 +167,7 @@ class CallerEventListener {
 //
 //
 //
-class SignalCient {
+class CallerExpectSignalClient {
   void send(Caller caller, core.String toUUid, core.String from, core.String type, core.String data) {
     ;
   }
