@@ -21,8 +21,29 @@ class SignalClient
   }
 
   void onMessage(html.MessageEvent e) {
-    core.print("type="+e.type);
-    core.print("data="+e.data);
+    core.print("type="+e.type+","+e.data.runtimeType.toString());
+    if(e is core.String) {
+      core.print("data="+e.data);      
+    }
+    else if(e.data is data.Uint8List) {
+      data.Uint8List buffer = e.data;
+      onReceiveSignalMessage(Bencode.decode(buffer));
+    }
+  }
+
+  void onReceiveSignalMessage(core.Map message) {
+    core.print("receive signal message"+convert.JSON.encode(message));
+    
+    if(convert.UTF8.decode(message["action"]) == "join") {
+      if(convert.UTF8.decode(message["mode"]) == "response") {
+        core.List peers = message["peers"];
+        for(core.int i=0;i<peers.length;i++) {
+          core.print(""+convert.UTF8.decode(peers[i]));
+        }
+      } else {
+        core.print(""+convert.UTF8.decode(message["from"]));
+      }
+    }
   }
 
   core.int getState() {
