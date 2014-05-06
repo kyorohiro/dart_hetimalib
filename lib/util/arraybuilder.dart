@@ -31,6 +31,10 @@ class ArrayBuilder {
     return _buffer8.sublist(0, _length);
   }
 
+  data.Uint8List toUint8List() {
+    return new data.Uint8List.fromList(toList());
+  }
+
   core.String toText() {
     return convert.UTF8.decode(toList());
   }

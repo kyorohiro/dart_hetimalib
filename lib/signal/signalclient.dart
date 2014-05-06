@@ -40,7 +40,12 @@ class SignalClient
   void send() {
   }
 
+  void sendBuffer(data.ByteBuffer buffer){
+    _websocket.sendByteBuffer(buffer);
+  }
+
   void sendText(core.String message) {
     _websocket.sendString(message);   
   }
+
 }
