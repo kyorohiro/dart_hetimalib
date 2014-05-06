@@ -21,14 +21,32 @@ class Bdecoder {
   core.Object decode(data.Uint8List buffer) 
   {
     index = 0;
-    if( 0x30 <= buffer[index] && buffer[index]<=0x39) {
+    return innerDecode(buffer);
+  }
+  core.Object innerDecode(data.Uint8List buffer) 
+  { 
+    if( 0x30 <= buffer[index] && buffer[index]<=0x39) {//0-9
       return decodeBytes(buffer);
     }
-    else if(0x69 == buffer[index]) {
+    else if(0x69 == buffer[index]) {// i 
       return decodeNumber(buffer);
+    }
+    else if(0x6c == buffer[index]) {// l
+      return decodeList(buffer);
     }
     return null;
   }
+
+  core.List decodeList(data.Uint8List buffer) {
+    index++;
+    core.List ret = new core.List();
+    while(index<buffer.length && buffer[index] != 0x65) {
+      ret.add(innerDecode(buffer));
+    }
+    index++;
+    return ret;
+  }
+
   core.num decodeNumber(data.Uint8List buffer) {
     index++;
     core.int v = 0;
@@ -38,13 +56,14 @@ class Bdecoder {
       len++;
       index++;
     }
-
+    index++;
     core.String numAsStr =convert.ASCII.decode(buffer.sublist(start,start+len));
     if(numAsStr.length == 0) {
       return 0;
     }
     return core.num.parse(numAsStr);
   }
+
   data.Uint8List decodeBytes(data.Uint8List buffer) {
     core.int length = 0;
     while(index<buffer.length && buffer[index] != 0x3a) {
@@ -52,7 +71,9 @@ class Bdecoder {
       index++;
     }
     index++;
-    return new data.Uint8List.fromList(buffer.sublist(index, index+length));
+    data.Uint8List ret = new data.Uint8List.fromList(buffer.sublist(index, index+length));
+    index += length;
+    return ret;
   }
 }
 
@@ -74,6 +95,14 @@ class Bencoder {
     builder.appendString("i"+num.toString()+"e");
   }
 
+  void encodeList(core.List list) {
+    builder.appendString("l");
+    for(core.int i=0;i<list.length;i++) {
+      _innerEenode(list[i]);
+    }
+    builder.appendString("e");
+  }
+
   void _innerEenode(core.Object obj) {
     
     if(obj is core.num) {
@@ -87,7 +116,7 @@ class Bencoder {
     } else if(obj is core.String) {
       encodeString(obj);    
     } else if(obj is core.List) {
-      
+      encodeList(obj);
     } else if(obj is core.Map) {
       
     }
