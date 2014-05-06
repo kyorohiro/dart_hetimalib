@@ -24,7 +24,26 @@ class Bdecoder {
     if( 0x30 <= buffer[index] && buffer[index]<=0x39) {
       return decodeBytes(buffer);
     }
+    else if(0x69 == buffer[index]) {
+      return decodeNumber(buffer);
+    }
     return null;
+  }
+  core.num decodeNumber(data.Uint8List buffer) {
+    index++;
+    core.int v = 0;
+    core.int len=0;
+    core.int start = index;
+    while(index<buffer.length && buffer[index] != 0x65) {
+      len++;
+      index++;
+    }
+
+    core.String numAsStr =convert.ASCII.decode(buffer.sublist(start,start+len));
+    if(numAsStr.length == 0) {
+      return 0;
+    }
+    return core.num.parse(numAsStr);
   }
   data.Uint8List decodeBytes(data.Uint8List buffer) {
     core.int length = 0;
@@ -51,10 +70,14 @@ class Bencoder {
     builder.appendString(""+obj.length.toString()+":"+obj);
   }
 
+  void encodeNumber(core.num num) {
+    builder.appendString("i"+num.toString()+"e");
+  }
+
   void _innerEenode(core.Object obj) {
     
     if(obj is core.num) {
-      
+      encodeNumber(obj);
     } else if(core.identical(obj, true)) {
       
     } else if(core.identical(obj, false)) {
