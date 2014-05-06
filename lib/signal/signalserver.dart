@@ -27,7 +27,23 @@ class SignalServer {
     core.print("connect");
     _temporaryConnectionList.add(socket);
     socket.listen((dynmics){
-      core.print("receive:"+dynmics);
+      if(dynmics is core.String) {
+        core.print("receive:"+dynmics);
+      }
+      else if(dynmics is type.ByteBuffer) {
+        type.ByteBuffer buffer = dynmics;
+        type.Uint8List accessBuffer = new type.Uint8List.view(buffer);
+        core.print(convert.JSON.encode(Bencode.decode(accessBuffer)));
+      }
+      else if(dynmics is type.Uint8List) {
+        type.Uint8List buffer = dynmics;
+        type.Uint8List accessBuffer = buffer;
+        core.print(convert.JSON.encode(Bencode.decode(accessBuffer)));
+      }
+      else {
+        core.print("warning:"+dynmics.toString());
+        core.print("warning:"+dynmics.runtimeType.toString());
+      }
     },
     onDone:(){onWsDone(socket,"done");});
 //    onError:(){onWsDone(socket, "error");});

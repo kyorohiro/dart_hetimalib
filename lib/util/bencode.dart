@@ -82,11 +82,13 @@ class Bdecoder {
   data.Uint8List decodeBytes(data.Uint8List buffer) {
     core.int length = 0;
     while(index<buffer.length && buffer[index] != 0x3a) {
-      length += length*10+(buffer[index]-0x30);
+      length = length*10+(buffer[index]-0x30);
       index++;
     }
     index++;
+//    core.print("index="+index.toString()+",len="+length.toString()+",b="+buffer.length.toString());
     data.Uint8List ret = new data.Uint8List.fromList(buffer.sublist(index, index+length));
+//    core.print("ret="+convert.UTF8.decode(ret));
     index += length;
     return ret;
   }

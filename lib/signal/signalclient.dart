@@ -40,6 +40,14 @@ class SignalClient
   void send() {
   }
 
+  void sendJoin(core.String id) {
+    var pack = {};
+    pack["action"] = "join";
+    pack["mode"] = "broadcast";
+    pack["id"] = id;
+    _websocket.sendByteBuffer(Bencode.encode(pack).buffer);
+  }
+
   void sendBuffer(data.ByteBuffer buffer){
     _websocket.sendByteBuffer(buffer);
   }
