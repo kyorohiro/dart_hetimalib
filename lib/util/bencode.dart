@@ -34,7 +34,22 @@ class Bdecoder {
     else if(0x6c == buffer[index]) {// l
       return decodeList(buffer);
     }
+    else if(0x64 == buffer[index]) {// d
+      return decodeMap(buffer);
+    }
     return null;
+  }
+
+  core.Map decodeMap(data.Uint8List buffer) {
+    index++;
+    core.Map ret = new core.Map();
+    while(index<buffer.length && buffer[index] != 0x65) {
+      data.Uint8List keyAsList = innerDecode(buffer);
+      core.String key = convert.UTF8.decode(keyAsList.toList());
+      ret[key] = innerDecode(buffer);
+    }
+    index++;
+    return ret;
   }
 
   core.List decodeList(data.Uint8List buffer) {
@@ -95,6 +110,16 @@ class Bencoder {
     builder.appendString("i"+num.toString()+"e");
   }
 
+  void encodeDictionary(core.Map obj) {
+    core.Iterable<core.String> keys = obj.keys;
+    builder.appendString("d");
+    for(var key in keys) {
+      encodeString(key);
+      _innerEenode(obj[key]);
+    }
+    builder.appendString("e");
+  }
+
   void encodeList(core.List list) {
     builder.appendString("l");
     for(core.int i=0;i<list.length;i++) {
@@ -104,21 +129,20 @@ class Bencoder {
   }
 
   void _innerEenode(core.Object obj) {
-    
     if(obj is core.num) {
       encodeNumber(obj);
     } else if(core.identical(obj, true)) {
-      
+      encodeString("true");
     } else if(core.identical(obj, false)) {
-      
+      encodeString("false");
     } else if(obj == null) {
-      
+      encodeString("null");
     } else if(obj is core.String) {
       encodeString(obj);    
     } else if(obj is core.List) {
       encodeList(obj);
     } else if(obj is core.Map) {
-      
+      encodeDictionary(obj);
     }
   }
 }
