@@ -4,7 +4,7 @@ class Uuid
 {
   static math.Random _random = new math.Random();
   static core.String createUUID() {
-    return s4()+s4()+"-"+s4()+"-"+s4()+"-"+s4()+"-"+s4()+s4()+s4();;
+    return s4()+s4()+"-"+s4()+"-"+s4()+"-"+s4()+"-"+s4()+s4()+s4();
   }
   static core.String s4() {
     core.int a;

@@ -96,6 +96,12 @@ class SignalServer {
   void onWsDone(io.WebSocket socket, core.String message) {
     core.print(message); 
     _temporaryConnectionList.remove(socket);
+    for(core.String key in _connectionList.keys) {
+      if(_connectionList[key]["socket"] == socket) {
+        _connectionList.remove(key);
+        return;
+      }
+    }
   }
 
   void onError(core.String message) {

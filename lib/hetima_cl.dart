@@ -1,5 +1,6 @@
 library hetima_cl;
 import 'package:hetima/hetima.dart';
+import 'dart:async' as async;
 import 'dart:core' as core;
 import 'dart:typed_data' as data;
 import 'dart:html' as html;
