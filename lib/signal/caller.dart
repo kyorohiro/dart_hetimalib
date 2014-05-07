@@ -53,6 +53,7 @@ class Caller {
     _connection.onDataChannel.listen(_onDataChannel);
     _datachannel = _connection.createDataChannel("message");
     _setChannelEvent(_datachannel);
+    return this;
   }
 
   ///

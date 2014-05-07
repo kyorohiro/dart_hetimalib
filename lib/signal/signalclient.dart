@@ -36,12 +36,19 @@ class SignalClient
     
     if(convert.UTF8.decode(message["action"]) == "join") {
       if(convert.UTF8.decode(message["mode"]) == "response") {
-        core.List peers = message["peers"];
-        for(core.int i=0;i<peers.length;i++) {
-          core.print(""+convert.UTF8.decode(peers[i]));
+        core.List peersAsBytes = message["peers"];
+        core.List<core.String> peers = new core.List();
+        for(core.int i=0;i<peersAsBytes.length;i++) {
+          peers.add(convert.UTF8.decode(peersAsBytes[i]));
+          core.print(""+convert.UTF8.decode(peersAsBytes[i]));
         }
+        
+        notifyUpdatePeer(peers);
       } else {
         core.print(""+convert.UTF8.decode(message["from"]));
+        core.List<core.String> peers = new core.List();
+        peers.add(convert.UTF8.decode(message["from"]));
+        notifyUpdatePeer(peers);
       }
     }
   }
@@ -66,7 +73,21 @@ class SignalClient
     pack["action"] = "join";
     pack["mode"] = "broadcast";
     pack["id"] = id;
-    _websocket.sendByteBuffer(Bencode.encode(pack).buffer);
+    sendObject(pack);
+  }
+
+  void unicastPackage(core.String to, core.String from, core.Map pack) {
+    var pack = {};
+    pack["action"] = "pack";
+    pack["mode"] = "unicast";
+    pack["pack"] = pack;
+    pack["to"] = to;
+    pack["from"] = from;
+    sendObject(pack);
+  }
+
+  void sendObject(core.Map pack) {
+    _websocket.sendByteBuffer(Bencode.encode(pack).buffer);    
   }
 
   void sendBuffer(data.ByteBuffer buffer){
@@ -77,4 +98,22 @@ class SignalClient
     _websocket.sendString(message);   
   }
 
+  core.List<SignalClientListener> _observer = new core.List();
+  void addEventListener(SignalClientListener observer) {
+    _observer.add(observer);
+  }
+
+  void notifyUpdatePeer(core.List<core.String> peers) {
+    for(SignalClientListener l in _observer) {
+      l.updatePeer(peers);
+    }
+  }
+}
+
+class SignalClientListener 
+{
+  void updatePeer(core.List<core.String> uuidList) {    
+  }
+  void onReceivePackage() {
+  }
 }
