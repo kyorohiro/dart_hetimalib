@@ -55,6 +55,11 @@ class SignalClient {
         notifyUpdatePeer(peers);
       }
     }
+    else if (convert.UTF8.decode(message["action"]) == "pack") {
+      core.String to = convert.UTF8.decode(message["to"]);
+      core.String from = convert.UTF8.decode(message["from"]);
+      notifyOnReceivePackage(to, from, message["pack"]);
+    }
   }
 
   core.int getState() {
@@ -114,11 +119,18 @@ class SignalClient {
       l.updatePeer(peers);
     }
   }
+ 
+  void notifyOnReceivePackage(
+    core.String to, core.String from, core.Map pack) {
+    for (SignalClientListener l in _observer) {
+      l.onReceivePackage(to, from, pack);
+    }
+  }
 }
 
 class SignalClientListener {
   void updatePeer(core.List<core.String> uuidList) {
   }
-  void onReceivePackage() {
+  void onReceivePackage(core.String to, core.String from, core.Map pack) {
   }
 }

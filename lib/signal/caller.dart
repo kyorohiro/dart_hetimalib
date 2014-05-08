@@ -172,11 +172,16 @@ class CallerExpectSignalClient {
   void send(Caller caller, core.String toUUid, core.String from, core.String type, core.String data) {
     ;
   }
-  void onReceive(Caller caller, core.String type, core.String data) {
+  void onReceive(Caller caller, core.String to, core.String from, core.String type, core.String data) {
     switch (type) {
       case "answer":
       case "offer":
         caller.setRemoteSDP(type, data);
+        if(type =="offer") {
+          caller
+          .setTarget(from)
+          .createAnswer();
+        }
         break;
       case "ice":
         break;
