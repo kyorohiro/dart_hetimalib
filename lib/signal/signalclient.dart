@@ -82,17 +82,18 @@ class SignalClient {
 
 
   void unicastPackage(core.String to, core.String from, core.Map pack) {
-    var pack = {};
-    pack["action"] = "pack";
-    pack["mode"] = "unicast";
-    pack["pack"] = pack;
-    pack["to"] = to;
-    pack["from"] = from;
-    sendObject(pack);
+    var package = {};
+    package["action"] = "pack";
+    package["mode"] = "unicast";
+    package["pack"] = pack;
+    package["to"] = to;
+    package["from"] = from;
+    sendObject(package);
   }
 
   void sendObject(core.Map pack) {
-    _websocket.sendByteBuffer(Bencode.encode(pack).buffer);
+    data.Uint8List buffer8 = Bencode.encode(pack);
+    _websocket.sendByteBuffer(buffer8.buffer);
   }
 
   void sendBuffer(data.ByteBuffer buffer) {

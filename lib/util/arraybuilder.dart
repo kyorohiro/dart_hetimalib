@@ -1,9 +1,13 @@
 part of hetima;
 
 class ArrayBuilder {
-  data.Uint8List _buffer8 = new data.Uint8List(1024);
+  core.int _max = 1024;
+  data.Uint8List _buffer8;
   core.int _length = 0;
 
+  ArrayBuilder() {
+    _buffer8 = new data.Uint8List(_max);
+  }
   void clear() {
     _length = 0;
   }
@@ -12,8 +16,24 @@ class ArrayBuilder {
     return _length;
   }
 
+  void update(core.int plusLength) {
+    if (_length+plusLength<_max) {
+      return;   
+    } else {
+      core.int nextMax = _length+plusLength+_max;
+      data.Uint8List next = new data.Uint8List(nextMax);
+      for(core.int i=0;i<_length;i++) {
+        next[i] = _buffer8[i];
+      }
+     // _buffer8.clear();
+      _buffer8 = null;
+      _buffer8 = next;
+      _max = nextMax;
+    }
+  }
   void appendString(core.String text) {
     core.List<core.int> code = convert.UTF8.encode(text);
+    update(code.length);
     for (core.int i = 0; i < code.length; i++) {
       _buffer8[_length] = code[i];
       _length += 1;
@@ -21,6 +41,7 @@ class ArrayBuilder {
   }
 
   void appendUint8List(data.Uint8List buffer, core.int index, core.int length) {
+    update(length);
     for (core.int i = 0; i < length; i++) {
       _buffer8[_length] = buffer[index + i];
       _length += 1;
