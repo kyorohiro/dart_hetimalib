@@ -80,13 +80,6 @@ class Caller {
   ///
   ///
   ///
-  void sendMessage(data.ByteBuffer message) {
-    _datachannel.sendByteBuffer(message);
-  }
-
-  ///
-  ///
-  ///
   void setRemoteSDP(core.String type, core.String sdp) {
     html.RtcSessionDescription rsd = new html.RtcSessionDescription();
     rsd.sdp = sdp;
@@ -144,7 +137,9 @@ class Caller {
     _setChannelEvent(_datachannel);
   }
 
-
+  //
+  // sent text message
+  //
   void sendText(core.String text) {
     //_datachannel.sendString(text);
     core.Map pack = {};
@@ -154,6 +149,17 @@ class Caller {
     _datachannel.sendByteBuffer(Bencode.encode(pack).buffer);
   }
 
+  //
+  // send pack
+  //
+  void sendPack(core.Map pack) {
+    core.Map pack = {};
+    pack["action"] = "pack";
+    pack["type"] = "map";
+    pack["content"] = pack;
+    _datachannel.sendByteBuffer(Bencode.encode(pack).buffer);
+    
+  }
   void _onDataChannelReceiveMessage(html.MessageEvent event) {
     core.print("onReceiveMessage :" + event.data.runtimeType.toString());
     if(event.data is data.ByteBuffer) {

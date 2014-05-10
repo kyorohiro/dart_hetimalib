@@ -7,3 +7,5 @@ import 'dart:html' as html;
 import 'dart:convert' as convert;
 part 'signal/caller.dart';
 part 'signal/signalclient.dart';
+part 'signal/hetimapeer.dart';
+
