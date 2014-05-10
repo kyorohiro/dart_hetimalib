@@ -102,6 +102,12 @@ class Caller {
     if (event.candidate == null) {
       core.print("fin onIceCandidate");
     }
+    else {
+     if(_signalclient != null) {
+        _signalclient.send(this, _targetuuid, _myuuid, 
+            "ice",convert.JSON.encode(IceTransfer.iceObj2Map(event.candidate)));
+      }
+    }
   }
 
   void _onSuccessLocalSdp(dynamic) {
@@ -137,6 +143,7 @@ class Caller {
 
   void _onDataChannelReceiveMessage(html.MessageEvent event) {
     core.print("onReceiveMessage");
+    core.print(""+event.data.toString());
   }
 
   void _onDataChannelOpen(html.Event event) {
@@ -157,6 +164,19 @@ class Caller {
     channel.onError.listen(_onDataChannelError);
     channel.onClose.listen(_onDataChannelClose);
   }
+
+  void sendText(core.String text) {
+    _datachannel.sendString(text);
+  }
+
+  void addIceCandidate(html.RtcIceCandidate candidate) {
+    _connection.addIceCandidate(candidate, (){
+      core.print("add ice ok");
+    }, (core.String e){
+      core.print("add ice ng"+e.toString());
+    });
+  }
+
 }
 
 class CallerEventListener {
@@ -165,6 +185,16 @@ class CallerEventListener {
   }
 }
 
+class IceTransfer {
+  static core.Map iceObj2Map(html.RtcIceCandidate candidate) {
+    core.Map ret = {
+       'candidate':candidate.candidate,
+       'sdpMid':candidate.sdpMid,
+       'sdpMLineIndex':candidate.sdpMLineIndex,
+     };
+    return ret;
+  }
+}
 //
 //
 //
@@ -184,6 +214,8 @@ class CallerExpectSignalClient {
         }
         break;
       case "ice":
+           html.RtcIceCandidate candidate= convert.JSON.decode(data);
+           caller.addIceCandidate(candidate);
         break;
     }
   }
