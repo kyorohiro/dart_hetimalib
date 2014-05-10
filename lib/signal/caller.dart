@@ -33,14 +33,9 @@ class Caller {
     return this;
   }
 
-  Caller addEventListener(CallerEventListener listener) {
-    _obseverList.add(listener);
-    return this;
-  }
-
-  Caller removeEventListener(CallerEventListener listener) {
-    _obseverList.remove(listener);
-    return this;
+  async.StreamController<MessageInfo> _onReceiveStreamController = new async.StreamController.broadcast();
+  async.Stream onReceiveMessage() {
+    return _onReceiveStreamController.stream;    
   }
 
   Caller init() {
@@ -146,6 +141,7 @@ class Caller {
   void _onDataChannelReceiveMessage(html.MessageEvent event) {
     core.print("onReceiveMessage");
     core.print(""+event.data.toString());
+    _onReceiveStreamController.add(new MessageInfo("text", event.data.toString()));
   }
 
   void _onDataChannelOpen(html.Event event) {
@@ -181,11 +177,6 @@ class Caller {
 
 }
 
-class CallerEventListener {
-  void onIceCandidate(html.RtcIceCandidateEvent event) {
-    ;
-  }
-}
 
 class IceTransfer {
   static core.Map iceObj2Map(html.RtcIceCandidate candidate) {
@@ -195,6 +186,22 @@ class IceTransfer {
        'sdpMLineIndex':candidate.sdpMLineIndex,
      };
     return ret;
+  }
+}
+
+class MessageInfo {
+  core.String _message = "";
+  core.String _type = "";
+
+  MessageInfo(core.String type, core.String message) {
+    _message = message; 
+    _type =type;
+  }
+  core.String get type {
+    return _type;
+  }
+  core.String get message {
+    return _message;
   }
 }
 //
