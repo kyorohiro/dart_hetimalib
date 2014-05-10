@@ -29,7 +29,13 @@ class SignalClient {
     core.print("type=" + e.type + "," + e.data.runtimeType.toString());
     if (e is core.String) {
       core.print("data=" + e.data);
-    } else if (e.data is data.Uint8List) {
+    }
+    else if (e.data is data.ByteBuffer) {
+      data.ByteBuffer bbuffer = e.data;
+      data.Uint8List buffer = new data.Uint8List.view(bbuffer);
+      onReceiveSignalMessage(Bencode.decode(buffer));      
+    }
+    else if (e.data is data.Uint8List) {
       data.Uint8List buffer = e.data;
       onReceiveSignalMessage(Bencode.decode(buffer));
     }

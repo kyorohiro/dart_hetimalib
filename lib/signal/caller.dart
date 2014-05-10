@@ -104,6 +104,7 @@ class Caller {
     }
     else {
      if(_signalclient != null) {
+       core.print("---caller#send : ice");
         _signalclient.send(this, _targetuuid, _myuuid, 
             "ice",convert.JSON.encode(IceTransfer.iceObj2Map(event.candidate)));
       }
@@ -112,11 +113,12 @@ class Caller {
 
   void _onSuccessLocalSdp(dynamic) {
       core.print("sucess set loca sdp¥n" + 
-          _connection.localDescription.sdp
+          _connection.localDescription.sdp.toString().substring(0,10)
           +"¥n");
       // send offer
       // send answer
       if(_signalclient != null) {
+        core.print("---caller#send sdp : "+_connection.localDescription.type);
         _signalclient.send(this, _targetuuid, _myuuid, 
             _connection.localDescription.type,
             _connection.localDescription.sdp);
@@ -206,7 +208,9 @@ class CallerExpectSignalClient {
     switch (type) {
       case "answer":
       case "offer":
+        core.print("##1##" + caller.toString());
         caller.setRemoteSDP(type, data);
+        core.print("##2##");
         if(type =="offer") {
           caller
           .setTarget(from)
@@ -214,7 +218,10 @@ class CallerExpectSignalClient {
         }
         break;
       case "ice":
-           html.RtcIceCandidate candidate= convert.JSON.decode(data);
+        core.print("##"+data+"##");
+           html.RtcIceCandidate candidate =
+               new html.RtcIceCandidate(convert.JSON.decode(data));
+           core.print("add ice" + candidate.candidate+","+candidate.sdpMid+","+candidate.sdpMLineIndex.toString());
            caller.addIceCandidate(candidate);
         break;
     }
