@@ -40,15 +40,15 @@ class SignalClient {
     else if (e.data is data.ByteBuffer) {
       data.ByteBuffer bbuffer = e.data;
       data.Uint8List buffer = new data.Uint8List.view(bbuffer);
-      onReceiveSignalMessage(Bencode.decode(buffer));      
+      _onReceiveSignalMessage(Bencode.decode(buffer));      
     }
     else if (e.data is data.Uint8List) {
       data.Uint8List buffer = e.data;
-      onReceiveSignalMessage(Bencode.decode(buffer));
+      _onReceiveSignalMessage(Bencode.decode(buffer));
     }
   }
 
-  void onReceiveSignalMessage(core.Map message) {
+  void _onReceiveSignalMessage(core.Map message) {
     core.print("receive signal message" + convert.JSON.encode(message));
 
     if (convert.UTF8.decode(message["action"]) == "join") {
