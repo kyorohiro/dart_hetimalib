@@ -6,17 +6,22 @@ class Caller {
   core.String _myuuid;
   core.String _targetuuid;
   CallerExpectSignalClient _signalclient;
-  core.List<CallerEventListener> _obseverList = new core.List();
 
   core.Map _stuninfo = {
     "iceServers": [{
         "url": "stun:stun.l.google.com:19302"
       }]
   };
+  /*
+   * http://stackoverflow.com/questions/21585681/send-image-data-over-rtc-data-channel
+   * 
   core.Map _mediainfo = {
     'optional': [{
         'RtpDataChannels': true
       }]
+  };*/
+  core.Map _mediainfo = {
+    'optional': []
   };
 
   Caller(core.String uuid) {
@@ -47,6 +52,7 @@ class Caller {
     _connection.onIceCandidate.listen(_onIceCandidate);
     _connection.onDataChannel.listen(_onDataChannel);
     _datachannel = _connection.createDataChannel("message");
+    _datachannel.binaryType = "arraybuffer";
     _setChannelEvent(_datachannel);
     return this;
   }
@@ -138,10 +144,48 @@ class Caller {
     _setChannelEvent(_datachannel);
   }
 
+
+  void sendText(core.String text) {
+    //_datachannel.sendString(text);
+    core.Map pack = {};
+    pack["action"] = "direct";
+    pack["type"] = "text";
+    pack["content"] = text;
+    _datachannel.sendByteBuffer(Bencode.encode(pack).buffer);
+  }
+
   void _onDataChannelReceiveMessage(html.MessageEvent event) {
-    core.print("onReceiveMessage");
-    core.print(""+event.data.toString());
-    _onReceiveStreamController.add(new MessageInfo("text", event.data.toString()));
+    core.print("onReceiveMessage :" + event.data.runtimeType.toString());
+    if(event.data is data.ByteBuffer) {
+      core.print("##-#001");
+      data.ByteBuffer bbuffer = event.data;
+      data.Uint8List buffer = new data.Uint8List.view(bbuffer);
+      core.Map pack = Bencode.decode(buffer);
+      core.print("s="+convert.JSON.encode(pack));
+      if(convert.UTF8.decode(pack["type"]) == "text") {
+        core.print("##-#002");
+        _onReceiveStreamController.add(new MessageInfo("text", 
+            convert.UTF8.decode(pack["content"])
+        ));
+        core.print("##-#003");
+      }
+    }
+    else if(event.data is data.Uint8List) {
+      core.print("###001");
+      data.Uint8List buffer = event.data;
+      core.Map pack = Bencode.decode(buffer);
+      if(convert.UTF8.decode(pack["type"]) == "text") {
+        core.print("###002");
+        _onReceiveStreamController.add(new MessageInfo("text", 
+            convert.UTF8.decode(pack["content"])
+        ));
+        core.print("###003");
+      } else {
+        core.print("###004");
+      }
+    } else {
+      core.print("##-#fin");
+    }
   }
 
   void _onDataChannelOpen(html.Event event) {
@@ -161,10 +205,6 @@ class Caller {
     channel.onOpen.listen(_onDataChannelOpen);
     channel.onError.listen(_onDataChannelError);
     channel.onClose.listen(_onDataChannelClose);
-  }
-
-  void sendText(core.String text) {
-    _datachannel.sendString(text);
   }
 
   void addIceCandidate(html.RtcIceCandidate candidate) {
