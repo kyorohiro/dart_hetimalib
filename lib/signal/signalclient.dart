@@ -10,6 +10,9 @@ class SignalClient {
   core.String _websocketUrl = "ws://localhost:8082/websocket";
   html.WebSocket _websocket;
 
+  async.StreamController<core.List<core.String>> _signalFindPeer = new async.StreamController();
+  async.StreamController<SignalMessageInfo> _signalReceiveMessage = new async.StreamController();
+  async.StreamController<core.String> _signalClose = new async.StreamController();
 
   async.Future connect() {
     async.Completer<html.Event> _connectWork = new async.Completer();
@@ -17,12 +20,15 @@ class SignalClient {
     _websocket = new html.WebSocket(_websocketUrl);
     _websocket.binaryType = "arraybuffer";
     _websocket.onOpen.listen((html.Event e) {
-      onOpen(e);
       _connectWork.complete(e);
     });
     _websocket.onMessage.listen(onMessage);
-    _websocket.onError.listen(onError);
-    _websocket.onClose.listen(onClose);
+    _websocket.onError.listen((html.Event e) {
+      notifyOnClose("close websocket");      
+    });
+    _websocket.onClose.listen((html.CloseEvent e) {
+      notifyOnClose("close websocket");
+    });
     return _connectWork.future;
   }
 
@@ -75,14 +81,6 @@ class SignalClient {
     }
     return _websocket.readyState;
   }
-  void onOpen(html.Event e) {
-  }
-  void onClose(html.CloseEvent e) {
-  }
-  void onError(html.Event e) {
-  }
-  void send() {
-  }
 
   void sendJoin(core.String id) {
     var pack = {};
@@ -91,7 +89,6 @@ class SignalClient {
     pack["id"] = id;
     sendObject(pack);
   }
-
 
   void unicastPackage(core.String to, core.String from, core.Map pack) {
     var package = {};
@@ -120,22 +117,24 @@ class SignalClient {
     _signalFindPeer.add(peers);
   }
  
-  void notifyOnReceivePackage(
-    core.String to, core.String from, core.Map pack) {
-    core.print("to="+to+",from="+from);
+  void notifyOnReceivePackage(core.String to, core.String from, core.Map pack) {
     SignalMessageInfo info = new SignalMessageInfo(to, from, pack);
-    core.print("--------------");
     _signalReceiveMessage.add(info);
   }
 
-  async.StreamController<core.List<core.String>> _signalFindPeer = new async.StreamController();
+  void notifyOnClose(core.String message) {
+    _signalClose.add(message);
+  }
+
   async.Stream onFindPeer() {
     return _signalFindPeer.stream;
   }
 
-  async.StreamController<SignalMessageInfo> _signalReceiveMessage = new async.StreamController();
   async.Stream onReceiveMessage() {
     return _signalReceiveMessage.stream;
+  }
+  async.Stream onClose() {
+    return _signalClose.stream;
   }
 }
 
