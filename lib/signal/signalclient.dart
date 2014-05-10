@@ -10,6 +10,7 @@ class SignalClient {
   core.String _websocketUrl = "ws://localhost:8082/websocket";
   html.WebSocket _websocket;
 
+
   async.Future connect() {
     async.Completer<html.Event> _connectWork = new async.Completer();
 
@@ -115,28 +116,39 @@ class SignalClient {
     _websocket.sendString(message);
   }
 
-  core.List<SignalClientListener> _observer = new core.List();
-  void addEventListener(SignalClientListener observer) {
-    _observer.add(observer);
-  }
-
   void notifyUpdatePeer(core.List<core.String> peers) {
-    for (SignalClientListener l in _observer) {
-      l.updatePeer(peers);
-    }
+    _signalFindPeer.add(peers);
   }
  
   void notifyOnReceivePackage(
     core.String to, core.String from, core.Map pack) {
-    for (SignalClientListener l in _observer) {
-      l.onReceivePackage(to, from, pack);
-    }
+    core.print("to="+to+",from="+from);
+    SignalMessageInfo info = new SignalMessageInfo(to, from, pack);
+    core.print("--------------");
+    _signalReceiveMessage.add(info);
+  }
+
+  async.StreamController<core.List<core.String>> _signalFindPeer = new async.StreamController();
+  async.Stream onFindPeer() {
+    return _signalFindPeer.stream;
+  }
+
+  async.StreamController<SignalMessageInfo> _signalReceiveMessage = new async.StreamController();
+  async.Stream onReceiveMessage() {
+    return _signalReceiveMessage.stream;
   }
 }
 
-class SignalClientListener {
-  void updatePeer(core.List<core.String> uuidList) {
+class SignalMessageInfo {
+  core.String _mTo;
+  core.String _mFrom;
+  core.Map _mPack;
+  SignalMessageInfo(core.String to, core.String from, core.Map pack) {
+    _mTo = to;
+    _mFrom = from;
+    _mPack = pack;
   }
-  void onReceivePackage(core.String to, core.String from, core.Map pack) {
-  }
+  core.String get to => _mTo;
+  core.String get from => _mFrom;
+  core.Map get pack => _mPack;
 }
