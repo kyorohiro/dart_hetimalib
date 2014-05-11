@@ -5,25 +5,25 @@ class Caller {
   static final core.int STATE_OPEN  = 1;
   static final core.int STATE_CLOSE = 2;
 
-  static final core.String RTC_STATE_NEW = "new";
+  static final core.String RTC_ICE_STATE_NEW = "new";
   //The ICE Agent is gathering addresses and/or waiting for remote candidates to be supplied.
   //http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState
-  static final core.String RTC_STATE_CHECKING = "checking";
+  static final core.String RTC_ICE_STATE_CHECKING = "checking";
   //The ICE Agent has received remote candidates on at least one component, and is checking candidate pairs but has not yet found a connection. In addition to checking, it may also still be gathering.
   //http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState
-  static final core.String RTC_STATE_CONNECTED = "connected";
+  static final core.String RTC_ICE_STATE_CONNECTED = "connected";
   //The ICE Agent has found a usable connection for all components but is still checking other candidate pairs to see if there is a better connection. It may also still be gathering.
   //http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState
-  static final core.String RTC_STATE_COMPLEDTED = "completed";
+  static final core.String RTC_ICE_STATE_COMPLEDTED = "completed";
   //The ICE Agent has finished gathering and checking and found a connection for all components. Open issue: it is not clear how the non controlling ICE side knows it is in the state.
   //http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState
-  static final core.String RTC_STATE_FAILED = "failed";
+  static final core.String RTC_ICE_STATE_FAILED = "failed";
   //The ICE Agent is finished checking all candidate pairs and failed to find a connection for at least one component. Connections may have been found for some components.
   //http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState
-  static final core.String RTC_STATE_DISCONNECTE = "disconnected";
+  static final core.String RTC_ICE_STATE_DISCONNECTE = "disconnected";
   // Liveness checks have failed for one or more components. This is more aggressive than failed, and may trigger intermittently (and resolve itself without action) on a flaky network
   //http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState.
-  static final core.String RTC_STATE_CLOSED = "closed";
+  static final core.String RTC_ICE_STATE_CLOSED = "closed";
   //The ICE Agent has shut down and is no longer responding to STUN requests.
   //http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState
 
@@ -78,11 +78,14 @@ class Caller {
     _connection = new html.RtcPeerConnection(_stuninfo, _mediainfo);
     _connection.onIceCandidate.listen(_onIceCandidate);
     _connection.onDataChannel.listen(_onDataChannel);
-    _connection.onAddStream.listen((html.MediaStreamEvent e){core.print("##onAddStream###");});
-    _connection.onIceConnectionStateChange.listen((html.Event e){core.print("##onIceConnectionStateChange###"+_connection.iceConnectionState);});
-    _connection.onNegotiationNeeded.listen((html.Event e){core.print("##onNegotiationNeeded###"+_connection.iceConnectionState);});
-    _connection.onSignalingStateChange.listen((html.Event e){core.print("##onSignalingStateChange###"+_connection.iceConnectionState);});
-
+    _connection.onAddStream.listen((html.MediaStreamEvent e){    core.print("#####[ww]#########onAddStream###");});
+    _connection.onIceConnectionStateChange.listen((html.Event e){core.print("#####[ww]#########onIceConnectionStateChange###"
+        +_connection.iceConnectionState+","+_connection.signalingState +","+_connection.iceGatheringState);});
+    _connection.onNegotiationNeeded.listen((html.Event e){ 
+      core.print("#####[ww]#########onNegotiationNeeded###"+_connection.iceConnectionState+","+_connection.signalingState);
+      //createOffer();
+    });
+    _connection.onSignalingStateChange.listen((html.Event e){    core.print("#####[ww]#########onSignalingStateChange###"+_connection.iceConnectionState+","+_connection.signalingState);});
     _datachannel = _connection.createDataChannel("message");
     _datachannel.binaryType = "arraybuffer";
     _setChannelEvent(_datachannel);
@@ -238,17 +241,17 @@ class Caller {
   }
 
   void _onDataChannelOpen(html.Event event) {
-    core.print("onOpen");
+    core.print("onOpenDataChannel:");
     _status = Caller.STATE_OPEN;
   }
 
   void _onDataChannelError(html.Event event) {
-    core.print("onError"+event.toString());
+    core.print("onErrorDataChannel:"+event.toString());
     _status = Caller.STATE_CLOSE;
   }
 
   void _onDataChannelClose(html.Event event) {
-    core.print("onClose");
+    core.print("onCloseDataChannel:");
     _status = Caller.STATE_CLOSE;
   }
 
