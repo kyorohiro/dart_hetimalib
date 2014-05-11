@@ -70,6 +70,16 @@ class Caller {
     return _onReceiveStreamController.stream;    
   }
 
+  async.StreamController<core.String> _onDoneControleler = new async.StreamController.broadcast();
+  async.Stream<MessageInfo> onDone() {
+    return _onReceiveStreamController.stream;    
+  }
+
+  async.StreamController<core.String> _onStatusChangeControleler = new async.StreamController.broadcast();
+  async.Stream<core.String> onStatusChange() {
+    return _onStatusChangeControleler.stream;    
+  }
+
   Caller init() {
     return this;
   }
@@ -79,8 +89,10 @@ class Caller {
     _connection.onIceCandidate.listen(_onIceCandidate);
     _connection.onDataChannel.listen(_onDataChannel);
     _connection.onAddStream.listen((html.MediaStreamEvent e){    core.print("#####[ww]#########onAddStream###");});
-    _connection.onIceConnectionStateChange.listen((html.Event e){core.print("#####[ww]#########onIceConnectionStateChange###"
-        +_connection.iceConnectionState+","+_connection.signalingState +","+_connection.iceGatheringState);});
+    _connection.onIceConnectionStateChange.listen((html.Event e){
+      core.print("#####[ww]#########onIceConnectionStateChange###"+_connection.iceConnectionState+","+_connection.signalingState +","+_connection.iceGatheringState);
+      _onStatusChangeControleler.add(_connection.iceConnectionState);
+    });
     _connection.onNegotiationNeeded.listen((html.Event e){ 
       core.print("#####[ww]#########onNegotiationNeeded###"+_connection.iceConnectionState+","+_connection.signalingState);
       //createOffer();
@@ -92,27 +104,26 @@ class Caller {
     return this;
   }
 
-  async.Completer<core.String> _taskDone = new  async.Completer();
   ///
   ///
   ///
-  async.Future<core.String> createOffer() {
+  Caller createOffer() {
     core.print("#caller#create offer");
     _connection.createOffer()
     .then(_onOffer)
     .catchError((){_onError("create offer");});
-    return _taskDone.future;
+    return this;
   }
 
   ///
   ///
   ///
-  async.Future<core.String> createAnswer() {
+  Caller createAnswer() {
     core.print("#caller#create answer");
     _connection.createAnswer()
     .then(_onAnswer)
     .catchError((){_onError("create answer");});
-    return _taskDone.future;
+    return this;
   }
 
   ///
@@ -164,23 +175,14 @@ class Caller {
   void _onOffer(html.RtcSessionDescription sdp) {
     core.print("onOffer"+sdp.toString());
     _setLocalSdp(sdp);
-    if(!_taskDone.isCompleted) {
-      _taskDone.complete("ok offer");
-    }
   }
   void _onAnswer(html.RtcSessionDescription sdp) {
     core.print("onAnswer"+sdp.toString());
     _setLocalSdp(sdp);
-    if(!_taskDone.isCompleted) {
-      _taskDone.complete("ok answer");
-    }
   }
 
   void _onError(core.String event) {
     core.print("onerror "+event.toString());
-    if(!_taskDone.isCompleted) {
-      _taskDone.complete("error");
-    }
   }
 
   void _onDataChannel(html.RtcDataChannelEvent event) {
