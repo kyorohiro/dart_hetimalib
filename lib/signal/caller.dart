@@ -177,8 +177,11 @@ class Caller {
     if(event.data is data.ByteBuffer) {
       core.print("##-#001");
       data.ByteBuffer bbuffer = event.data;
+      core.print("##-#001-3");
       data.Uint8List buffer = new data.Uint8List.view(bbuffer);
+      core.print("##-#001-2"+convert.UTF8.decode(buffer.toList()).toString());
       core.Map pack = Bencode.decode(buffer);
+      core.print("##-#001-1");
       core.print("s="+convert.JSON.encode(pack));
       if(convert.UTF8.decode(pack["type"]) == "text") {
         core.print("##-#002");

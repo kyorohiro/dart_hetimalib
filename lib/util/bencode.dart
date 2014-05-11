@@ -105,7 +105,8 @@ class Bencoder {
   }
 
   void encodeString(core.String obj) {
-    builder.appendString(""+obj.length.toString()+":"+obj);
+    core.List<core.int> buffer = convert.UTF8.encode(obj);
+    builder.appendString(""+buffer.length.toString()+":"+obj);
   }
 
   void encodeNumber(core.num num) {
