@@ -67,7 +67,7 @@ class HetimaPeer {
   }
 
   core.List<PeerInfo> getPeerList() {
-    return null;
+    return mPeerInfoList;
   }
 
   PeerInfo findPeerFromList(core.String uuid) {
@@ -83,7 +83,7 @@ class HetimaPeer {
     core.print("find peer from server :" + uuidList.length.toString());
     core.List<core.String> adduuid = new core.List();
     for (core.String uuid in uuidList) {
-      if (mPeerInfoList.contains(uuid) != true && uuid != _mMyId) {
+      if(uuid != _mMyId && null == findPeerFromList(uuid)) {
         mPeerInfoList.add(new PeerInfo(uuid));
         adduuid.add(uuid);
       }
@@ -165,12 +165,12 @@ class PeerInfo {
     _uuid = uuid;
   }
   core.String get uuid => _uuid;
-  core.int get status => _status;
-
-  set staus(core.int v) {
-    _status = v;
+  core.int get status {
+    if(caller == null) {
+      return Caller.STATE_ZERO;
+    }
+    return caller.status;
   }
-
   set relayClient(SignalClient client) {
     _relayClient = client;
   }

@@ -1,11 +1,38 @@
 part of hetima_cl;
 
 class Caller {
+  static final core.int STATE_ZERO  = 0;
+  static final core.int STATE_OPEN  = 1;
+  static final core.int STATE_CLOSE = 2;
+
+  static final core.String RTC_STATE_NEW = "new";
+  //The ICE Agent is gathering addresses and/or waiting for remote candidates to be supplied.
+  //http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState
+  static final core.String RTC_STATE_CHECKING = "checking";
+  //The ICE Agent has received remote candidates on at least one component, and is checking candidate pairs but has not yet found a connection. In addition to checking, it may also still be gathering.
+  //http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState
+  static final core.String RTC_STATE_CONNECTED = "connected";
+  //The ICE Agent has found a usable connection for all components but is still checking other candidate pairs to see if there is a better connection. It may also still be gathering.
+  //http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState
+  static final core.String RTC_STATE_COMPLEDTED = "completed";
+  //The ICE Agent has finished gathering and checking and found a connection for all components. Open issue: it is not clear how the non controlling ICE side knows it is in the state.
+  //http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState
+  static final core.String RTC_STATE_FAILED = "failed";
+  //The ICE Agent is finished checking all candidate pairs and failed to find a connection for at least one component. Connections may have been found for some components.
+  //http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState
+  static final core.String RTC_STATE_DISCONNECTE = "disconnected";
+  // Liveness checks have failed for one or more components. This is more aggressive than failed, and may trigger intermittently (and resolve itself without action) on a flaky network
+  //http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState.
+  static final core.String RTC_STATE_CLOSED = "closed";
+  //The ICE Agent has shut down and is no longer responding to STUN requests.
+  //http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState
+
   html.RtcPeerConnection _connection = null;
   html.RtcDataChannel _datachannel = null;
   core.String _myuuid;
   core.String _targetuuid;
   CallerExpectSignalClient _signalclient;
+  core.int _status = 0;
 
   core.Map _stuninfo = {
     "iceServers": [{
@@ -51,13 +78,18 @@ class Caller {
     _connection = new html.RtcPeerConnection(_stuninfo, _mediainfo);
     _connection.onIceCandidate.listen(_onIceCandidate);
     _connection.onDataChannel.listen(_onDataChannel);
+    _connection.onAddStream.listen((html.MediaStreamEvent e){core.print("##onAddStream###");});
+    _connection.onIceConnectionStateChange.listen((html.Event e){core.print("##onIceConnectionStateChange###"+_connection.iceConnectionState);});
+    _connection.onNegotiationNeeded.listen((html.Event e){core.print("##onNegotiationNeeded###"+_connection.iceConnectionState);});
+    _connection.onSignalingStateChange.listen((html.Event e){core.print("##onSignalingStateChange###"+_connection.iceConnectionState);});
+
     _datachannel = _connection.createDataChannel("message");
     _datachannel.binaryType = "arraybuffer";
     _setChannelEvent(_datachannel);
     return this;
   }
 
-  async.Completer<core.String> taskDone = new  async.Completer();
+  async.Completer<core.String> _taskDone = new  async.Completer();
   ///
   ///
   ///
@@ -65,8 +97,8 @@ class Caller {
     core.print("#caller#create offer");
     _connection.createOffer()
     .then(_onOffer)
-    .then(_onError);
-    return taskDone.future;
+    .catchError((){_onError("create offer");});
+    return _taskDone.future;
   }
 
   ///
@@ -76,8 +108,8 @@ class Caller {
     core.print("#caller#create answer");
     _connection.createAnswer()
     .then(_onAnswer)
-    .then(_onError);
-    return taskDone.future;
+    .catchError((){_onError("create answer");});
+    return _taskDone.future;
   }
 
   ///
@@ -89,6 +121,10 @@ class Caller {
     rsd.type = type;
     _connection.setRemoteDescription(rsd);
   }
+
+  ///
+  ///
+  get status => _status;
 
   void _setLocalSdp(html.RtcSessionDescription description) {
     _connection.setLocalDescription(description)
@@ -125,22 +161,22 @@ class Caller {
   void _onOffer(html.RtcSessionDescription sdp) {
     core.print("onOffer"+sdp.toString());
     _setLocalSdp(sdp);
-    if(!taskDone.isCompleted) {
-      taskDone.complete("ok offer");
+    if(!_taskDone.isCompleted) {
+      _taskDone.complete("ok offer");
     }
   }
   void _onAnswer(html.RtcSessionDescription sdp) {
     core.print("onAnswer"+sdp.toString());
     _setLocalSdp(sdp);
-    if(!taskDone.isCompleted) {
-      taskDone.complete("ok answer");
+    if(!_taskDone.isCompleted) {
+      _taskDone.complete("ok answer");
     }
   }
 
-  void _onError(html.Event event) {
+  void _onError(core.String event) {
     core.print("onerror "+event.toString());
-    if(!taskDone.isCompleted) {
-    taskDone.complete("error");
+    if(!_taskDone.isCompleted) {
+      _taskDone.complete("error");
     }
   }
 
@@ -175,22 +211,16 @@ class Caller {
   void _onDataChannelReceiveMessage(html.MessageEvent event) {
     core.print("onReceiveMessage :" + event.data.runtimeType.toString());
     if(event.data is data.ByteBuffer) {
-      core.print("##-#001");
+      core.print("###000");
       data.ByteBuffer bbuffer = event.data;
-      core.print("##-#001-3");
       data.Uint8List buffer = new data.Uint8List.view(bbuffer);
-      core.print("##-#001-2"+convert.UTF8.decode(buffer.toList()).toString());
       core.Map pack = Bencode.decode(buffer);
-      core.print("##-#001-1");
-      core.print("s="+convert.JSON.encode(pack));
       if(convert.UTF8.decode(pack["type"]) == "text") {
-        core.print("##-#002");
         _onReceiveStreamController.add(new MessageInfo(
             _targetuuid,
             "text", 
             convert.UTF8.decode(pack["content"])
         ));
-        core.print("##-#003");
       }
     }
     else if(event.data is data.Uint8List) {
@@ -198,31 +228,28 @@ class Caller {
       data.Uint8List buffer = event.data;
       core.Map pack = Bencode.decode(buffer);
       if(convert.UTF8.decode(pack["type"]) == "text") {
-        core.print("###002");
         _onReceiveStreamController.add(new MessageInfo(
             _targetuuid,
             "text", 
             convert.UTF8.decode(pack["content"])
         ));
-        core.print("###003");
-      } else {
-        core.print("###004");
       }
-    } else {
-      core.print("##-#fin");
     }
   }
 
   void _onDataChannelOpen(html.Event event) {
     core.print("onOpen");
+    _status = Caller.STATE_OPEN;
   }
 
   void _onDataChannelError(html.Event event) {
     core.print("onError"+event.toString());
+    _status = Caller.STATE_CLOSE;
   }
 
   void _onDataChannelClose(html.Event event) {
     core.print("onClose");
+    _status = Caller.STATE_CLOSE;
   }
 
   void _setChannelEvent(html.RtcDataChannel channel) {
