@@ -10,8 +10,8 @@ class SignalClient {
   core.String _websocketUrl = "ws://localhost:8082/websocket";
   html.WebSocket _websocket;
 
-  async.StreamController<core.List<core.String>> _signalFindPeer = new async.StreamController();
-  async.StreamController<SignalMessageInfo> _signalReceiveMessage = new async.StreamController();
+  async.StreamController<core.List<core.String>> _signalFindPeer = new async.StreamController.broadcast();
+  async.StreamController<SignalMessageInfo> _signalReceiveMessage = new async.StreamController.broadcast();
   async.StreamController<core.String> _signalClose = new async.StreamController();
 
   async.Future connect() {
@@ -49,7 +49,10 @@ class SignalClient {
   }
 
   void _onReceiveSignalMessage(core.Map message) {
-    core.print("receive signal message" + convert.JSON.encode(message));
+    core.print("receive signal message");
+    core.String log = convert.JSON.encode(message);
+    core.int max = 40;if(log.length <max) {max =log.length;}
+    core.print("---" + convert.JSON.encode(message).substring(0,max));    
 
     if (convert.UTF8.decode(message["action"]) == "join") {
       if (convert.UTF8.decode(message["mode"]) == "response") {

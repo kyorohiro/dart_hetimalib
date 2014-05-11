@@ -39,7 +39,7 @@ class Caller {
   }
 
   async.StreamController<MessageInfo> _onReceiveStreamController = new async.StreamController.broadcast();
-  async.Stream onReceiveMessage() {
+  async.Stream<MessageInfo> onReceiveMessage() {
     return _onReceiveStreamController.stream;    
   }
 
@@ -57,24 +57,27 @@ class Caller {
     return this;
   }
 
+  async.Completer<core.String> taskDone = new  async.Completer();
   ///
   ///
   ///
-  void createOffer() {
-    core.print("create offer");
+  async.Future<core.String> createOffer() {
+    core.print("#caller#create offer");
     _connection.createOffer()
     .then(_onOffer)
     .then(_onError);
+    return taskDone.future;
   }
 
   ///
   ///
   ///
-  void createAnswer() {
-    core.print("create answer");
+  async.Future<core.String> createAnswer() {
+    core.print("#caller#create answer");
     _connection.createAnswer()
     .then(_onAnswer)
     .then(_onError);
+    return taskDone.future;
   }
 
   ///
@@ -122,14 +125,23 @@ class Caller {
   void _onOffer(html.RtcSessionDescription sdp) {
     core.print("onOffer"+sdp.toString());
     _setLocalSdp(sdp);
+    if(!taskDone.isCompleted) {
+      taskDone.complete("ok offer");
+    }
   }
   void _onAnswer(html.RtcSessionDescription sdp) {
     core.print("onAnswer"+sdp.toString());
     _setLocalSdp(sdp);
+    if(!taskDone.isCompleted) {
+      taskDone.complete("ok answer");
+    }
   }
 
   void _onError(html.Event event) {
     core.print("onerror "+event.toString());
+    if(!taskDone.isCompleted) {
+    taskDone.complete("error");
+    }
   }
 
   void _onDataChannel(html.RtcDataChannelEvent event) {
@@ -170,7 +182,9 @@ class Caller {
       core.print("s="+convert.JSON.encode(pack));
       if(convert.UTF8.decode(pack["type"]) == "text") {
         core.print("##-#002");
-        _onReceiveStreamController.add(new MessageInfo("text", 
+        _onReceiveStreamController.add(new MessageInfo(
+            _targetuuid,
+            "text", 
             convert.UTF8.decode(pack["content"])
         ));
         core.print("##-#003");
@@ -182,7 +196,9 @@ class Caller {
       core.Map pack = Bencode.decode(buffer);
       if(convert.UTF8.decode(pack["type"]) == "text") {
         core.print("###002");
-        _onReceiveStreamController.add(new MessageInfo("text", 
+        _onReceiveStreamController.add(new MessageInfo(
+            _targetuuid,
+            "text", 
             convert.UTF8.decode(pack["content"])
         ));
         core.print("###003");
@@ -238,17 +254,15 @@ class IceTransfer {
 class MessageInfo {
   core.String _message = "";
   core.String _type = "";
+  core.String _uuid = "";
 
-  MessageInfo(core.String type, core.String message) {
+  MessageInfo(core.String uuid, core.String type, core.String message) {
     _message = message; 
     _type =type;
   }
-  core.String get type {
-    return _type;
-  }
-  core.String get message {
-    return _message;
-  }
+  core.String get uuid => _uuid;
+  core.String get type => _type;
+  core.String get message => _message;
 }
 //
 //
@@ -263,8 +277,9 @@ class CallerExpectSignalClient {
       case "offer":
         core.print("##1##" + caller.toString());
         caller.setRemoteSDP(type, data);
-        core.print("##2##");
+        core.print("##2##"+data);
         if(type =="offer") {
+          core.print("##3## create answer");
           caller
           .setTarget(from)
           .createAnswer();
@@ -276,6 +291,7 @@ class CallerExpectSignalClient {
                new html.RtcIceCandidate(convert.JSON.decode(data));
            core.print("add ice" + candidate.candidate+","+candidate.sdpMid+","+candidate.sdpMLineIndex.toString());
            caller.addIceCandidate(candidate);
+          
         break;
     }
   }
