@@ -39,11 +39,12 @@ class Caller {
   /*
    * http://stackoverflow.com/questions/21585681/send-image-data-over-rtc-data-channel
    * 
-  core.Map _mediainfo = {
-    'optional': [{
-        'RtpDataChannels': true
-      }]
-  };*/
+   * core.Map _mediainfo = {
+   * 'optional': [{
+   *     'RtpDataChannels': true
+   *   }]
+   * };
+   */
   core.Map _mediainfo = {
     'optional': []
   };
@@ -67,11 +68,6 @@ class Caller {
     return _onReceiveStreamController.stream;    
   }
 
-  async.StreamController<DoneInfo> _onDoneControleler = new async.StreamController.broadcast();
-  async.Stream<DoneInfo> onDone() {
-    return _onDoneControleler.stream;    
-  }
-
   async.StreamController<core.String> _onStatusChangeControleler = new async.StreamController.broadcast();
   async.Stream<core.String> onStatusChange() {
     return _onStatusChangeControleler.stream;    
@@ -89,7 +85,6 @@ class Caller {
     _connection.onIceConnectionStateChange.listen((html.Event e){
       core.print("#####[ww]#########onIceConnectionStateChange###"+_connection.iceConnectionState+","+_connection.signalingState +","+_connection.iceGatheringState);
       _onStatusChangeControleler.add(_connection.iceConnectionState);
-      _iceStatusHandle();
     });
     _connection.onNegotiationNeeded.listen((html.Event e){ 
       core.print("#####[ww]#########onNegotiationNeeded###"+_connection.iceConnectionState+","+_connection.signalingState);
@@ -102,21 +97,12 @@ class Caller {
     return this;
   }
 
-  void _iceStatusHandle() {
-    core.String status = _connection.iceConnectionState;
-    if(status == Caller.RTC_ICE_STATE_DISCONNECTE ||
-       status == Caller.RTC_ICE_STATE_DISCONNECTE ||
-       status == Caller.RTC_ICE_STATE_FAILED || 
-       status == Caller.RTC_ICE_STATE_CLOSED) {
-      _onDoneControleler.add(new DoneInfo(_targetuuid, status));
-    }
-  }
-
+  ///
+  ///
   void close() {
     _connection.close();
   }
 
-  ///
   ///
   ///
   Caller createOffer() {
@@ -129,7 +115,6 @@ class Caller {
 
   ///
   ///
-  ///
   Caller createAnswer() {
     core.print("#caller#create answer");
     _connection.createAnswer()
@@ -138,7 +123,6 @@ class Caller {
     return this;
   }
 
-  ///
   ///
   ///
   void setRemoteSDP(core.String type, core.String sdp) {
@@ -150,6 +134,16 @@ class Caller {
 
   ///
   ///
+  void addIceCandidate(html.RtcIceCandidate candidate) {
+    _connection.addIceCandidate(candidate, (){
+      core.print("add ice ok");
+    }, (core.String e){
+      core.print("add ice ng"+e.toString());
+    });
+  }
+
+  ///
+  ///
   core.String get status {
     if(_connection == null) {
       return RTC_ICE_STATE_ZERO;
@@ -157,7 +151,9 @@ class Caller {
     return _connection.iceConnectionState;
   }
 
-  void _setLocalSdp(html.RtcSessionDescription description) {
+  ///
+  ///
+  void setLocalSdp(html.RtcSessionDescription description) {
     _connection.setLocalDescription(description)
     .then(_onSuccessLocalSdp);//.then(_onError);
   }
@@ -191,11 +187,11 @@ class Caller {
 
   void _onOffer(html.RtcSessionDescription sdp) {
     core.print("onOffer"+sdp.toString());
-    _setLocalSdp(sdp);
+    setLocalSdp(sdp);
   }
   void _onAnswer(html.RtcSessionDescription sdp) {
     core.print("onAnswer"+sdp.toString());
-    _setLocalSdp(sdp);
+    setLocalSdp(sdp);
   }
 
   void _onError(core.String event) {
@@ -234,28 +230,23 @@ class Caller {
     core.print("onReceiveMessage :" + event.data.runtimeType.toString());
     if(event.data is data.ByteBuffer) {
       core.print("###000");
-      data.ByteBuffer bbuffer = event.data;
-      data.Uint8List buffer = new data.Uint8List.view(bbuffer);
-      core.Map pack = Bencode.decode(buffer);
-      if(convert.UTF8.decode(pack["type"]) == "text") {
-        _onReceiveStreamController.add(new MessageInfo(
-            _targetuuid,
-            "text", 
-            convert.UTF8.decode(pack["content"])
-        ));
-      }
+      core.Map pack = Bencode.decode(new data.Uint8List.view(event.data as data.ByteBuffer));
+      _onHandleDataChannelReceiveMessage(pack);
     }
     else if(event.data is data.Uint8List) {
       core.print("###001");
-      data.Uint8List buffer = event.data;
-      core.Map pack = Bencode.decode(buffer);
-      if(convert.UTF8.decode(pack["type"]) == "text") {
-        _onReceiveStreamController.add(new MessageInfo(
-            _targetuuid,
-            "text", 
-            convert.UTF8.decode(pack["content"])
-        ));
-      }
+      core.Map pack = Bencode.decode(event.data as data.Uint8List);
+      _onHandleDataChannelReceiveMessage(pack);
+    }
+  }
+
+  void _onHandleDataChannelReceiveMessage(core.Map pack) {
+    if(convert.UTF8.decode(pack["type"]) == "text") {
+      _onReceiveStreamController.add(new MessageInfo(
+          _targetuuid,
+          "text", 
+          convert.UTF8.decode(pack["content"])
+      ));
     }
   }
 
@@ -278,13 +269,6 @@ class Caller {
     channel.onClose.listen(_onDataChannelClose);
   }
 
-  void addIceCandidate(html.RtcIceCandidate candidate) {
-    _connection.addIceCandidate(candidate, (){
-      core.print("add ice ok");
-    }, (core.String e){
-      core.print("add ice ng"+e.toString());
-    });
-  }
 
 }
 
@@ -324,9 +308,10 @@ class MessageInfo {
   core.String get type => _type;
   core.String get message => _message;
 }
-//
-//
-//
+
+///
+///
+///
 class CallerExpectSignalClient {
   void send(Caller caller, core.String toUUid, core.String from, core.String type, core.String data) {
     ;

@@ -125,10 +125,6 @@ class HetimaPeer {
     ret.onReceiveMessage().listen((MessageInfo info) {
       _mCallerReceiveMessage.add(info);
     });
-    ret.onDone().listen((DoneInfo info) {
-      //
-      core.print("done "+info.targetUuid);
-    });
     ret.onStatusChange().listen((core.String s) {
       core.print("statuschange:"+s);
       _mStatusChange.add(new StatusChangeInfo(s));
