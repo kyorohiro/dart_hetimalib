@@ -1,29 +1,42 @@
 part of hetima_cl;
 
+/**
+ * 
+ *  
+ * 
+ * 
+ */
 class Caller {
+  /// don't have webrtc instance
   static final core.String RTC_ICE_STATE_ZERO = "zero";
-  
+ 
+  /// The ICE Agent is gathering addresses and/or waiting for remote candidates to be supplied.
+  /// http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState  
   static final core.String RTC_ICE_STATE_NEW = "new";
-  //The ICE Agent is gathering addresses and/or waiting for remote candidates to be supplied.
-  //http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState
+
+  /// The ICE Agent has received remote candidates on at least one component, and is checking candidate pairs but has not yet found a connection. In addition to checking, it may also still be gathering.
+  /// http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState
   static final core.String RTC_ICE_STATE_CHECKING = "checking";
-  //The ICE Agent has received remote candidates on at least one component, and is checking candidate pairs but has not yet found a connection. In addition to checking, it may also still be gathering.
-  //http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState
+
+  /// The ICE Agent has found a usable connection for all components but is still checking other candidate pairs to see if there is a better connection. It may also still be gathering.
+  /// http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState  
   static final core.String RTC_ICE_STATE_CONNECTED = "connected";
-  //The ICE Agent has found a usable connection for all components but is still checking other candidate pairs to see if there is a better connection. It may also still be gathering.
-  //http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState
+
+  /// The ICE Agent has finished gathering and checking and found a connection for all components. Open issue: it is not clear how the non controlling ICE side knows it is in the state.
+  /// http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState
   static final core.String RTC_ICE_STATE_COMPLEDTED = "completed";
-  //The ICE Agent has finished gathering and checking and found a connection for all components. Open issue: it is not clear how the non controlling ICE side knows it is in the state.
-  //http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState
+
+  /// The ICE Agent is finished checking all candidate pairs and failed to find a connection for at least one component. Connections may have been found for some components.
+  /// http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState
   static final core.String RTC_ICE_STATE_FAILED = "failed";
-  //The ICE Agent is finished checking all candidate pairs and failed to find a connection for at least one component. Connections may have been found for some components.
-  //http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState
+
+  /// Liveness checks have failed for one or more components. This is more aggressive than failed, and may trigger intermittently (and resolve itself without action) on a flaky network
+  /// http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState.
   static final core.String RTC_ICE_STATE_DISCONNECTE = "disconnected";
-  // Liveness checks have failed for one or more components. This is more aggressive than failed, and may trigger intermittently (and resolve itself without action) on a flaky network
-  //http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState.
+
+  /// The ICE Agent has shut down and is no longer responding to STUN requests.
+  /// http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState
   static final core.String RTC_ICE_STATE_CLOSED = "closed";
-  //The ICE Agent has shut down and is no longer responding to STUN requests.
-  //http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState
 
   html.RtcPeerConnection _connection = null;
   html.RtcDataChannel _datachannel = null;
@@ -49,34 +62,51 @@ class Caller {
     'optional': []
   };
 
+  ///
+  /// set application uuid;
   Caller(core.String uuid) {
     _myuuid = uuid;
   }
 
+  ///
+  /// set connection/send/receive target application uuid. 
   Caller setTarget(uuid) {
     _targetuuid = uuid;
     return this;
   }
 
+  ///
+  /// set signal client. 
+  /// signal client send or receive sdp data and ice candidate data, 
   Caller setSignalClient(CallerExpectSignalClient signalclient) {
     _signalclient = signalclient;
     return this;
   }
 
   async.StreamController<MessageInfo> _onReceiveStreamController = new async.StreamController.broadcast();
+  
+  ///
+  /// when receive message, then notified/.
   async.Stream<MessageInfo> onReceiveMessage() {
     return _onReceiveStreamController.stream;    
   }
 
   async.StreamController<core.String> _onStatusChangeControleler = new async.StreamController.broadcast();
+
+  ///
+  /// when status change, then notified/.
   async.Stream<core.String> onStatusChange() {
     return _onStatusChangeControleler.stream;    
   }
 
+  ///
+  /// initialize
   Caller init() {
     return this;
   }
 
+  ///
+  /// start to connect
   Caller connect() {
     _connection = new html.RtcPeerConnection(_stuninfo, _mediainfo);
     _connection.onIceCandidate.listen(_onIceCandidate);
@@ -98,13 +128,13 @@ class Caller {
   }
 
   ///
-  ///
+  /// close 
   void close() {
     _connection.close();
   }
 
   ///
-  ///
+  /// create offer sdp.
   Caller createOffer() {
     core.print("#caller#create offer");
     _connection.createOffer()
@@ -114,7 +144,7 @@ class Caller {
   }
 
   ///
-  ///
+  /// create answer sdp.
   Caller createAnswer() {
     core.print("#caller#create answer");
     _connection.createAnswer()
@@ -124,7 +154,7 @@ class Caller {
   }
 
   ///
-  ///
+  /// set remote sdp
   void setRemoteSDP(core.String type, core.String sdp) {
     html.RtcSessionDescription rsd = new html.RtcSessionDescription();
     rsd.sdp = sdp;
@@ -133,7 +163,7 @@ class Caller {
   }
 
   ///
-  ///
+  /// add ice candidate
   void addIceCandidate(html.RtcIceCandidate candidate) {
     _connection.addIceCandidate(candidate, (){
       core.print("add ice ok");
@@ -143,7 +173,7 @@ class Caller {
   }
 
   ///
-  ///
+  /// return RTC_ICE_STATE_xxxx
   core.String get status {
     if(_connection == null) {
       return RTC_ICE_STATE_ZERO;
@@ -152,7 +182,7 @@ class Caller {
   }
 
   ///
-  ///
+  /// set local sdp
   void setLocalSdp(html.RtcSessionDescription description) {
     _connection.setLocalDescription(description)
     .then(_onSuccessLocalSdp);//.then(_onError);
@@ -203,9 +233,8 @@ class Caller {
     _setChannelEvent(_datachannel);
   }
 
-  //
-  // sent text message
-  //
+  ///
+  /// sent text message
   void sendText(core.String text) {
     //_datachannel.sendString(text);
     core.Map pack = {};
@@ -215,9 +244,8 @@ class Caller {
     _datachannel.sendByteBuffer(Bencode.encode(pack).buffer);
   }
 
-  //
-  // send pack
-  //
+  ///
+  /// send pack
   void sendPack(core.Map pack) {
     core.Map pack = {};
     pack["action"] = "pack";
