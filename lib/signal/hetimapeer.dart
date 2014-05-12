@@ -11,6 +11,7 @@ class HetimaPeer {
 
   async.StreamController<core.List<core.String>> _mSignalFindPeer = new async.StreamController.broadcast();
   async.StreamController<MessageInfo> _mCallerReceiveMessage = new async.StreamController.broadcast();
+  async.StreamController<StatusChangeInfo> _mStatusChange = new async.StreamController.broadcast();
 
   HetimaPeer() {
     mClient = new SignalClient();
@@ -52,6 +53,10 @@ class HetimaPeer {
 
   async.Stream<MessageInfo> onMessage() {
     return _mCallerReceiveMessage.stream;
+  }
+
+  async.Stream<StatusChangeInfo> onStatusChange() {
+    return _mStatusChange.stream;
   }
 
   core.int get status => mClient.getState();
@@ -120,6 +125,14 @@ class HetimaPeer {
     ret.onReceiveMessage().listen((MessageInfo info) {
       _mCallerReceiveMessage.add(info);
     });
+    ret.onDone().listen((DoneInfo info) {
+      //
+      core.print("done "+info.targetUuid);
+    });
+    ret.onStatusChange().listen((core.String s) {
+      core.print("statuschange:"+s);
+      _mStatusChange.add(new StatusChangeInfo(s));
+    });
     return ret;
   }
 }
@@ -149,6 +162,13 @@ class AdapterSignalClient extends CallerExpectSignalClient {
   }
 }
 
+class StatusChangeInfo {
+  core.String status = "";
+  StatusChangeInfo(core.String s) {
+    status = s;
+  }
+}
+
 class PeerInfo {
   static core.int NONE = 0;
   static core.int CONNECTING = 1;
@@ -165,9 +185,9 @@ class PeerInfo {
     _uuid = uuid;
   }
   core.String get uuid => _uuid;
-  core.int get status {
+  core.String get status {
     if(caller == null) {
-      return Caller.STATE_ZERO;
+      return Caller.RTC_ICE_STATE_ZERO;
     }
     return caller.status;
   }

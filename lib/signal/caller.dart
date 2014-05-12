@@ -1,10 +1,8 @@
 part of hetima_cl;
 
 class Caller {
-  static final core.int STATE_ZERO  = 0;
-  static final core.int STATE_OPEN  = 1;
-  static final core.int STATE_CLOSE = 2;
-
+  static final core.String RTC_ICE_STATE_ZERO = "zero";
+  
   static final core.String RTC_ICE_STATE_NEW = "new";
   //The ICE Agent is gathering addresses and/or waiting for remote candidates to be supplied.
   //http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState
@@ -32,7 +30,6 @@ class Caller {
   core.String _myuuid;
   core.String _targetuuid;
   CallerExpectSignalClient _signalclient;
-  core.int _status = 0;
 
   core.Map _stuninfo = {
     "iceServers": [{
@@ -70,9 +67,9 @@ class Caller {
     return _onReceiveStreamController.stream;    
   }
 
-  async.StreamController<core.String> _onDoneControleler = new async.StreamController.broadcast();
-  async.Stream<MessageInfo> onDone() {
-    return _onReceiveStreamController.stream;    
+  async.StreamController<DoneInfo> _onDoneControleler = new async.StreamController.broadcast();
+  async.Stream<DoneInfo> onDone() {
+    return _onDoneControleler.stream;    
   }
 
   async.StreamController<core.String> _onStatusChangeControleler = new async.StreamController.broadcast();
@@ -92,6 +89,7 @@ class Caller {
     _connection.onIceConnectionStateChange.listen((html.Event e){
       core.print("#####[ww]#########onIceConnectionStateChange###"+_connection.iceConnectionState+","+_connection.signalingState +","+_connection.iceGatheringState);
       _onStatusChangeControleler.add(_connection.iceConnectionState);
+      _iceStatusHandle();
     });
     _connection.onNegotiationNeeded.listen((html.Event e){ 
       core.print("#####[ww]#########onNegotiationNeeded###"+_connection.iceConnectionState+","+_connection.signalingState);
@@ -102,6 +100,20 @@ class Caller {
     _datachannel.binaryType = "arraybuffer";
     _setChannelEvent(_datachannel);
     return this;
+  }
+
+  void _iceStatusHandle() {
+    core.String status = _connection.iceConnectionState;
+    if(status == Caller.RTC_ICE_STATE_DISCONNECTE ||
+       status == Caller.RTC_ICE_STATE_DISCONNECTE ||
+       status == Caller.RTC_ICE_STATE_FAILED || 
+       status == Caller.RTC_ICE_STATE_CLOSED) {
+      _onDoneControleler.add(new DoneInfo(_targetuuid, status));
+    }
+  }
+
+  void close() {
+    _connection.close();
   }
 
   ///
@@ -138,7 +150,12 @@ class Caller {
 
   ///
   ///
-  get status => _status;
+  core.String get status {
+    if(_connection == null) {
+      return RTC_ICE_STATE_ZERO;
+    }
+    return _connection.iceConnectionState;
+  }
 
   void _setLocalSdp(html.RtcSessionDescription description) {
     _connection.setLocalDescription(description)
@@ -244,17 +261,14 @@ class Caller {
 
   void _onDataChannelOpen(html.Event event) {
     core.print("onOpenDataChannel:");
-    _status = Caller.STATE_OPEN;
   }
 
   void _onDataChannelError(html.Event event) {
     core.print("onErrorDataChannel:"+event.toString());
-    _status = Caller.STATE_CLOSE;
   }
 
   void _onDataChannelClose(html.Event event) {
     core.print("onCloseDataChannel:");
-    _status = Caller.STATE_CLOSE;
   }
 
   void _setChannelEvent(html.RtcDataChannel channel) {
@@ -284,6 +298,17 @@ class IceTransfer {
      };
     return ret;
   }
+}
+
+class DoneInfo {
+  core.String _status;
+  core.String _targetUuid;
+  DoneInfo(core.String targetUuid, core.String status) {
+    _status = status; 
+    _targetUuid = targetUuid;
+  }
+  core.String get status => _status;
+  core.String get targetUuid => _targetUuid;
 }
 
 class MessageInfo {
