@@ -7,7 +7,7 @@ class HetimaPeer {
   SignalClient mClient = null;
   core.List<PeerInfo> mPeerInfoList = new core.List();
   core.String _mMyId = Uuid.createUUID();
-  AdapterSignalClient _mAdapterSignalClient;
+  AdapterCallerExpectedSignalClient _mAdapterSignalClient;
 
   async.StreamController<core.List<core.String>> _mSignalFindPeer = new async.StreamController.broadcast();
   async.StreamController<MessageInfo> _mCallerReceiveMessage = new async.StreamController.broadcast();
@@ -15,7 +15,7 @@ class HetimaPeer {
 
   HetimaPeer() {
     mClient = new SignalClient();
-    _mAdapterSignalClient = new AdapterSignalClient(mClient);
+    _mAdapterSignalClient = new AdapterCallerExpectedSignalClient(this, mClient);
   }
 
   void connectJoinServer() {
@@ -23,7 +23,7 @@ class HetimaPeer {
       mClient = new SignalClient();
     }
     mClient.onFindPeer().listen(onFindPeerFromSignalServer);
-    mClient.onReceiveMessage().listen(_onReceiveMessageFromSignalServer);
+    mClient.onReceiveMessage().listen(_mAdapterSignalClient.onReceiveMessageFromSignalServer);
 
     mClient.connect().then((html.Event e) {
       mClient.sendJoin(_mMyId);
@@ -84,38 +84,29 @@ class HetimaPeer {
     return null;
   }
 
+  PeerInfo getConnectedPeerInfo(core.String uuid) {
+    PeerInfo targetPeer = findPeerFromList(uuid);
+    if (targetPeer == null) {
+      targetPeer = new PeerInfo(uuid);
+      mPeerInfoList.add(targetPeer);
+    }
+    if (targetPeer.caller == null) {
+      targetPeer.caller = _createCaller(uuid, _mAdapterSignalClient);
+      targetPeer.caller.connect();
+    }
+    return targetPeer;
+  }
+
   void onFindPeerFromSignalServer(core.List<core.String> uuidList) {
     core.print("find peer from server :" + uuidList.length.toString());
     core.List<core.String> adduuid = new core.List();
     for (core.String uuid in uuidList) {
-      if(uuid != _mMyId && null == findPeerFromList(uuid)) {
+      if (uuid != _mMyId && null == findPeerFromList(uuid)) {
         mPeerInfoList.add(new PeerInfo(uuid));
         adduuid.add(uuid);
       }
     }
     _mSignalFindPeer.add(adduuid);
-  }
-
-  void _onReceiveMessageFromSignalServer(SignalMessageInfo message) {
-    core.Map pack = message.pack;
-    core.String to = message.to;
-    core.String from = message.from;
-    core.print("receive message from server :to=" + to + ",from=" + from + ",type=" + convert.UTF8.decode(pack["type"]));
-    if (convert.UTF8.decode(pack["action"]) != "caller") {
-      return;
-    }
-    core.String type = convert.UTF8.decode(pack["type"]);
-    core.String data = convert.UTF8.decode(pack["data"]);
-    PeerInfo targetPeer = findPeerFromList(from);
-    if (targetPeer == null) {
-      targetPeer = new PeerInfo(from);
-      mPeerInfoList.add(targetPeer);
-    }
-    if (targetPeer.caller == null) {
-      targetPeer.caller = _createCaller(from, _mAdapterSignalClient);
-      targetPeer.caller.connect();
-    }
-    _mAdapterSignalClient.onReceive(targetPeer.caller, to, from, type, data);
   }
 
   Caller _createCaller(core.String targetUUID, CallerExpectSignalClient esclient) {
@@ -126,17 +117,19 @@ class HetimaPeer {
       _mCallerReceiveMessage.add(info);
     });
     ret.onStatusChange().listen((core.String s) {
-      core.print("statuschange:"+s);
+      core.print("statuschange:" + s);
       _mStatusChange.add(new StatusChangeInfo(s));
     });
     return ret;
   }
 }
 
-class AdapterSignalClient extends CallerExpectSignalClient {
+class AdapterCallerExpectedSignalClient extends CallerExpectSignalClient {
   SignalClient _mClient = null;
-  AdapterSignalClient(SignalClient client) {
+  HetimaPeer _mPeer = null;
+  AdapterCallerExpectedSignalClient(HetimaPeer peer, SignalClient client) {
     _mClient = client;
+    _mPeer = peer;
   }
 
   set client(SignalClient c) {
@@ -152,10 +145,17 @@ class AdapterSignalClient extends CallerExpectSignalClient {
     _mClient.unicastPackage(to, from, pack);
   }
 
-  void onReceive(Caller caller, core.String to, core.String from, core.String type, core.String data) {
-    core.print("onreceive to=" + to + "from=" + from + "type=" + type + ",data=" + data.substring(0, 10));
-    super.onReceive(caller, to, from, type, data);
+  void onReceiveMessageFromSignalServer(SignalMessageInfo message) {
+    core.print("receive message from server :to=" + message.to + ",from=" + message.from + ",type=" + convert.UTF8.decode(message.pack["type"]));
+    if (convert.UTF8.decode(message.pack["action"]) != "caller") {
+      return;
+    }
+    core.String type = convert.UTF8.decode(message.pack["type"]);
+    core.String data = convert.UTF8.decode(message.pack["data"]);
+    PeerInfo targetPeer = _mPeer.getConnectedPeerInfo(message.from);
+    onReceive(targetPeer.caller, message.to, message.from, type, data);
   }
+
 }
 
 class StatusChangeInfo {
@@ -166,14 +166,8 @@ class StatusChangeInfo {
 }
 
 class PeerInfo {
-  static core.int NONE = 0;
-  static core.int CONNECTING = 1;
-  static core.int CONNECTED = 2;
-  static core.int DISCONNECTED = 3;
-
   Caller caller = null;
   core.String _uuid = null;
-  core.int _status = NONE;
   SignalClient _relayClient = null;
   Caller _relayCaller = null;
 
@@ -182,7 +176,7 @@ class PeerInfo {
   }
   core.String get uuid => _uuid;
   core.String get status {
-    if(caller == null) {
+    if (caller == null) {
       return Caller.RTC_ICE_STATE_ZERO;
     }
     return caller.status;
