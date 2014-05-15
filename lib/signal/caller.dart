@@ -246,13 +246,15 @@ class Caller {
 
   ///
   /// send pack
-  void sendPack(core.Map pack) {
+  void sendPack(core.Map p) {
+    core.print("-start-sendpack");
     core.Map pack = {};
     pack["action"] = "pack";
     pack["type"] = "map";
-    pack["content"] = pack;
+    pack["content"] = p;
+    core.print(convert.JSON.encode(pack));
     _datachannel.sendByteBuffer(Bencode.encode(pack).buffer);
-    
+    core.print("-end-sendpack");    
   }
   void _onDataChannelReceiveMessage(html.MessageEvent event) {
     core.print("onReceiveMessage :" + event.data.runtimeType.toString());
@@ -273,9 +275,20 @@ class Caller {
       _onReceiveStreamController.add(new MessageInfo(
           _targetuuid,
           "text", 
-          convert.UTF8.decode(pack["content"])
+          convert.UTF8.decode(pack["content"]),
+          {},
+          this
+      ));
+    } else if(convert.UTF8.decode(pack["type"]) == "map") {
+      _onReceiveStreamController.add(new MessageInfo(
+          _targetuuid,
+          "map", 
+          "",
+          pack["content"],
+          this
       ));
     }
+
   }
 
   void _onDataChannelOpen(html.Event event) {
@@ -327,14 +340,19 @@ class MessageInfo {
   core.String _message = "";
   core.String _type = "";
   core.String _uuid = "";
+  core.Map _pack = {};
+  Caller caller;
 
-  MessageInfo(core.String uuid, core.String type, core.String message) {
+  MessageInfo(core.String uuid, core.String type, core.String message, core.Map pack, Caller c) {
     _message = message; 
     _type =type;
+    _pack = pack;
+    caller = c;
   }
   core.String get uuid => _uuid;
   core.String get type => _type;
   core.String get message => _message;
+  core.Map get pack => _pack;
 }
 
 ///

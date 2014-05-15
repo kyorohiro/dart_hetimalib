@@ -8,6 +8,7 @@ class HetimaPeer {
   core.List<PeerInfo> mPeerInfoList = new core.List();
   core.String _mMyId = Uuid.createUUID();
   AdapterCallerExpectedSignalClient _mAdapterSignalClient;
+  AdapterPeerDirectCommand _mAdapterResponser;
 
   async.StreamController<core.List<core.String>> _mSignalFindPeer = new async.StreamController.broadcast();
   async.StreamController<MessageInfo> _mCallerReceiveMessage = new async.StreamController.broadcast();
@@ -16,6 +17,7 @@ class HetimaPeer {
   HetimaPeer() {
     mClient = new SignalClient();
     _mAdapterSignalClient = new AdapterCallerExpectedSignalClient(this, mClient);
+    _mAdapterResponser = new AdapterPeerDirectCommand(this);
   }
 
   void connectJoinServer() {
@@ -76,11 +78,15 @@ class HetimaPeer {
   }
 
   PeerInfo findPeerFromList(core.String uuid) {
+    core.print("--mm");
     for (core.int i = 0; i < mPeerInfoList.length; i++) {
+      core.print("--mfff");
       if (mPeerInfoList[i].uuid == uuid) {
+        core.print("--mdd");
         return mPeerInfoList[i];
       }
     }
+    core.print("--nn");
     return null;
   }
 
@@ -116,11 +122,63 @@ class HetimaPeer {
     ret.onReceiveMessage().listen((MessageInfo info) {
       _mCallerReceiveMessage.add(info);
     });
+    ret.onReceiveMessage().listen(_mAdapterResponser.onReceiveMessageFromSignalServer);
+
     ret.onStatusChange().listen((core.String s) {
       core.print("statuschange:" + s);
       _mStatusChange.add(new StatusChangeInfo(s));
     });
     return ret;
+  }
+  void requestFindNode(core.String toUuid, core.String target) {
+    core.print("--aa");
+    _mAdapterResponser.requestFindNode(toUuid, target);
+    core.print("--bb");
+  }
+}
+
+class AdapterPeerDirectCommand {
+  HetimaPeer _mPeer = null;
+  AdapterPeerDirectCommand(HetimaPeer peer) {
+    _mPeer = peer;
+  }
+
+  void requestFindNode(core.String toUuid, core.String target) {
+    core.print("--cc");
+    PeerInfo peerinfo = _mPeer.findPeerFromList(toUuid);
+    if(peerinfo == null || peerinfo.caller == null) {
+      core.print("--ee");
+      return;}
+    core.Map pack = {};
+    pack["m"] = "request";
+    pack["a"] = "findnode";
+    pack["v"] = target;
+    peerinfo.caller.sendPack(pack);
+    core.print("--dd");
+  }
+
+  void onReceiveMessageFromSignalServer(MessageInfo message) {
+    if("map" == message.type) {
+      if(convert.UTF8.decode(message.pack["a"]) == "findnode") {
+        core.print("xxxxxxxxxxxxxxx findnode");
+        if(convert.UTF8.decode(message.pack["m"]) == "request") {
+          core.print("xxxxxxxxxxxxxxx findnode -001");
+        core.Map pack = {};
+        pack["m"] = "response";
+        pack["a"] = "findnode";
+        core.List peers = pack["v"] = new core.List<core.String>();
+        core.List<PeerInfo> infos = _mPeer.getPeerList();
+        for(core.int i=0;i<infos.length;i++) {
+          if(infos[i].status == Caller.RTC_ICE_STATE_CONNECTED || 
+              infos[i].status == Caller.RTC_ICE_STATE_COMPLEDTED) {
+            peers.add(infos[i].uuid);
+          }
+        }
+        message.caller.sendPack(pack);
+        core.print("xxxxxxxxxxxxxxx findnode -002");
+        }
+      }
+    }
   }
 }
 
