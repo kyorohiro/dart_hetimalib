@@ -8,4 +8,6 @@ import 'dart:convert' as convert;
 part 'signal/caller.dart';
 part 'signal/signalclient.dart';
 part 'signal/hetimapeer.dart';
+part 'signal/hetimapeer/bucket.dart';
+part 'signal/hetimapeer/adapter.dart';
 
