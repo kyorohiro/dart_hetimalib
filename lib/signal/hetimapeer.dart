@@ -13,6 +13,7 @@ class HetimaPeer {
   async.StreamController<core.List<core.String>> _mSignalFindPeer = new async.StreamController.broadcast();
   async.StreamController<MessageInfo> _mCallerReceiveMessage = new async.StreamController.broadcast();
   async.StreamController<StatusChangeInfo> _mStatusChange = new async.StreamController.broadcast();
+  async.StreamController<RelayPackageInfo> _mRelayPackage = new async.StreamController.broadcast();
 
   HetimaPeer() {
     core.print("--new HetimaPeer :");
@@ -55,18 +56,12 @@ class HetimaPeer {
     peerInfo.caller.sendText(message);
   }
 
-  async.Stream<core.List<core.String>> onFindPeer() {
-    return _mSignalFindPeer.stream;
-  }
+  async.Stream<core.List<core.String>> onFindPeer() => _mSignalFindPeer.stream;
+  async.Stream<MessageInfo> onMessage() => _mCallerReceiveMessage.stream;
+  async.Stream<StatusChangeInfo> onStatusChange() => _mStatusChange.stream;
+  async.Stream<RelayPackageInfo> onRelayPackage() => _mRelayPackage.stream;
 
-  async.Stream<MessageInfo> onMessage() {
-    return _mCallerReceiveMessage.stream;
-  }
-
-  async.Stream<StatusChangeInfo> onStatusChange() {
-    return _mStatusChange.stream;
-  }
-
+ 
   core.int get status => mClient.getState();
   core.String get id => _mMyId;
 
@@ -166,3 +161,9 @@ class StatusChangeInfo {
   }
 }
 
+class RelayPackageInfo {
+  core.Map pack;
+  RelayPackageInfo(core.Map p) {
+    pack = p;
+  }
+}

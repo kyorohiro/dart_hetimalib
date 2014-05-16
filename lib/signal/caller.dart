@@ -327,17 +327,6 @@ class IceTransfer {
   }
 }
 
-class DoneInfo {
-  core.String _status;
-  core.String _targetUuid;
-  DoneInfo(core.String targetUuid, core.String status) {
-    _status = status; 
-    _targetUuid = targetUuid;
-  }
-  core.String get status => _status;
-  core.String get targetUuid => _targetUuid;
-}
-
 class MessageInfo {
   core.String _message = "";
   core.String _type = "";

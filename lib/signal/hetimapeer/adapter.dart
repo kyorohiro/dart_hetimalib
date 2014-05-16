@@ -124,6 +124,7 @@ class AdapterPeerDirectCommand {
        pack["f"] = message.pack["f"];
        info.caller.sendPack(pack);
      } else {
+       _mPeer._mRelayPackage.add(new RelayPackageInfo(message.pack["v"]));
        core.print("xxxxxxxxxxxxxxx request unicast ---------------------[B]");
      }  
   }
