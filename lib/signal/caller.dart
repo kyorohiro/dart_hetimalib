@@ -68,6 +68,8 @@ class Caller {
     _myuuid = uuid;
   }
 
+  core.String get targetUuid => _targetuuid;
+
   ///
   /// set connection/send/receive target application uuid. 
   Caller setTarget(uuid) {

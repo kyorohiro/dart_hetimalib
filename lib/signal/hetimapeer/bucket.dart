@@ -16,6 +16,9 @@ class PeerInfo {
     }
     return caller.status;
   }
+
+  SignalClient get relayClient => _relayClient;
+  Caller get relayCaller => _relayCaller;
   set relayClient(SignalClient client) {
     _relayClient = client;
   }

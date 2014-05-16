@@ -116,6 +116,11 @@ class HetimaPeer {
         peerInfo.relayClient = client;
         peerInfo.relayCaller = caller;
         adduuid.add(uuid);
+      } else if(null != findPeerFromList(uuid)) {
+        PeerInfo peerInfo = findPeerFromList(uuid);
+        peerInfo.relayCaller = caller;
+        peerInfo.relayClient = client;
+                
       }
     }
     _mSignalFindPeer.add(adduuid);
@@ -141,6 +146,9 @@ class HetimaPeer {
     core.print("--aa");
     _mAdapterResponser.requestFindNode(toUuid, target);
     core.print("--bb");
+  }
+  void requestRelayPackage(core.String relayUuid, core.String toUuid, core.Map pack) {
+    _mAdapterResponser.requestUnicastPackage(toUuid, relayUuid, pack);
   }
 }
 
