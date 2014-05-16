@@ -85,11 +85,9 @@ class AdapterPeerDirectCommand {
     }
   }
 
-  void requestUnicastPackage(core.String toUuid, core.String relayUuid, core.Map p) {
-    core.print("--cc1");
+  void requestUnicastPackage(core.String toUuid, core.String relayUuid, core.String fromUuid, core.Map p) {
     PeerInfo peerinfo = _mPeer.findPeerFromList(relayUuid);
     if (peerinfo == null || peerinfo.caller == null) {
-      core.print("--ee");
       return;
     }
     core.Map pack = {};
@@ -98,35 +96,39 @@ class AdapterPeerDirectCommand {
     pack["v"] = p;
     pack["t"] = toUuid;
     pack["r"] = relayUuid;
+    pack["f"] = fromUuid;
     peerinfo.caller.sendPack(pack);
-    core.print("--dd1");
   }
 
   void handleUnicastPackage(MessageInfo message) {
+    core.print("== handleUnicastPackage");
      if (convert.UTF8.decode(message.pack["a"]) != "unicast") {
        return;
      }
-     core.print("xxxxxxxxxxxxxxx request unicast nnnn");
 
      if (convert.UTF8.decode(message.pack["m"]) == "request") {
        if(convert.UTF8.decode(message.pack["t"]) == _mPeer.id) {
-         core.print("xxxxxxxxxxxxxxx sdfsdfasdfad[E]");
          return;
        }
-       core.print("xxxxxxxxxxxxxxx request unicast ---------------------[A]");
        core.String toUuid = convert.UTF8.decode(message.pack["t"]);
        PeerInfo info = _mPeer.findPeerFromList(toUuid);
        if(info == null) {
          core.print("xxxxxxxxxxxxxxx sdfsdfasdfad[E] null");         
        }
-       info.caller.sendPack(message.pack);
+       core.Map pack = {};
+       pack["m"] = "response";
+       pack["a"] = message.pack["a"];
+       pack["v"] = message.pack["v"];
+       pack["t"] = message.pack["t"];
+       pack["r"] = message.pack["r"];
+       pack["f"] = message.pack["f"];
+       info.caller.sendPack(pack);
      } else {
        core.print("xxxxxxxxxxxxxxx request unicast ---------------------[B]");
-     }
-     
-   }
+     }  
+  }
   
-  void onReceiveMessageFromSignalServer(MessageInfo message) {
+  void onReceiveMessage(MessageInfo message) {
     if ("map" == message.type) {
       core.String action = convert.UTF8.decode(message.pack["a"]);
       if (action == "findnode") {
@@ -136,13 +138,5 @@ class AdapterPeerDirectCommand {
         handleUnicastPackage(message);
       }
     }
-    /*
-    else {
-      pack["m"] = "request";
-      pack["a"] = "unicast";
-      pack["v"] = pack;
-      pack["t"] = toUuid;
-      pack["r"] = relayUuid;
-    }*/
   }
 }

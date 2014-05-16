@@ -285,7 +285,7 @@ class Caller {
       _onReceiveStreamController.add(new MessageInfo(
           _targetuuid,
           "map", 
-          "",
+          "-",
           pack["content"],
           this
       ));

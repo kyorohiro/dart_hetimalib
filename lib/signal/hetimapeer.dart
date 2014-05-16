@@ -15,12 +15,14 @@ class HetimaPeer {
   async.StreamController<StatusChangeInfo> _mStatusChange = new async.StreamController.broadcast();
 
   HetimaPeer() {
+    core.print("--new HetimaPeer :");
     mClient = new SignalClient();
     _mAdapterSignalClient = new AdapterCallerExpectedSignalClient(this, mClient);
     _mAdapterResponser = new AdapterPeerDirectCommand(this);
   }
 
   void connectJoinServer() {
+    core.print("--connectJoinServer :");
     if (mClient.getState() == SignalClient.CLOSED) {
       mClient = new SignalClient();
     }
@@ -35,6 +37,7 @@ class HetimaPeer {
   }
 
   void connectPeer(core.String uuid) {
+    core.print("--connectPeer :" + uuid);
     PeerInfo peerInfo = findPeerFromList(uuid);
     if (peerInfo == null || peerInfo.caller != null) {
       return;
@@ -44,6 +47,7 @@ class HetimaPeer {
   }
 
   void sendMessage(core.String uuid, core.String message) {
+    core.print("--sendMessage :" + uuid + "." + message);
     PeerInfo peerInfo = findPeerFromList(uuid);
     if (peerInfo == null || peerInfo.caller == null) {
       return;
@@ -67,6 +71,7 @@ class HetimaPeer {
   core.String get id => _mMyId;
 
   void joinNetwork() {
+    core.print("--joinNetwork :");
     if (mClient == null || mClient.getState() == SignalClient.CLOSED || mClient.getState() == SignalClient.CLOSING) {
       mClient = new SignalClient();
     }
@@ -76,23 +81,22 @@ class HetimaPeer {
   }
 
   core.List<PeerInfo> getPeerList() {
+    core.print("--getPeerList :");
     return mPeerInfoList;
   }
 
   PeerInfo findPeerFromList(core.String uuid) {
-    core.print("--mm");
+    core.print("--findPeerFromList :" + uuid);
     for (core.int i = 0; i < mPeerInfoList.length; i++) {
-      core.print("--mfff");
       if (mPeerInfoList[i].uuid == uuid) {
-        core.print("--mdd");
         return mPeerInfoList[i];
       }
     }
-    core.print("--nn");
     return null;
   }
 
   PeerInfo getConnectedPeerInfo(core.String uuid) {
+    core.print("--getConnectedPeerInfo :" + uuid);
     PeerInfo targetPeer = findPeerFromList(uuid);
     if (targetPeer == null) {
       targetPeer = new PeerInfo(uuid);
@@ -109,31 +113,32 @@ class HetimaPeer {
     core.print("find peer from server :" + uuidList.length.toString());
     core.List<core.String> adduuid = new core.List();
     for (core.String uuid in uuidList) {
-      core.print("xxxxxxxxxxxxxxx findnode ="+uuid);
+      core.print("xxxxxxxxxxxxxxx findnode =" + uuid);
       if (uuid != _mMyId && null == findPeerFromList(uuid)) {
         PeerInfo peerInfo = new PeerInfo(uuid);
         mPeerInfoList.add(peerInfo);
         peerInfo.relayClient = client;
         peerInfo.relayCaller = caller;
         adduuid.add(uuid);
-      } else if(null != findPeerFromList(uuid)) {
+      } else if (null != findPeerFromList(uuid)) {
         PeerInfo peerInfo = findPeerFromList(uuid);
         peerInfo.relayCaller = caller;
         peerInfo.relayClient = client;
-                
+
       }
     }
     _mSignalFindPeer.add(adduuid);
   }
 
   Caller createCaller(core.String targetUUID, CallerExpectSignalClient esclient) {
+    core.print("--createCaller :" + targetUUID);
     Caller ret = new Caller(_mMyId);
     ret.setSignalClient(esclient);
     ret.setTarget(targetUUID);
     ret.onReceiveMessage().listen((MessageInfo info) {
       _mCallerReceiveMessage.add(info);
     });
-    ret.onReceiveMessage().listen(_mAdapterResponser.onReceiveMessageFromSignalServer);
+    ret.onReceiveMessage().listen(_mAdapterResponser.onReceiveMessage);
 
     ret.onStatusChange().listen((core.String s) {
       core.print("statuschange:" + s);
@@ -143,12 +148,13 @@ class HetimaPeer {
   }
 
   void requestFindNode(core.String toUuid, core.String target) {
-    core.print("--aa");
+    core.print("--requestFindNode :" + toUuid + "," + target);
     _mAdapterResponser.requestFindNode(toUuid, target);
-    core.print("--bb");
   }
+
   void requestRelayPackage(core.String relayUuid, core.String toUuid, core.Map pack) {
-    _mAdapterResponser.requestUnicastPackage(toUuid, relayUuid, pack);
+    core.print("--requestRelayPackage :" + toUuid + "," + relayUuid + "," + convert.JSON.encode(pack));
+    _mAdapterResponser.requestUnicastPackage(toUuid, relayUuid, this.id, pack);
   }
 }
 
@@ -159,5 +165,4 @@ class StatusChangeInfo {
     status = s;
   }
 }
-
 
