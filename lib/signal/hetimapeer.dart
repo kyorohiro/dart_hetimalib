@@ -38,7 +38,7 @@ class HetimaPeer {
       mClient = new SignalClient();
     }
     mClient.onFindPeer().listen((core.List<core.String> uuidList) {
-      onInternalUpdatePeerInfo(uuidList, mClient, null);
+      _onInternalUpdatePeerInfo(uuidList, mClient, null);
     });
     mClient.onReceiveMessage().listen(_mAdapterSignalClient.onReceiveMessageFromSignalServer);
 
@@ -119,7 +119,7 @@ class HetimaPeer {
     return targetPeer;
   }
 
-  void onInternalUpdatePeerInfo(core.List<core.String> uuidList, SignalClient client, Caller caller) {
+  void _onInternalUpdatePeerInfo(core.List<core.String> uuidList, SignalClient client, Caller caller) {
      core.print("-[hetimapeer]- find peer from server :" + uuidList.length.toString());
      core.List<core.String> adduuid = new core.List();
      for (core.String uuid in uuidList) {
