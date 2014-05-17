@@ -1,8 +1,9 @@
 part of hetima_cl;
 
-//
-//
-//
+/**
+ * 
+ * 
+ */
 class HetimaPeer {
   SignalClient mClient = null;
   core.List<PeerInfo> mPeerInfoList = new core.List();
@@ -37,7 +38,7 @@ class HetimaPeer {
       mClient = new SignalClient();
     }
     mClient.onFindPeer().listen((core.List<core.String> uuidList) {
-      onFindPeerF(uuidList, mClient, null);
+      onInternalFindPeer(uuidList, mClient, null);
     });
     mClient.onReceiveMessage().listen(_mAdapterSignalClient.onReceiveMessageFromSignalServer);
 
@@ -118,7 +119,7 @@ class HetimaPeer {
     return targetPeer;
   }
 
-  void onFindPeerF(core.List<core.String> uuidList, SignalClient client, Caller caller) {
+  void onInternalFindPeer(core.List<core.String> uuidList, SignalClient client, Caller caller) {
     core.print("-[hetimapeer]- find peer from server :" + uuidList.length.toString());
     core.List<core.String> adduuid = new core.List();
     for (core.String uuid in uuidList) {
