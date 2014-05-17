@@ -16,14 +16,21 @@ class HetimaPeer {
   async.StreamController<RelayPackageInfo> _mRelayPackage = new async.StreamController.broadcast();
 
   HetimaPeer() {
-    core.print("--new HetimaPeer :");
+    core.print("-[hetimapeer]-new HetimaPeer :");
     mClient = new SignalClient();
     _mAdapterSignalClient = new AdapterCallerExpectedSignalClient(this, mClient);
     _mAdapterResponser = new DirectCommand(this);
   }
 
+  void showDebug() {
+    core.print("start show debug");
+    for(core.int i=0;i<mPeerInfoList.length;i++) {
+      core.print(""+mPeerInfoList[i].uuid);
+    }
+    core.print("end show debug");
+  }
   void connectJoinServer() {
-    core.print("--connectJoinServer :");
+    core.print("-[hetimapeer]-connectJoinServer :");
     if (mClient.getState() == SignalClient.CLOSED) {
       mClient = new SignalClient();
     }
@@ -38,7 +45,7 @@ class HetimaPeer {
   }
 
   void connectPeer(core.String uuid) {
-    core.print("--connectPeer :" + uuid);
+    core.print("-[hetimapeer]-connectPeer :" + uuid);
     PeerInfo peerInfo = findPeerFromList(uuid);
     if (peerInfo == null || peerInfo.caller != null) {
       return;
@@ -48,7 +55,7 @@ class HetimaPeer {
   }
 
   void sendMessage(core.String uuid, core.String message) {
-    core.print("--sendMessage :" + uuid + "." + message);
+    core.print("-[hetimapeer]-sendMessage :" + uuid + "." + message);
     PeerInfo peerInfo = findPeerFromList(uuid);
     if (peerInfo == null || peerInfo.caller == null) {
       return;
@@ -66,7 +73,7 @@ class HetimaPeer {
   core.String get id => _mMyId;
 
   void joinNetwork() {
-    core.print("--joinNetwork :");
+    core.print("-[hetimapeer]-joinNetwork :");
     if (mClient == null || mClient.getState() == SignalClient.CLOSED || mClient.getState() == SignalClient.CLOSING) {
       mClient = new SignalClient();
     }
@@ -76,7 +83,7 @@ class HetimaPeer {
   }
 
   core.List<PeerInfo> getPeerList() {
-    core.print("--getPeerList :");
+    core.print("-[hetimapeer]-getPeerList :");
     return mPeerInfoList;
   }
 
@@ -94,8 +101,9 @@ class HetimaPeer {
     core.print("-[hetimapeer]-addPeerInfo :m=" + info.uuid);
     mPeerInfoList.add(info);
   }
+
   PeerInfo getConnectedPeerInfo(core.String uuid) {
-    core.print("--getConnectedPeerInfo :" + uuid);
+    core.print("-[hetimapeer]-getConnectedPeerInfo :" + uuid);
     PeerInfo targetPeer = findPeerFromList(uuid);
     if (targetPeer == null) {
       targetPeer = new PeerInfo(uuid);
@@ -109,28 +117,35 @@ class HetimaPeer {
   }
 
   void onFindPeerF(core.List<core.String> uuidList, SignalClient client, Caller caller) {
-    core.print("find peer from server :" + uuidList.length.toString());
+    core.print("-[hetimapeer]- find peer from server :" + uuidList.length.toString());
     core.List<core.String> adduuid = new core.List();
     for (core.String uuid in uuidList) {
       core.print("xxxxxxxxxxxxxxx findnode =" + uuid);
       if (uuid != _mMyId && null == findPeerFromList(uuid)) {
         PeerInfo peerInfo = new PeerInfo(uuid);
         addPeerInfo(peerInfo);
-        peerInfo.relayClient = client;
-        peerInfo.relayCaller = caller;
+        if(client !=null) {
+          peerInfo.relayClient = client;
+        }
+        if(caller != null) {
+          peerInfo.relayCaller = caller;
+        }
         adduuid.add(uuid);
       } else if (null != findPeerFromList(uuid)) {
         PeerInfo peerInfo = findPeerFromList(uuid);
-        peerInfo.relayCaller = caller;
-        peerInfo.relayClient = client;
-
+        if(client !=null) {
+          peerInfo.relayClient = client;
+        }
+        if(caller != null) {
+          peerInfo.relayCaller = caller;
+        }
       }
     }
     _mSignalFindPeer.add(adduuid);
   }
 
   Caller createCaller(core.String targetUUID, CallerExpectSignalClient esclient) {
-    core.print("--createCaller :t=" + targetUUID+",m="+_mMyId);
+    core.print("-[hetimapeer]-createCaller :t=" + targetUUID+",m="+_mMyId);
     Caller ret = new Caller(_mMyId);
     ret.setSignalClient(esclient);
     ret.setTarget(targetUUID);
@@ -147,7 +162,7 @@ class HetimaPeer {
   }
 
   void requestFindNode(core.String toUuid, core.String target) {
-    core.print("--requestFindNode :" + toUuid + "," + target);
+    core.print("-[hetimapeer]-requestFindNode :" + toUuid + "," + target);
     _mAdapterResponser.requestFindNode(toUuid, target);
   }
 
@@ -159,8 +174,9 @@ class HetimaPeer {
   void requestRelayConnectPeer(core.String relayUuid, core.String toUuid) {
     core.print("-[hetimapeer]-requestRelayConnectPeer :" + toUuid + "," + relayUuid);
     PeerInfo peerInfo = findPeerFromList(toUuid);
-    if (peerInfo == null || peerInfo.caller == null) {
+    if (peerInfo == null || peerInfo.caller != null) {
       core.print("--not found");
+      showDebug();
       return;
     }
     AdapterCESCCaller cescaller = new AdapterCESCCaller(this, relayUuid);

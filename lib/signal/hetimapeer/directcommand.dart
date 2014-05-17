@@ -93,6 +93,11 @@ class DirectCommand {
        info.caller.sendPack(pack);
      } else {
        _mPeer._mRelayPackage.add(new RelayPackageInfo(message.pack["v"]));
+       message.pack["r"];
+       core.List<core.String> uuidList = new core.List();
+       PeerInfo info = _mPeer.findPeerFromList(message.from);
+       uuidList.add(convert.UTF8.decode(message.pack["f"]));
+       _mPeer.onFindPeerF(uuidList, null, info.caller);
        core.print("xxxxxxxxxxxxxxx request unicast ---------------------[B]");
      }  
   }
