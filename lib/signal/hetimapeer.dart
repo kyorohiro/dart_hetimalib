@@ -8,6 +8,7 @@ class HetimaPeer {
   core.List<PeerInfo> mPeerInfoList = new core.List();
   core.String _mMyId = Uuid.createUUID();
   AdapterCallerExpectedSignalClient _mAdapterSignalClient;
+  AdapterCESCCaller _mCescaller;
   DirectCommand _mAdapterResponser;
 
   async.StreamController<core.List<core.String>> _mSignalFindPeer = new async.StreamController.broadcast();
@@ -20,6 +21,7 @@ class HetimaPeer {
     mClient = new SignalClient();
     _mAdapterSignalClient = new AdapterCallerExpectedSignalClient(this, mClient);
     _mAdapterResponser = new DirectCommand(this);
+    _mCescaller = new AdapterCESCCaller(this);
   }
 
   void showDebug() {
@@ -128,6 +130,7 @@ class HetimaPeer {
           peerInfo.relayClient = client;
         }
         if(caller != null) {
+          core.print("-[hetimapeer]- set caller " );
           peerInfo.relayCaller = caller;
         }
         adduuid.add(uuid);
@@ -137,6 +140,7 @@ class HetimaPeer {
           peerInfo.relayClient = client;
         }
         if(caller != null) {
+          core.print("-[hetimapeer]- set caller " );
           peerInfo.relayCaller = caller;
         }
       }
@@ -153,6 +157,7 @@ class HetimaPeer {
       _mCallerReceiveMessage.add(info);
     });
     ret.onReceiveMessage().listen(_mAdapterResponser.onReceiveMessage);
+    ret.onReceiveMessage().listen(_mCescaller.onReceiveMessageFromCaller);
 
     ret.onStatusChange().listen((core.String s) {
       core.print("statuschange:" + s);
@@ -174,14 +179,20 @@ class HetimaPeer {
   void requestRelayConnectPeer(core.String relayUuid, core.String toUuid) {
     core.print("-[hetimapeer]-requestRelayConnectPeer :" + toUuid + "," + relayUuid);
     PeerInfo peerInfo = findPeerFromList(toUuid);
-    if (peerInfo == null || peerInfo.caller != null) {
+    if (peerInfo == null) {
       core.print("--not found");
       showDebug();
       return;
     }
-    AdapterCESCCaller cescaller = new AdapterCESCCaller(this, relayUuid);
-    peerInfo.caller = createCaller(toUuid, cescaller);
-    peerInfo.caller.onReceiveMessage().listen(cescaller.onReceiveMessageFromCaller);
+
+    PeerInfo relayInfo = findPeerFromList(relayUuid);
+    if (relayInfo == null || relayInfo.caller == null) {
+      core.print("--not found");
+      showDebug();
+      return;
+    }
+
+    peerInfo.caller = createCaller(toUuid, _mCescaller);
     peerInfo.caller.connect().createOffer();
   }
 

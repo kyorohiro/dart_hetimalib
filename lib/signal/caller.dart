@@ -110,7 +110,7 @@ class Caller {
   ///
   /// start to connect
   Caller connect() {
-    core.print("-[caller] start-connect "+ _myuuid+","+_targetuuid);
+    core.print("##[caller] connect "+ _myuuid+","+_targetuuid);
     _connection = new html.RtcPeerConnection(_stuninfo, _mediainfo);
     _connection.onIceCandidate.listen(_onIceCandidate);
     _connection.onDataChannel.listen(_onDataChannel);
@@ -133,13 +133,14 @@ class Caller {
   ///
   /// close 
   void close() {
+    core.print("##[caller] close "+ _myuuid+","+_targetuuid);
     _connection.close();
   }
 
   ///
   /// create offer sdp.
   Caller createOffer() {
-    core.print("-[caller] start-create offer "+ _myuuid+","+_targetuuid);
+    core.print("##[caller] createOffer "+ _myuuid+","+_targetuuid);
     _connection.createOffer()
     .then(_onOffer)
     .catchError((){_onError("create offer");});
@@ -149,7 +150,7 @@ class Caller {
   ///
   /// create answer sdp.
   Caller createAnswer() {
-    core.print("-[caller] start-create answer "+ _myuuid+","+_targetuuid);
+    core.print("##[caller] createAnswer "+ _myuuid+","+_targetuuid);
     _connection.createAnswer()
     .then(_onAnswer)
     .catchError((){_onError("create answer");});
@@ -159,6 +160,7 @@ class Caller {
   ///
   /// set remote sdp
   void setRemoteSDP(core.String type, core.String sdp) {
+    core.print("##[caller] setRemoteSdp "+ _myuuid+","+_targetuuid);
     html.RtcSessionDescription rsd = new html.RtcSessionDescription();
     rsd.sdp = sdp;
     rsd.type = type;
@@ -168,6 +170,7 @@ class Caller {
   ///
   /// add ice candidate
   void addIceCandidate(html.RtcIceCandidate candidate) {
+    core.print("##[caller] addIceCandidate "+ _myuuid+","+_targetuuid);
     _connection.addIceCandidate(candidate, (){
       core.print("add ice ok");
     }, (core.String e){
@@ -187,6 +190,7 @@ class Caller {
   ///
   /// set local sdp
   void setLocalSdp(html.RtcSessionDescription description) {
+    core.print("##[caller] setLocalSdp "+ _myuuid+","+_targetuuid);
     _connection.setLocalDescription(description)
     .then(_onSuccessLocalSdp);//.then(_onError);
   }
@@ -239,7 +243,7 @@ class Caller {
   ///
   /// sent text message
   void sendText(core.String text) {
-    core.print("-[caller] start-sendtext "+ _myuuid+","+_targetuuid);
+    core.print("##[caller] sendText "+ _myuuid+","+_targetuuid);
     //_datachannel.sendString(text);
     core.Map pack = {};
     pack["action"] = "direct";
@@ -251,7 +255,7 @@ class Caller {
   ///
   /// send pack
   void sendPack(core.Map p) {
-    core.print("-[caller] start-sendpack "+ _myuuid+","+_targetuuid);
+    core.print("##[caller] sendPack "+ _myuuid+","+_targetuuid);
     core.Map pack = {};
     pack["action"] = "pack";
     pack["type"] = "map";
@@ -361,7 +365,7 @@ class CallerExpectSignalClient {
     switch (type) {
       case "answer":
       case "offer":
-        core.print("##1##" + caller.toString());
+        core.print("##1## target=" + caller.targetUuid +",my="+caller._myuuid);
         caller.setRemoteSDP(type, data);
         core.print("##2##"+data);
         if(type =="offer") {

@@ -37,33 +37,50 @@ class AdapterCallerExpectedSignalClient extends CallerExpectSignalClient {
 
 class AdapterCESCCaller extends CallerExpectSignalClient {
   HetimaPeer _mPeer = null;
-  core.String _mRelayUuid;
 
-  AdapterCESCCaller(HetimaPeer peer, core.String relayUuid) {
+  AdapterCESCCaller(HetimaPeer peer) {
     _mPeer = peer;
-    _mRelayUuid = relayUuid;
   }
 
   void send(Caller caller, core.String to, core.String from, core.String type, core.String data) {
-    core.print("[caller adapter] send "+to+","+from +",("+_mRelayUuid+")");
+    core.print("[caller adapter] send "+to+","+from);
     var pack = {};
     pack["action"] = "caller";
     pack["type"] = type;
     pack["data"] = data;
-    _mPeer.requestRelayPackage(_mRelayUuid, to, pack);
+
+    PeerInfo info = _mPeer.findPeerFromList(to);
+    core.print("[caller adapter] ##("+info.relayCaller.targetUuid+")");
+
+    _mPeer.requestRelayPackage(info.relayCaller.targetUuid, to, pack);
   }
 
   void onReceiveMessageFromCaller(MessageInfo message) {
     core.print("[caller adapter] receive message :to=" 
-        + message.to + ",from=" + message.from + ",type=" 
-        + convert.UTF8.decode(message.pack["type"])+",("+_mRelayUuid+")");
-    if (convert.UTF8.decode(message.pack["action"]) != "caller") {
+        + message.to + ",from=" + message.from );
+    //core.print("[caller adapter]## "+convert.JSON.encode(message.pack));
+    
+    if (message.pack["v"] == null || (message.pack["v"] is core.List)|| message.pack["v"]["action"]==null) {
+      core.print("[caller adapter] --0--null");
       return;
     }
-    core.String type = convert.UTF8.decode(message.pack["type"]);
-    core.String data = convert.UTF8.decode(message.pack["data"]);
-    PeerInfo targetPeer = _mPeer.getConnectedPeerInfo(message.from);
-    super.onReceive(targetPeer.caller, message.to, message.from, type, data);
+    if(convert.UTF8.decode(message.pack["v"]["action"]) != "caller") {
+      core.print("[caller adapter] --0--" + convert.UTF8.decode(message.pack["v"]["action"]));
+      return;
+    }
+
+    core.print("[caller adapter] --1--" + convert.UTF8.decode(message.pack["f"]));
+    core.String type = convert.UTF8.decode(message.pack["v"]["type"]);
+    core.print("[caller adapter] --2--");
+    core.String data = convert.UTF8.decode(message.pack["v"]["data"]);
+    core.print("[caller adapter] --3--");
+    PeerInfo targetPeer = _mPeer.getConnectedPeerInfo(convert.UTF8.decode(message.pack["f"]));
+    targetPeer.caller.setSignalClient(_mPeer._mCescaller);
+    core.print("[caller adapter] --4-- to="+message.to+",from="+ message.from);
+    super.onReceive(targetPeer.caller, 
+        message.to, 
+        convert.UTF8.decode(message.pack["f"]),//message.from, 
+        type, data);
   }
 
 }
