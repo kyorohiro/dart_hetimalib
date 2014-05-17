@@ -110,6 +110,7 @@ class Caller {
   ///
   /// start to connect
   Caller connect() {
+    core.print("-[caller] start-connect "+ _myuuid+","+_targetuuid);
     _connection = new html.RtcPeerConnection(_stuninfo, _mediainfo);
     _connection.onIceCandidate.listen(_onIceCandidate);
     _connection.onDataChannel.listen(_onDataChannel);
@@ -138,7 +139,7 @@ class Caller {
   ///
   /// create offer sdp.
   Caller createOffer() {
-    core.print("#caller#create offer");
+    core.print("-[caller] start-create offer "+ _myuuid+","+_targetuuid);
     _connection.createOffer()
     .then(_onOffer)
     .catchError((){_onError("create offer");});
@@ -148,7 +149,7 @@ class Caller {
   ///
   /// create answer sdp.
   Caller createAnswer() {
-    core.print("#caller#create answer");
+    core.print("-[caller] start-create answer "+ _myuuid+","+_targetuuid);
     _connection.createAnswer()
     .then(_onAnswer)
     .catchError((){_onError("create answer");});
@@ -238,6 +239,7 @@ class Caller {
   ///
   /// sent text message
   void sendText(core.String text) {
+    core.print("-[caller] start-sendtext "+ _myuuid+","+_targetuuid);
     //_datachannel.sendString(text);
     core.Map pack = {};
     pack["action"] = "direct";
@@ -249,12 +251,12 @@ class Caller {
   ///
   /// send pack
   void sendPack(core.Map p) {
-    core.print("-start-sendpack");
+    core.print("-[caller] start-sendpack "+ _myuuid+","+_targetuuid);
     core.Map pack = {};
     pack["action"] = "pack";
     pack["type"] = "map";
     pack["content"] = p;
-    core.print(convert.JSON.encode(pack));
+    //core.print(convert.JSON.encode(pack));
     _datachannel.sendByteBuffer(Bencode.encode(pack).buffer);
     core.print("-end-sendpack");    
   }
@@ -340,6 +342,8 @@ class MessageInfo {
     _pack = pack;
     caller = c;
   }
+  core.String get from => caller.targetUuid;
+  core.String get to=> caller._myuuid;
   core.String get uuid => _uuid;
   core.String get type => _type;
   core.String get message => _message;
