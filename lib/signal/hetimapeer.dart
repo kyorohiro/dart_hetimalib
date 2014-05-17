@@ -27,8 +27,8 @@ class HetimaPeer {
 
   void showDebug() {
     core.print("start show debug");
-    for(core.int i=0;i<mPeerInfoList.length;i++) {
-      core.print(""+mPeerInfoList[i].uuid);
+    for (core.int i = 0; i < mPeerInfoList.length; i++) {
+      core.print("" + mPeerInfoList[i].uuid);
     }
     core.print("end show debug");
   }
@@ -38,7 +38,7 @@ class HetimaPeer {
       mClient = new SignalClient();
     }
     mClient.onFindPeer().listen((core.List<core.String> uuidList) {
-      onInternalFindPeer(uuidList, mClient, null);
+      onInternalUpdatePeerInfo(uuidList, mClient, null);
     });
     mClient.onReceiveMessage().listen(_mAdapterSignalClient.onReceiveMessageFromSignalServer);
 
@@ -119,52 +119,33 @@ class HetimaPeer {
     return targetPeer;
   }
 
-  void onInternalFindPeer(core.List<core.String> uuidList, SignalClient client, Caller caller) {
-    core.print("-[hetimapeer]- find peer from server :" + uuidList.length.toString());
-    core.List<core.String> adduuid = new core.List();
-    for (core.String uuid in uuidList) {
-      core.print("xxxxxxxxxxxxxxx findnode =" + uuid);
-      if (uuid != _mMyId && null == findPeerFromList(uuid)) {
-        PeerInfo peerInfo = new PeerInfo(uuid);
-        addPeerInfo(peerInfo);
-        if(client !=null) {
-          peerInfo.relayClient = client;
-        }
-        if(caller != null) {
-          core.print("-[hetimapeer]- set caller " );
-          peerInfo.relayCaller = caller;
-        }
-        adduuid.add(uuid);
-      } else if (null != findPeerFromList(uuid)) {
-        PeerInfo peerInfo = findPeerFromList(uuid);
-        if(client !=null) {
-          peerInfo.relayClient = client;
-        }
-        if(caller != null) {
-          core.print("-[hetimapeer]- set caller " );
-          peerInfo.relayCaller = caller;
-        }
-      }
-    }
-    _mSignalFindPeer.add(adduuid);
-  }
+  void onInternalUpdatePeerInfo(core.List<core.String> uuidList, SignalClient client, Caller caller) {
+     core.print("-[hetimapeer]- find peer from server :" + uuidList.length.toString());
+     core.List<core.String> adduuid = new core.List();
+     for (core.String uuid in uuidList) {
+       if (uuid == _mMyId) {continue;}
+       core.print("xxxxxxxxxxxxxxx findnode =" + uuid);
+       PeerInfo peerInfo = findPeerFromList(uuid);
+       if (peerInfo == null) {
+         peerInfo = new PeerInfo(uuid);
+         addPeerInfo(peerInfo);
+       }
+       if (client != null) { peerInfo.relayClient = client;}
+       if (caller != null) { peerInfo.relayCaller = caller;}
+     }
+     _mSignalFindPeer.add(adduuid);
+   }
 
   Caller createCaller(core.String targetUUID, CallerExpectSignalClient esclient) {
-    core.print("-[hetimapeer]-createCaller :t=" + targetUUID+",m="+_mMyId);
-    Caller ret = new Caller(_mMyId);
-    ret.setSignalClient(esclient);
-    ret.setTarget(targetUUID);
-    ret.onReceiveMessage().listen((MessageInfo info) {
-      _mCallerReceiveMessage.add(info);
-    });
-    ret.onReceiveMessage().listen(_mAdapterResponser.onReceiveMessage);
-    ret.onReceiveMessage().listen(_mCescaller.onReceiveMessageFromCaller);
-
-    ret.onStatusChange().listen((core.String s) {
-      core.print("statuschange:" + s);
-      _mStatusChange.add(new StatusChangeInfo(s));
-    });
-    return ret;
+    core.print("-[hetimapeer]-createCaller :t=" + targetUUID + ",m=" + _mMyId);
+    Caller newCaller = new Caller(_mMyId);
+    newCaller.setSignalClient(esclient);
+    newCaller.setTarget(targetUUID);
+    newCaller.onReceiveMessage().listen((MessageInfo info) {_mCallerReceiveMessage.add(info);});
+    newCaller.onReceiveMessage().listen(_mAdapterResponser.onReceiveMessage);
+    newCaller.onReceiveMessage().listen(_mCescaller.onReceiveMessageFromCaller);
+    newCaller.onStatusChange().listen((core.String s) {_mStatusChange.add(new StatusChangeInfo(s));});
+    return newCaller;
   }
 
   void requestFindNode(core.String toUuid, core.String target) {

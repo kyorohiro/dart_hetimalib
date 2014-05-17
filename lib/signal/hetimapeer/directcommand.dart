@@ -46,7 +46,7 @@ class DirectCommand {
       for (core.int i = 0; i < cashList.length; i++) {
         uuidList.add(convert.UTF8.decode(cashList[i]));
       }
-      _mPeer.onInternalFindPeer(uuidList, null, message.caller);
+      _mPeer.onInternalUpdatePeerInfo(uuidList, null, message.caller);
     }
   }
 
@@ -97,7 +97,7 @@ class DirectCommand {
        core.List<core.String> uuidList = new core.List();
        PeerInfo info = _mPeer.findPeerFromList(message.from);
        uuidList.add(convert.UTF8.decode(message.pack["f"]));
-       _mPeer.onInternalFindPeer(uuidList, null, info.caller);
+       _mPeer.onInternalUpdatePeerInfo(uuidList, null, info.caller);
        core.print("xxxxxxxxxxxxxxx request unicast ---------------------[B]");
      }  
   }
