@@ -56,30 +56,26 @@ class AdapterCESCCaller extends CallerExpectSignalClient {
   }
 
   void onReceiveMessageFromCaller(MessageInfo message) {
-    core.print("[caller adapter] receive message :to=" 
-        + message.to + ",from=" + message.from );
+    core.print("[caller adapter] receive message :to=" + message.to + ",from=" + message.from );
     //core.print("[caller adapter]## "+convert.JSON.encode(message.pack));
     
-    if (message.pack["v"] == null || (message.pack["v"] is core.List)|| message.pack["v"]["action"]==null) {
-      core.print("[caller adapter] --0--null");
+    if (message.pack["v"] == null || !(message.pack["v"] is core.Map)||
+        message.pack["v"]["action"]==null) {
+      core.print("[caller adapter] null");
       return;
     }
     if(convert.UTF8.decode(message.pack["v"]["action"]) != "caller") {
-      core.print("[caller adapter] --0--" + convert.UTF8.decode(message.pack["v"]["action"]));
+      core.print("[caller adapter] :action:" + convert.UTF8.decode(message.pack["v"]["action"]));
       return;
     }
 
-    core.print("[caller adapter] --1--" + convert.UTF8.decode(message.pack["f"]));
     core.String type = convert.UTF8.decode(message.pack["v"]["type"]);
-    core.print("[caller adapter] --2--");
     core.String data = convert.UTF8.decode(message.pack["v"]["data"]);
-    core.print("[caller adapter] --3--");
     PeerInfo targetPeer = _mPeer.getConnectedPeerInfo(convert.UTF8.decode(message.pack["f"]));
     targetPeer.caller.setSignalClient(_mPeer._mCescaller);
-    core.print("[caller adapter] --4-- to="+message.to+",from="+ message.from);
     super.onReceive(targetPeer.caller, 
         message.to, 
-        convert.UTF8.decode(message.pack["f"]),//message.from, 
+        convert.UTF8.decode(message.pack["f"]), 
         type, data);
   }
 

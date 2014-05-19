@@ -1,9 +1,9 @@
 part of hetima;
 
 class ArrayBuilder {
-  core.int _max = 1024;
+  int _max = 1024;
   data.Uint8List _buffer8;
-  core.int _length = 0;
+  int _length = 0;
 
   ArrayBuilder() {
     _buffer8 = new data.Uint8List(_max);
@@ -12,17 +12,17 @@ class ArrayBuilder {
     _length = 0;
   }
 
-  core.int size() {
+  int size() {
     return _length;
   }
 
-  void update(core.int plusLength) {
+  void update(int plusLength) {
     if (_length+plusLength<_max) {
       return;   
     } else {
-      core.int nextMax = _length+plusLength+_max;
+      int nextMax = _length+plusLength+_max;
       data.Uint8List next = new data.Uint8List(nextMax);
-      for(core.int i=0;i<_length;i++) {
+      for(int i=0;i<_length;i++) {
         next[i] = _buffer8[i];
       }
      // _buffer8.clear();
@@ -31,24 +31,24 @@ class ArrayBuilder {
       _max = nextMax;
     }
   }
-  void appendString(core.String text) {
-    core.List<core.int> code = convert.UTF8.encode(text);
+  void appendString(String text) {
+    List<int> code = convert.UTF8.encode(text);
     update(code.length);
-    for (core.int i = 0; i < code.length; i++) {
+    for (int i = 0; i < code.length; i++) {
       _buffer8[_length] = code[i];
       _length += 1;
     }
   }
 
-  void appendUint8List(data.Uint8List buffer, core.int index, core.int length) {
+  void appendUint8List(data.Uint8List buffer, int index, int length) {
     update(length);
-    for (core.int i = 0; i < length; i++) {
+    for (int i = 0; i < length; i++) {
       _buffer8[_length] = buffer[index + i];
       _length += 1;
     }
   }
 
-  core.List toList() {
+  List toList() {
     return _buffer8.sublist(0, _length);
   }
 
@@ -56,7 +56,7 @@ class ArrayBuilder {
     return new data.Uint8List.fromList(toList());
   }
 
-  core.String toText() {
+  String toText() {
     return convert.UTF8.decode(toList());
   }
 }
