@@ -52,6 +52,23 @@ class NodeId
     _buffer = buffer;
   }
 
+  NodeId xor(NodeId target) {
+    
+  }
+
+  int compareBigSmall(NodeId v) {
+    data.Uint8List my = _buffer;
+    data.Uint8List target = v.getBuffer();
+    for(int i=0;i<target.lengthInBytes;i++) {
+      if(my[i] > target[i]) {
+        return 1;
+      } else {
+        return -1;
+      }
+    }
+    return 0;
+  }
+
   NodeId.random() {
     _buffer = new data.Uint8List(20);
     for(int i=0;i<_buffer.lengthInBytes;i++) {
