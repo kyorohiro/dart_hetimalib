@@ -42,13 +42,21 @@ class Bdecoder {
     if(buffer[index++] != 0x64) {
       throw new ParseError("bendiction", buffer, index);
     }
+
+    ret = decodeDictionElements(buffer);
+
+    if(buffer[index++] != 0x65) {
+      throw new ParseError("bendiction", buffer, index);
+    }
+    return ret;
+  }
+
+  Map decodeDictionElements(data.Uint8List buffer) {
+    Map ret = new Map();
     while(index<buffer.length && buffer[index] != 0x65) {
       data.Uint8List keyAsList = decodeBenObject(buffer);
       String key = convert.UTF8.decode(keyAsList.toList());
       ret[key] = decodeBenObject(buffer);
-    }
-    if(buffer[index++] != 0x65) {
-      throw new ParseError("bendiction", buffer, index);
     }
     return ret;
   }
@@ -58,11 +66,17 @@ class Bdecoder {
     if(buffer[index++] != 0x6c) {
       throw new ParseError("benlist", buffer, index);
     }
-    while(index<buffer.length && buffer[index] != 0x65) {
-      ret.add(decodeBenObject(buffer));
-    }
+    ret = decodeListElemets(buffer);
     if(buffer[index++] != 0x65) {
       throw new ParseError("benlist", buffer, index);
+    }
+    return ret;
+  }
+
+  List decodeListElemets(data.Uint8List buffer) {
+    List ret = new List();
+    while(index<buffer.length && buffer[index] != 0x65) {
+      ret.add(decodeBenObject(buffer));
     }
     return ret;
   }
