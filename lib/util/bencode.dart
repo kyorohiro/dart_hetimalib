@@ -17,78 +17,85 @@ class Bencode
 }
 
 class Bdecoder {
-  int index = 0;
+  int index;
   Object decode(data.Uint8List buffer) 
   {
     index = 0;
-    return innerDecode(buffer);
-  }
-  Object innerDecode(data.Uint8List buffer) 
-  { 
-    if( 0x30 <= buffer[index] && buffer[index]<=0x39) {//0-9
-      return decodeBytes(buffer);
-    }
-    else if(0x69 == buffer[index]) {// i 
-      return decodeNumber(buffer);
-    }
-    else if(0x6c == buffer[index]) {// l
-      return decodeList(buffer);
-    }
-    else if(0x64 == buffer[index]) {// d
-      return decodeMap(buffer);
-    }
-    return null;
+    return decodeBenObject(buffer);
   }
 
-  Map decodeMap(data.Uint8List buffer) {
-    index++;
-    Map ret = new Map();
-    while(index<buffer.length && buffer[index] != 0x65) {
-      data.Uint8List keyAsList = innerDecode(buffer);
-      String key = convert.UTF8.decode(keyAsList.toList());
-      ret[key] = innerDecode(buffer);
+  Object decodeBenObject(data.Uint8List buffer) { 
+    if( 0x30 <= buffer[index] && buffer[index]<=0x39) {//0-9
+      return decodeBytes(buffer);
+    } else if(0x69 == buffer[index]) {// i 
+      return decodeNumber(buffer);
+    } else if(0x6c == buffer[index]) {// l
+      return decodeList(buffer);
+    } else if(0x64 == buffer[index]) {// d
+      return decodeDiction(buffer);
     }
-    index++;
+    throw new ParseError("benobject", buffer, index);
+  }
+
+  Map decodeDiction(data.Uint8List buffer) {
+    Map ret = new Map();
+    if(buffer[index++] != 0x64) {
+      throw new ParseError("bendiction", buffer, index);
+    }
+    while(index<buffer.length && buffer[index] != 0x65) {
+      data.Uint8List keyAsList = decodeBenObject(buffer);
+      String key = convert.UTF8.decode(keyAsList.toList());
+      ret[key] = decodeBenObject(buffer);
+    }
+    if(buffer[index++] != 0x65) {
+      throw new ParseError("bendiction", buffer, index);
+    }
     return ret;
   }
 
   List decodeList(data.Uint8List buffer) {
-    index++;
     List ret = new List();
-    while(index<buffer.length && buffer[index] != 0x65) {
-      ret.add(innerDecode(buffer));
+    if(buffer[index++] != 0x6c) {
+      throw new ParseError("benlist", buffer, index);
     }
-    index++;
+    while(index<buffer.length && buffer[index] != 0x65) {
+      ret.add(decodeBenObject(buffer));
+    }
+    if(buffer[index++] != 0x65) {
+      throw new ParseError("benlist", buffer, index);
+    }
     return ret;
   }
 
   num decodeNumber(data.Uint8List buffer) {
-    index++;
-    int v = 0;
-    int len=0;
-    int start = index;
+    if(buffer[index++] != 0x69) {
+      throw new ParseError("bennumber", buffer, index);
+    }
+    int returnValue = 0;
     while(index<buffer.length && buffer[index] != 0x65) {
-      len++;
-      index++;
+      if(!(0x30 <= buffer[index] && buffer[index]<=0x39)) {
+        throw new ParseError("bennumber", buffer, index);
+      }
+      returnValue = returnValue*10+(buffer[index++]-0x30);
     }
-    index++;
-    String numAsStr =convert.ASCII.decode(buffer.sublist(start,start+len));
-    if(numAsStr.length == 0) {
-      return 0;
+    if(buffer[index++] != 0x65) {
+      throw new ParseError("bennumber", buffer, index);
     }
-    return num.parse(numAsStr);
+    return returnValue;
   }
 
   data.Uint8List decodeBytes(data.Uint8List buffer) {
     int length = 0;
     while(index<buffer.length && buffer[index] != 0x3a) {
-      length = length*10+(buffer[index]-0x30);
-      index++;
+      if(!(0x30 <= buffer[index] && buffer[index]<=0x39)) {
+        throw new ParseError("benstring", buffer, index);
+      }
+      length = length*10+(buffer[index++]-0x30);
     }
-    index++;
-//    print("index="+index.toString()+",len="+length.toString()+",b="+buffer.length.toString());
+    if(buffer[index++] != 0x3a) {
+      throw new ParseError("benstring", buffer, index);
+    }
     data.Uint8List ret = new data.Uint8List.fromList(buffer.sublist(index, index+length));
-//    print("ret="+convert.UTF8.decode(ret));
     index += length;
     return ret;
   }
@@ -147,5 +154,17 @@ class Bencoder {
     } else if(obj is Map) {
       encodeDictionary(obj);
     }
+  }
+}
+
+class ParseError implements Exception {
+  
+  String log = "";
+  ParseError(String s, data.Uint8List buffer, int index) {
+    log = s+"#"+buffer.toList().toString() +"index="+index.toString()+":"+ super.toString();
+  }
+
+  String toString() {
+    return log;
   }
 }
