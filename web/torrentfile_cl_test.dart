@@ -20,34 +20,11 @@ void test_bencode() {
       });
     });
   });
-  //
-  unit.test("httprequest", () {
-    html.HttpRequest request = new html.HttpRequest();
-    request.responseType = "blob";
-    request.open("GET", "1k.txt.torrent");
-    request.onLoad.listen((html.ProgressEvent e) {
-      print("loaded");
-      print("dd" + request.response.toString());
-      print("dd" + request.responseType);
-      print("dd" + request.response.runtimeType.toString());
-      hetima_cl.HetimaFileCl cl = new hetima_cl.HetimaFileCl(request.response);
-      html.FileReader reader = new html.FileReader();
-      reader.readAsArrayBuffer(request.response);
-      reader.onLoadEnd.listen//(onData)
-      //reader.onLoad.listen
-      ((html.ProgressEvent e) {
-        print("ddsssssss");
-        print("dds=" + reader.result.toString());
-        print("dds=" + reader.result.runtimeType.toString());
-      });
-    });
-    request.send();
-  });
 
   unit.test("1k.txt.torrent", () {
     html.HttpRequest request = new html.HttpRequest();
     request.responseType = "blob";
-    request.open("GET", "1k.txt.torrent");
+    request.open("GET", "testdata/1k.txt.torrent");
     request.onLoad.listen((html.ProgressEvent e) {
       html.FileReader reader = new html.FileReader();
       reader.readAsArrayBuffer(request.response);
@@ -66,7 +43,7 @@ void test_bencode() {
   unit.test("1kb.torrent", () {
     html.HttpRequest request = new html.HttpRequest();
     request.responseType = "blob";
-    request.open("GET", "1kb.torrent");
+    request.open("GET", "testdata/1kb.torrent");
     request.onLoad.listen((html.ProgressEvent e) {
       html.FileReader reader = new html.FileReader();
       reader.readAsArrayBuffer(request.response);
@@ -79,6 +56,25 @@ void test_bencode() {
         unit.expect(1024, f.info.files.path[0].length);
         unit.expect("1k.txt", f.info.files.path[1].pathAsString);
         unit.expect(1024, f.info.files.path[1].length);
+      });
+    });
+    request.send();
+  });
+  
+  unit.test("1kb.txt", () {
+    html.HttpRequest request = new html.HttpRequest();
+    request.responseType = "blob";
+    request.open("GET", "testdata/1kb/1k.txt");
+    request.onLoad.listen((html.ProgressEvent e) {
+      html.FileReader reader = new html.FileReader();
+      reader.readAsArrayBuffer(request.response);
+      reader.onLoad.listen((html.ProgressEvent e) {
+        hetima.TorrentFileHelper helper = new hetima.TorrentFileHelper();
+        helper.verifyPiece(new hetima_cl.HetimaFileCl(request.response), 1024*16)
+        .then((hetima.VerifyPieceResult e) {
+          ;
+        });
+        hetima.TorrentFile f = new hetima.TorrentFile.load(reader.result);
       });
     });
     request.send();

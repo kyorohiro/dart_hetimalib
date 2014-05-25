@@ -39,6 +39,7 @@ class TorrentFileHelper {
   async.Future<VerifyPieceResult> verifyPiece(HetimaFile file, int pieceLength) {
     async.Completer<VerifyPieceResult> compleater = new async.Completer();
     VerifyPieceResult result = new VerifyPieceResult();
+    result.pieceLength = pieceLength;
     createPiece(compleater, result);
     return compleater.future;
   }
