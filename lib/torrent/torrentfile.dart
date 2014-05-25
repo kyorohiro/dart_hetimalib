@@ -5,6 +5,10 @@ class TorrentFile {
   static final String KEY_NAME = "name";
   static final String KEY_INFO = "info";
   static final String KEY_FILES = "files";
+  static final String KEY_LENGTH = "length";
+  static final String KEY_PIECE_LENGTH = "piece length";
+  static final String KEY_PIECE = "piece";
+  static final String KEY_PATH = "path";
 
   Map mMap = {};
   data.ByteBuffer piece = null;
@@ -16,7 +20,7 @@ class TorrentFile {
 
   String get announce {
     if (mMap.containsKey(KEY_ANNOUNCE)) {
-      return mMap[KEY_ANNOUNCE];
+      return objectToString(mMap[KEY_ANNOUNCE]);
     } else {
       return "";
     }
@@ -26,57 +30,115 @@ class TorrentFile {
     mMap[KEY_ANNOUNCE] = v;
   }
 
+  TorrentFileInfo mInfo = null;
   TorrentFileInfo get info {
-    return new TorrentFileInfo(mMap);
+    if (mInfo == null) {
+      mInfo = new TorrentFileInfo(mMap);
+    }
+    return mInfo;
   }
+
 }
 
 class TorrentFileInfo {
-  Map mMap = {};
+  Map mInfo = {};
   String get name {
-    if (mMap.containsKey(TorrentFile.KEY_ANNOUNCE)) {
-      return mMap[TorrentFile.KEY_NAME];
+    if (mInfo.containsKey(TorrentFile.KEY_NAME)) {
+      return objectToString(mInfo[TorrentFile.KEY_NAME]);
     } else {
       return "";
     }
   }
 
   void set name(String v) {
-    mMap[TorrentFile.KEY_NAME] = v;
+    mInfo[TorrentFile.KEY_NAME] = v;
   }
 
+  int get piece_length {
+    return mInfo[TorrentFile.KEY_PIECE_LENGTH];
+  }
+
+  data.Uint8List get piece {
+    return mInfo[TorrentFile.KEY_PIECE];
+  }
+
+  TorrentFileFiles mFiles = null;
   TorrentFileFiles get files {
-    return new TorrentFileFiles(mMap);
+    if (mFiles == null) {
+      mFiles = new TorrentFileFiles(this);
+    }
+    return new TorrentFileFiles(this);
   }
 
   TorrentFileInfo(Map metadata) {
-    mMap = metadata;
+    mInfo = metadata[TorrentFile.KEY_INFO];
   }
 }
 
 class TorrentFileFiles {
-  Map mMap = {};
-  TorrentFileFiles(Map metadata) {
-    mMap = metadata;
+  TorrentFileInfo mInfo = null;
+  TorrentFileFiles(TorrentFileInfo info) {
+    mInfo = info;
   }
+
   int get size {
-    mMap.containsKey("");
+    if (mInfo.mInfo.containsKey(TorrentFile.KEY_FILES)) {
+      return (mInfo.mInfo[TorrentFile.KEY_FILES] as List).length;
+    }
     return 0;
   }
-  List<String>path; 
+
+  List<TorrentFileFile> get path {
+    if (0 == this.size) {
+      mInfo.name;
+      List<TorrentFileFile> ret = new List();
+      ret.add(new TorrentFileFile([mInfo.name], mInfo.length));
+      return ret;
+    } else {
+      List<TorrentFileFile> ret = new List();
+      List<Map> files = mInfo.mInfo[TorrentFile.KEY_FILES];
+      for (Map f in files) {
+        ret.add(new TorrentFileFile(f[TorrentFile.KEY_PATH], f[TorrentFile.KEY_LENGTH]));
+      }
+      return ret;
+    }
+  }
 }
 
-class TorrentFileCreator 
-{
-  int piececSize = 16*1024;
+class TorrentFileFile {
+  List<String> path = new List();
+  int length = 0;
+  TorrentFileFile(List p, int l) {
+    length = l;
+    for (Object o in p) {
+      path.add(objectToString(o));
+    }
+  }
+  String get pathAsString {
+    StringBuffer buffer = new StringBuffer();
+    for (String s in path) {
+      buffer.write(s);
+    }
+    return buffer.toString();
+  }
+}
+
+class TorrentFileCreator {
+  int piececSize = 16 * 1024;
   async.Completer<TorrentFileCreatorResult> load(HetimaFile target) {
     async.Completer<TorrentFileCreatorResult> ret = new async.Completer();
     return ret;
   }
 }
 
-class TorrentFileCreatorResult 
-{
-  
+class TorrentFileCreatorResult {
+
 }
 
+String objectToString(Object v) {
+  if (v is String) {
+    return v;
+  } else {
+    return convert.UTF8.decode((v as data.Uint8List).toList());
+  }
+}

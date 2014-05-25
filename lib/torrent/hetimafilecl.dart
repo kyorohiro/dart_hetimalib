@@ -7,7 +7,7 @@ class HetimaFileCl extends HetimaFile
   HetimaFileCl(bl) {
     _mBlob = bl;
   }
-  async.Completer<WriteResult> write() {    
+  async.Completer<WriteResult> write() {
     return new async.Completer<WriteResult>();
   }
 
