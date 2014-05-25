@@ -35,7 +35,44 @@ class TorrentFileCreatorResult {
 }
 
 class TorrentFileHelper {
-  void verifyPiece(data ) {
+
+  async.Future<VerifyPieceResult> verifyPiece(HetimaFile file, int pieceLength) {
+    async.Completer<VerifyPieceResult> compleater = new async.Completer();
+    VerifyPieceResult result = new VerifyPieceResult();
+    createPiece(compleater, result);
+    return compleater.future;
+  }
+
+  void createPiece(async.Completer<VerifyPieceResult> compleater, VerifyPieceResult result) {
+    int start = result.start;
+    int end = result.start + result.pieceLength;
+
+    if(end> result.file.length) {
+      end = result.file.length;
+    }
+    result.file.read(start, end).then((ReadResult e){
+      crypto.SHA1 sha1 = new crypto.SHA1();
+      sha1.add(e.buffer.toList());
+      result.add(sha1.close());
+      result.start = end;
+      if(end == result.file.length) {
+        compleater.complete(result);
+      }
+      else {
+        createPiece(compleater, result);
+      }
+    });
+  }  
+}
+
+class VerifyPieceResult 
+{
+  ArrayBuilder b = new ArrayBuilder();
+  int start = 0;
+  int pieceLength = 0;
+  HetimaFile file = null;
+  void add(List<int> data) {
+    b.appendIntList(data, 0, data.length);
   }
 }
 

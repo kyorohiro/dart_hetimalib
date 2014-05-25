@@ -48,6 +48,14 @@ class ArrayBuilder {
     }
   }
 
+  void appendIntList(List<int> buffer, int index, int length) {
+    update(length);
+    for (int i = 0; i < length; i++) {
+      _buffer8[_length] = buffer[index + i];
+      _length += 1;
+    }
+  }
+
   List toList() {
     return _buffer8.sublist(0, _length);
   }

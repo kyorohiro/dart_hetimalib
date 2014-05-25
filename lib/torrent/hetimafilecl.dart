@@ -7,11 +7,12 @@ class HetimaFileCl extends HetimaFile
   HetimaFileCl(bl) {
     _mBlob = bl;
   }
-  async.Completer<WriteResult> write() {
-    return new async.Completer<WriteResult>();
+
+  async.Future<WriteResult> write() {
+    return new async.Completer<WriteResult>().future;
   }
 
-  async.Completer<ReadResult> read(core.int start, core.int end) {
+  async.Future<ReadResult> read(core.int start, core.int end) {
     async.Completer<ReadResult> ret = new async.Completer<ReadResult>();
     html.FileReader reader = new html.FileReader();
     reader.onLoad.listen((html.ProgressEvent e){
@@ -24,7 +25,7 @@ class HetimaFileCl extends HetimaFile
       ret.complete(new ReadResult());
     });
     reader.readAsArrayBuffer(_mBlob.slice(start, end));
-    return ret;
+    return ret.future;
   }
 
 }
