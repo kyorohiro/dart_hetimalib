@@ -92,7 +92,7 @@ class TorrentFileFiles {
     if (0 == this.size) {
       mInfo.name;
       List<TorrentFileFile> ret = new List();
-      ret.add(new TorrentFileFile([mInfo.name], mInfo.length));
+      ret.add(new TorrentFileFile([mInfo.name], mInfo.mInfo[TorrentFile.KEY_LENGTH]));
       return ret;
     } else {
       List<TorrentFileFile> ret = new List();
@@ -123,17 +123,7 @@ class TorrentFileFile {
   }
 }
 
-class TorrentFileCreator {
-  int piececSize = 16 * 1024;
-  async.Completer<TorrentFileCreatorResult> load(HetimaFile target) {
-    async.Completer<TorrentFileCreatorResult> ret = new async.Completer();
-    return ret;
-  }
-}
 
-class TorrentFileCreatorResult {
-
-}
 
 String objectToString(Object v) {
   if (v is String) {

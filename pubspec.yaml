@@ -6,4 +6,5 @@ homepage: https://github.com/kyorohiro/dart_hetimalib
 environment:
   sdk: 1.4.0
 dependencies:
+  crypto: any
   unittest: any

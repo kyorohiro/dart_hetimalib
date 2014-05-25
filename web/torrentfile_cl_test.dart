@@ -44,7 +44,7 @@ void test_bencode() {
     request.send();
   });
 
-  unit.test("", () {
+  unit.test("1k.txt.torrent", () {
     html.HttpRequest request = new html.HttpRequest();
     request.responseType = "blob";
     request.open("GET", "1k.txt.torrent");
@@ -63,7 +63,7 @@ void test_bencode() {
     request.send();
   });
 
-  unit.test("dd", () {
+  unit.test("1kb.torrent", () {
     html.HttpRequest request = new html.HttpRequest();
     request.responseType = "blob";
     request.open("GET", "1kb.torrent");
