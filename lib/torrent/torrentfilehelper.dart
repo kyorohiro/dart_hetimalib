@@ -6,8 +6,8 @@ class TorrentFileCreator {
 
   async.Completer<TorrentFileCreatorResult> load(HetimaFile target) {
     async.Completer<TorrentFileCreatorResult> ret = new async.Completer();
-    target.read(0, piececSize*0).then((ReadResult e){
-      if(e.status != ReadResult.OK) {
+    target.read(0, piececSize * 0).then((ReadResult e) {
+      if (e.status != ReadResult.OK) {
         ret.complete(new TorrentFileCreatorResult(TorrentFileCreatorResult.NG));
         return;
       }
@@ -22,7 +22,7 @@ class TorrentFileCreator {
     sha1.close();
     return null;
   }
-  
+
 }
 
 class TorrentFileCreatorResult {
@@ -48,27 +48,26 @@ class TorrentFileHelper {
   void createPiece(async.Completer<VerifyPieceResult> compleater, VerifyPieceResult result) {
     int start = result.start;
     int end = result.start + result.pieceLength;
-
-    if(end> result.file.length) {
-      end = result.file.length;
-    }
-    result.file.read(start, end).then((ReadResult e){
-      crypto.SHA1 sha1 = new crypto.SHA1();
-      sha1.add(e.buffer.toList());
-      result.add(sha1.close());
-      result.start = end;
-      if(end == result.file.length) {
-        compleater.complete(result);
+    result.file.getLength().then((int length) {
+      if (end > length) {
+        end = length;
       }
-      else {
-        createPiece(compleater, result);
-      }
+      result.file.read(start, end).then((ReadResult e) {
+        crypto.SHA1 sha1 = new crypto.SHA1();
+        sha1.add(e.buffer.toList());
+        result.add(sha1.close());
+        result.start = end;
+        if (end == length) {
+          compleater.complete(result);
+        } else {
+          createPiece(compleater, result);
+        }
+      });
     });
-  }  
+  }
 }
 
-class VerifyPieceResult 
-{
+class VerifyPieceResult {
   ArrayBuilder b = new ArrayBuilder();
   int start = 0;
   int pieceLength = 0;
@@ -77,4 +76,3 @@ class VerifyPieceResult
     b.appendIntList(data, 0, data.length);
   }
 }
-

@@ -59,7 +59,7 @@ void test_bencode() {
     });
     request.send();
   });
-  
+
   unit.test("1kb.txt", () {
     html.HttpRequest request = new html.HttpRequest();
     request.responseType = "blob";
@@ -69,8 +69,7 @@ void test_bencode() {
       reader.readAsArrayBuffer(request.response);
       reader.onLoad.listen((html.ProgressEvent e) {
         hetima.TorrentFileHelper helper = new hetima.TorrentFileHelper();
-        helper.verifyPiece(new hetima_cl.HetimaFileCl(request.response), 1024*16)
-        .then((hetima.VerifyPieceResult e) {
+        helper.verifyPiece(new hetima_cl.HetimaFileBlob(request.response), 1024 * 16).then((hetima.VerifyPieceResult e) {
           ;
         });
         hetima.TorrentFile f = new hetima.TorrentFile.load(reader.result);
@@ -85,14 +84,35 @@ void test_bencode() {
     request.open("GET", "testdata/1k.txt.torrent");
     request.onLoad.listen((html.ProgressEvent e) {
       html.FileReader reader = new html.FileReader();
-      hetima_cl.HetimaFileCl file = new hetima_cl.HetimaFileCl(request.response);
-      file.read(0, file.length).then((hetima.ReadResult r){
-         hetima.TorrentFile f = new hetima.TorrentFile.load(r.buffer);
-         unit.expect("http://127.0.0.1:6969/announce", f.announce);
-         unit.expect("1k.txt", f.info.name);
-         unit.expect(1, f.info.files.path.length);
-         unit.expect("1k.txt", f.info.files.path[0].pathAsString);
-         unit.expect(1024, f.info.files.path[0].length);
+      hetima_cl.HetimaFileBlob file = new hetima_cl.HetimaFileBlob(request.response);
+      file.getLength().then((int length) {
+        file.read(0, length).then((hetima.ReadResult r) {
+          hetima.TorrentFile f = new hetima.TorrentFile.load(r.buffer);
+          unit.expect("http://127.0.0.1:6969/announce", f.announce);
+          unit.expect("1k.txt", f.info.name);
+          unit.expect(1, f.info.files.path.length);
+          unit.expect("1k.txt", f.info.files.path[0].pathAsString);
+          unit.expect(1024, f.info.files.path[0].length);
+        });
+      });
+    });
+    request.send();
+  });
+
+  unit.test("1k.txt piece", () {
+    html.HttpRequest request = new html.HttpRequest();
+    request.responseType = "blob";
+    request.open("GET", "testdata/1k.txt.torrent");
+    request.onLoad.listen((html.ProgressEvent e) {
+      hetima_cl.HetimaFileBlob file = new hetima_cl.HetimaFileBlob(request.response);
+      hetima.TorrentFileHelper h = new hetima.TorrentFileHelper();
+      h.verifyPiece(file, 16 * 1024).then((hetima.VerifyPieceResult r) {
+        List<int> expect = [149, 96, 47, 41, 153, 193, 171, 203, 165, 128, 108, 193, 118, 11, 175, 49, 229, 27, 231, 149];
+        print("xxx" + r.b.size().toString());
+        unit.expect(20, r.b.size());
+        for (int i = 0; i < r.b.size(); i++) {
+          unit.expect(expect[i], r.b.toList()[i]);
+        }
       });
     });
     request.send();
@@ -104,35 +124,15 @@ void test_bencode() {
     request.open("GET", "testdata/1k.txt.torrent");
     request.onLoad.listen((html.ProgressEvent e) {
       html.FileReader reader = new html.FileReader();
-      hetima_cl.HetimaFileCl file = new hetima_cl.HetimaFileCl(request.response);
+      hetima_cl.HetimaFileBlob file = new hetima_cl.HetimaFileBlob(request.response);
       hetima.TorrentFileHelper h = new hetima.TorrentFileHelper();
-      h.verifyPiece(file, 16*1024).then((hetima.VerifyPieceResult r) {
-        List<int> expect = [149,96,47,41,153,193,171,203,165,128,108,193,118,11,175,49,229,27,231,149];
-         print("xxx"+r.b.size().toString());
-         unit.expect(20, r.b.size());
-         for(int i=0;i<r.b.size();i++) {
-           unit.expect(expect[i], r.b.toList()[i]);
-         }
-      });
-    });
-    request.send();
-  });
-
-  unit.test("1k.txt piece", () {
-    html.HttpRequest request = new html.HttpRequest();
-    request.responseType = "blob";
-    request.open("GET", "testdata/1k.txt.torrent");
-    request.onLoad.listen((html.ProgressEvent e) {
-      html.FileReader reader = new html.FileReader();
-      hetima_cl.HetimaFileCl file = new hetima_cl.HetimaFileCl(request.response);
-      hetima.TorrentFileHelper h = new hetima.TorrentFileHelper();
-      h.verifyPiece(file, 16*1024).then((hetima.VerifyPieceResult r) {
-        List<int> expect = [149,96,47,41,153,193,171,203,165,128,108,193,118,11,175,49,229,27,231,149];
-         print("xxx"+r.b.size().toString());
-         unit.expect(20, r.b.size());
-         for(int i=0;i<r.b.size();i++) {
-           unit.expect(expect[i], r.b.toList()[i]);
-         }
+      h.verifyPiece(file, 16 * 1024).then((hetima.VerifyPieceResult r) {
+        List<int> expect = [149, 96, 47, 41, 153, 193, 171, 203, 165, 128, 108, 193, 118, 11, 175, 49, 229, 27, 231, 149];
+        print("xxx" + r.b.size().toString());
+        unit.expect(20, r.b.size());
+        for (int i = 0; i < r.b.size(); i++) {
+          unit.expect(expect[i], r.b.toList()[i]);
+        }
       });
     });
     request.send();

@@ -1,8 +1,7 @@
 part of hetima;
 
 abstract class HetimaFile {
-  int length;
-  List<String> path = new List();
+  async.Future<int> getLength();
   async.Future<WriteResult> write();
   async.Future<ReadResult> read(int start, int end);
 }
