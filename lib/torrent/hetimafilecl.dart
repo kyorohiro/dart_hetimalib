@@ -12,6 +12,10 @@ class HetimaFileCl extends HetimaFile
     return new async.Completer<WriteResult>().future;
   }
 
+  core.int get length {
+    return _mBlob.size;
+  }
+
   async.Future<ReadResult> read(core.int start, core.int end) {
     async.Completer<ReadResult> ret = new async.Completer<ReadResult>();
     html.FileReader reader = new html.FileReader();

@@ -40,6 +40,7 @@ class TorrentFileHelper {
     async.Completer<VerifyPieceResult> compleater = new async.Completer();
     VerifyPieceResult result = new VerifyPieceResult();
     result.pieceLength = pieceLength;
+    result.file = file;
     createPiece(compleater, result);
     return compleater.future;
   }
