@@ -118,4 +118,23 @@ void test_bencode() {
     request.send();
   });
 
+  unit.test("1k.txt piece", () {
+    html.HttpRequest request = new html.HttpRequest();
+    request.responseType = "blob";
+    request.open("GET", "testdata/1k.txt.torrent");
+    request.onLoad.listen((html.ProgressEvent e) {
+      html.FileReader reader = new html.FileReader();
+      hetima_cl.HetimaFileCl file = new hetima_cl.HetimaFileCl(request.response);
+      hetima.TorrentFileHelper h = new hetima.TorrentFileHelper();
+      h.verifyPiece(file, 16*1024).then((hetima.VerifyPieceResult r) {
+        List<int> expect = [149,96,47,41,153,193,171,203,165,128,108,193,118,11,175,49,229,27,231,149];
+         print("xxx"+r.b.size().toString());
+         unit.expect(20, r.b.size());
+         for(int i=0;i<r.b.size();i++) {
+           unit.expect(expect[i], r.b.toList()[i]);
+         }
+      });
+    });
+    request.send();
+  });
 }
