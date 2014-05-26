@@ -16,13 +16,13 @@ class HetimaFileCl extends HetimaFile
     async.Completer<ReadResult> ret = new async.Completer<ReadResult>();
     html.FileReader reader = new html.FileReader();
     reader.onLoad.listen((html.ProgressEvent e){
-      ret.complete(new ReadResult());
+      ret.complete(new ReadResult(ReadResult.OK, reader.result));
     });
     reader.onError.listen((html.Event e){
-      ret.complete(new ReadResult());      
+      ret.complete(new ReadResult(ReadResult.NG, null));      
     });
     reader.onAbort.listen((html.ProgressEvent e){
-      ret.complete(new ReadResult());
+      ret.complete(new ReadResult(ReadResult.NG, null));
     });
     reader.readAsArrayBuffer(_mBlob.slice(start, end));
     return ret.future;

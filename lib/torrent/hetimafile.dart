@@ -15,4 +15,8 @@ class ReadResult {
   static final NG = -1;
   int status = NG;
   data.Uint8List buffer;
+  ReadResult(int _status, data.Uint8List _buffer) {
+    status = _status;
+    buffer = _buffer;
+  }
 }

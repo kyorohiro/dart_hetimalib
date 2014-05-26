@@ -8,6 +8,7 @@ import 'dart:html' as html;
 void test_bencode() {
 
   //
+  /*
   unit.test("fs check", () {
     html.window.requestFileSystem(1024).then((html.FileSystem e) {
       print("fs:fullpath:" + e.root.fullPath);
@@ -75,6 +76,25 @@ void test_bencode() {
           ;
         });
         hetima.TorrentFile f = new hetima.TorrentFile.load(reader.result);
+      });
+    });
+    request.send();
+  });
+*/
+  unit.test("1k.txt.torrent", () {
+    html.HttpRequest request = new html.HttpRequest();
+    request.responseType = "blob";
+    request.open("GET", "testdata/1k.txt.torrent");
+    request.onLoad.listen((html.ProgressEvent e) {
+      html.FileReader reader = new html.FileReader();
+      hetima_cl.HetimaFileCl file = new hetima_cl.HetimaFileCl(request.response);
+      file.read(0, file.length).then((hetima.ReadResult r){
+         hetima.TorrentFile f = new hetima.TorrentFile.load(r.buffer);
+         unit.expect("http://127.0.0.1:6969/announce", f.announce);
+         unit.expect("1k.txt", f.info.name);
+         unit.expect(1, f.info.files.path.length);
+         unit.expect("1k.txt", f.info.files.path[0].pathAsString);
+         unit.expect(1024, f.info.files.path[0].length);
       });
     });
     request.send();
