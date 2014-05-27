@@ -9,7 +9,7 @@ class HetimaFileBlob extends HetimaFile
   }
 
   async.Future<WriteResult> write() {
-    return new async.Completer<WriteResult>().future;
+    return null;
   }
 
   async.Future<core.int> getLength() { 
@@ -54,11 +54,12 @@ class HetimaFileGet extends HetimaFile
     async.Completer<html.Blob>ret = new async.Completer(); 
     html.HttpRequest request = new html.HttpRequest();
     request.responseType = "blob";
-    request.open("GET", "testdata/1kb.torrent");
+    request.open("GET", _mPath);
     request.onLoad.listen((html.ProgressEvent e) {
       _mBlob = request.response;
       ret.complete(request.response);
     });
+    request.send();
     return ret.future;
   }
 

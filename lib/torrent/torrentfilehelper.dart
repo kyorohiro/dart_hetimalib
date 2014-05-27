@@ -18,7 +18,7 @@ class TorrentFileCreator {
 
   data.Uint8List calcSha1(data.Uint8List buffer, int start, int end) {
     crypto.SHA1 sha1 = new crypto.SHA1();
-    sha1.add(buffer.toList());
+    sha1.add(buffer.sublist(start,end));
     sha1.close();
     return null;
   }
@@ -54,7 +54,7 @@ class TorrentFileHelper {
       }
       result.file.read(start, end).then((ReadResult e) {
         crypto.SHA1 sha1 = new crypto.SHA1();
-        sha1.add(e.buffer.toList());
+        sha1.add(e.buffer.sublist(start,end));
         result.add(sha1.close());
         result.start = end;
         if (end == length) {
