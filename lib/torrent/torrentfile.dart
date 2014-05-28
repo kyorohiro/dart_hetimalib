@@ -14,7 +14,7 @@ class TorrentFile {
   data.ByteBuffer piece = null;
   int piece_length = 0;
 
-  TorrentFile.load(data.Uint8List buffer) {
+  TorrentFile.loadTorrentFileBuffer(data.Uint8List buffer) {
     mMap = Bencode.decode(buffer);
   }
 
