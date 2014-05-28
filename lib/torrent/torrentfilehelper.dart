@@ -36,16 +36,16 @@ class TorrentFileCreatorResult {
 
 class TorrentFileHelper {
 
-  async.Future<VerifyPieceResult> verifyPiece(HetimaFile file, int pieceLength) {
-    async.Completer<VerifyPieceResult> compleater = new async.Completer();
-    VerifyPieceResult result = new VerifyPieceResult();
+  async.Future<CreatePieceHashResult> createPieceHash(HetimaFile file, int pieceLength) {
+    async.Completer<CreatePieceHashResult> compleater = new async.Completer();
+    CreatePieceHashResult result = new CreatePieceHashResult();
     result.pieceLength = pieceLength;
     result.file = file;
-    createPiece(compleater, result);
+    _createPieceHash(compleater, result);
     return compleater.future;
   }
 
-  void createPiece(async.Completer<VerifyPieceResult> compleater, VerifyPieceResult result) {
+  void _createPieceHash(async.Completer<CreatePieceHashResult> compleater, CreatePieceHashResult result) {
     int start = result.start;
     int end = result.start + result.pieceLength;
     result.file.getLength().then((int length) {
@@ -60,14 +60,14 @@ class TorrentFileHelper {
         if (end == length) {
           compleater.complete(result);
         } else {
-          createPiece(compleater, result);
+          _createPieceHash(compleater, result);
         }
       });
     });
   }
 }
 
-class VerifyPieceResult {
+class CreatePieceHashResult {
   ArrayBuilder b = new ArrayBuilder();
   int start = 0;
   int pieceLength = 0;

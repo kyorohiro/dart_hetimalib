@@ -112,7 +112,7 @@ void test_bencode() {
     file002.open("GET", "testdata/1kb/1k.txt");
     file002.onLoadEnd.listen((html.ProgressEvent e) {
       hetima_cl.HetimaFileBlob file = new hetima_cl.HetimaFileBlob(new html.Blob([file001.response, file002.response]));
-      h.verifyPiece(file, 16 * 1024).then((hetima.VerifyPieceResult r) {
+      h.createPieceHash(file, 16 * 1024).then((hetima.CreatePieceHashResult r) {
         unit.test("hetimafile get double", () {
           List<int> expect = 
               [149,96,47,41,153,193,171,203,165,128,108,193,118,11,175,49,229,27,231,149];
