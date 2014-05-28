@@ -7,6 +7,7 @@ import 'dart:html' as html;
 import 'dart:async' as async;
 
 void test_bencode() {
+  /*
   unit.test("fs check", () {
     html.window.requestFileSystem(1024).then((html.FileSystem e) {
       print("fs:fullpath:" + e.root.fullPath);
@@ -100,27 +101,31 @@ void test_bencode() {
       });
     });
   }
+  */
   {
-    html.HttpRequest request = new html.HttpRequest();
-    request.responseType = "blob";
-    request.open("GET", "testdata/1kb/1k.txt");
-    request.onLoadEnd.listen((html.ProgressEvent e) {
-      html.FileReader reader = new html.FileReader();
-      hetima_cl.HetimaFileBlob file = new hetima_cl.HetimaFileBlob(request.response);
-      hetima.TorrentFileHelper h = new hetima.TorrentFileHelper();
+    hetima.TorrentFileHelper h = new hetima.TorrentFileHelper();
+    html.HttpRequest file001 = new html.HttpRequest();
+    html.HttpRequest file002 = new html.HttpRequest();
+    file001.responseType = "blob";
+    file002.responseType = "blob";
+    file001.open("GET", "testdata/1kb/1k_b.txt");
+    file002.open("GET", "testdata/1kb/1k.txt");
+    file002.onLoadEnd.listen((html.ProgressEvent e) {
+      hetima_cl.HetimaFileBlob file = new hetima_cl.HetimaFileBlob(new html.Blob([file001.response, file002.response]));
       h.verifyPiece(file, 16 * 1024).then((hetima.VerifyPieceResult r) {
-        unit.test("1k.txt piece", () {
-          List<int> expect = [196, 42, 125, 9, 64, 47, 78, 143, 209, 15, 188, 87, 124, 199, 203, 157, 198, 52, 62, 142];
-          print("xxx" + r.b.size().toString());
+        unit.test("hetimafile get double", () {
+          List<int> expect = 
+              [149,96,47,41,153,193,171,203,165,128,108,193,118,11,175,49,229,27,231,149];
           unit.expect(20, r.b.size());
           for (int i = 0; i < r.b.size(); i++) {
             unit.expect(expect[i], r.b.toList()[i]);
           }
         });
-      }).catchError((e) {
-        unit.expect(0, 1);
       });
     });
-    request.send();
+    file001.onLoadEnd.listen((html.ProgressEvent e) {
+      file002.send();
+    });
+    file001.send();
   }
 }
