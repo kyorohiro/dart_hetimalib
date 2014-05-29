@@ -7,7 +7,6 @@ import 'dart:html' as html;
 import 'dart:async' as async;
 
 void test_bencode() {
-  /*
   unit.test("fs check", () {
     html.window.requestFileSystem(1024).then((html.FileSystem e) {
       print("fs:fullpath:" + e.root.fullPath);
@@ -29,8 +28,8 @@ void test_bencode() {
       html.FileReader reader = new html.FileReader();
       reader.readAsArrayBuffer(request.response);
       reader.onLoad.listen((html.ProgressEvent e) {
-        unit.test("1k.txt.torrent", () {
-          hetima.TorrentFile f = new hetima.TorrentFile.load(reader.result);
+        unit.test("001 1k.txt.torrent", () {
+          hetima.TorrentFile f = new hetima.TorrentFile.loadTorrentFileBuffer(reader.result);
           unit.expect("http://127.0.0.1:6969/announce", f.announce);
           unit.expect("1k.txt", f.info.name);
           unit.expect(1, f.info.files.path.length);
@@ -50,8 +49,8 @@ void test_bencode() {
       html.FileReader reader = new html.FileReader();
       reader.readAsArrayBuffer(request.response);
       reader.onLoad.listen((html.ProgressEvent e) {
-        unit.test("1kb.torrent", () {
-          hetima.TorrentFile f = new hetima.TorrentFile.load(reader.result);
+        unit.test("002 1kb.torrent", () {
+          hetima.TorrentFile f = new hetima.TorrentFile.loadTorrentFileBuffer(reader.result);
           unit.expect("http://127.0.0.1:6969/announce", f.announce);
           unit.expect("1kb", f.info.name);
           unit.expect(2, f.info.files.path.length);
@@ -74,8 +73,8 @@ void test_bencode() {
       hetima_cl.HetimaFileBlob file = new hetima_cl.HetimaFileBlob(request.response);
       file.getLength().then((int length) {
         file.read(0, length).then((hetima.ReadResult r) {
-          unit.test("hetimafile blob", () {
-            hetima.TorrentFile f = new hetima.TorrentFile.load(r.buffer);
+          unit.test("003 hetimafile blob", () {
+            hetima.TorrentFile f = new hetima.TorrentFile.loadTorrentFileBuffer(r.buffer);
             unit.expect("http://127.0.0.1:6969/announce", f.announce);
             unit.expect("1k.txt", f.info.name);
             unit.expect(1, f.info.files.path.length);
@@ -91,17 +90,16 @@ void test_bencode() {
   {
     hetima_cl.HetimaFileGet file = new hetima_cl.HetimaFileGet("testdata/1kb/1k.txt");
     hetima.TorrentFileHelper h = new hetima.TorrentFileHelper();
-    h.verifyPiece(file, 16 * 1024).then((hetima.VerifyPieceResult r) {
-      unit.test("hetimafile get ss", () {
+    h.createPieceHash(file, 16 * 1024).then((hetima.CreatePieceHashResult r) {
+      unit.test("004 hetimafile get ss", () {
         List<int> expect = [196, 42, 125, 9, 64, 47, 78, 143, 209, 15, 188, 87, 124, 199, 203, 157, 198, 52, 62, 142];
-        unit.expect(20, r.b.size());
-        for (int i = 0; i < r.b.size(); i++) {
-          unit.expect(expect[i], r.b.toList()[i]);
+        unit.expect(20, r.pieceBuffer.size());
+        for (int i = 0; i < r.pieceBuffer.size(); i++) {
+          unit.expect(expect[i], r.pieceBuffer.toList()[i]);
         }
       });
     });
   }
-  */
   {
     hetima.TorrentFileHelper h = new hetima.TorrentFileHelper();
     html.HttpRequest file001 = new html.HttpRequest();
@@ -113,12 +111,12 @@ void test_bencode() {
     file002.onLoadEnd.listen((html.ProgressEvent e) {
       hetima_cl.HetimaFileBlob file = new hetima_cl.HetimaFileBlob(new html.Blob([file001.response, file002.response]));
       h.createPieceHash(file, 16 * 1024).then((hetima.CreatePieceHashResult r) {
-        unit.test("hetimafile get double", () {
+        unit.test("005 hetimafile get double", () {
           List<int> expect = 
               [149,96,47,41,153,193,171,203,165,128,108,193,118,11,175,49,229,27,231,149];
-          unit.expect(20, r.b.size());
-          for (int i = 0; i < r.b.size(); i++) {
-            unit.expect(expect[i], r.b.toList()[i]);
+          unit.expect(20, r.pieceBuffer.size());
+          for (int i = 0; i < r.pieceBuffer.size(); i++) {
+            unit.expect(expect[i], r.pieceBuffer.toList()[i]);
           }
         });
       });
@@ -127,5 +125,14 @@ void test_bencode() {
       file002.send();
     });
     file001.send();
+  }
+
+  {
+    hetima_cl.HetimaFileGet file = new hetima_cl.HetimaFileGet("testdata/1kb/1k.txt");
+    hetima.TorrentFileCreator c = new hetima.TorrentFileCreator();
+    c.name = "1k.txt";
+    c.createFromSingleFile(file).then((hetima.TorrentFileCreatorResult e){
+      
+    });
   }
 }

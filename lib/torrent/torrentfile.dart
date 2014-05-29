@@ -22,6 +22,10 @@ class TorrentFile {
     mMap = Bencode.decode(buffer);
   }
 
+  TorrentFile.torentmap(Map map) {
+    mMap = map;
+  }
+
   String get announce {
     if (mMap.containsKey(KEY_ANNOUNCE)) {
       return objectToString(mMap[KEY_ANNOUNCE]);
@@ -66,11 +70,7 @@ class TorrentFileInfo {
     return mInfo[TorrentFile.KEY_PIECE];
   }
 
-  TorrentFileFiles mFiles = null;
   TorrentFileFiles get files {
-    if (mFiles == null) {
-      mFiles = new TorrentFileFiles(this);
-    }
     return new TorrentFileFiles(this);
   }
 
@@ -89,11 +89,11 @@ class TorrentFileFiles {
     if (mInfo.mInfo.containsKey(TorrentFile.KEY_FILES)) {
       return (mInfo.mInfo[TorrentFile.KEY_FILES] as List).length;
     }
-    return 0;
+    return 1;
   }
 
   List<TorrentFileFile> get path {
-    if (0 == this.size) {
+    if (1 == this.size) {
       mInfo.name;
       List<TorrentFileFile> ret = new List();
       ret.add(new TorrentFileFile([mInfo.name], mInfo.mInfo[TorrentFile.KEY_LENGTH]));
@@ -126,7 +126,6 @@ class TorrentFileFile {
     return buffer.toString();
   }
 }
-
 
 
 String objectToString(Object v) {
