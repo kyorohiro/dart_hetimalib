@@ -8,7 +8,7 @@ class HetimaFileBlob extends HetimaFile
     _mBlob = bl;
   }
 
-  async.Future<WriteResult> write() {
+  async.Future<WriteResult> write(core.Object o) {
     return null;
   }
 
@@ -46,7 +46,7 @@ class HetimaFileGet extends HetimaFile
     _mPath = path;
   }
 
-  async.Future<WriteResult> write() {
+  async.Future<WriteResult> write(core.Object buffer) {
     return new async.Completer<WriteResult>().future;
   }
 

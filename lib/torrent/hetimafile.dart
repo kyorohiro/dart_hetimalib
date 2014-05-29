@@ -2,7 +2,7 @@ part of hetima;
 
 abstract class HetimaFile {
   async.Future<int> getLength();
-  async.Future<WriteResult> write();
+  async.Future<WriteResult> write(Object buffer);
   async.Future<ReadResult> read(int start, int end);
 }
 

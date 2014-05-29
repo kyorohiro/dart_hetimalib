@@ -7,7 +7,7 @@ class TorrentFileCreator {
 
   async.Future<TorrentFileCreatorResult> createFromSingleFile(HetimaFile target) {
     async.Completer<TorrentFileCreatorResult> ret = new async.Completer();
-    TorrentFileHelper helper = new TorrentFileHelper();
+    TorrentPieceHashCreator helper = new TorrentPieceHashCreator();
     helper.createPieceHash(target, piececSize).then((CreatePieceHashResult r) {
       Map file = {};
       Map info = {};
@@ -23,6 +23,14 @@ class TorrentFileCreator {
     return ret.future;
   }
 
+  async.Future<WriteResult> saveTorrentFile(TorrentFile target, HetimaFile output) {
+    async.Completer<WriteResult> c = new async.Completer();
+    data.Uint8List buffer = Bencode.encode(target.mMetadata);
+    output.write(buffer).then((WriteResult ret) {
+      c.complete(ret);
+    });
+    return c.future;
+  }
 }
 
 class TorrentFileCreatorResult {
@@ -35,7 +43,7 @@ class TorrentFileCreatorResult {
   }
 }
 
-class TorrentFileHelper {
+class TorrentPieceHashCreator {
 
   async.Future<CreatePieceHashResult> createPieceHash(HetimaFile file, int pieceLength) {
     async.Completer<CreatePieceHashResult> compleater = new async.Completer();

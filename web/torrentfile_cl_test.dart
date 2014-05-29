@@ -89,7 +89,7 @@ void test_bencode() {
 
   {
     hetima_cl.HetimaFileGet file = new hetima_cl.HetimaFileGet("testdata/1kb/1k.txt");
-    hetima.TorrentFileHelper h = new hetima.TorrentFileHelper();
+    hetima.TorrentPieceHashCreator h = new hetima.TorrentPieceHashCreator();
     h.createPieceHash(file, 16 * 1024).then((hetima.CreatePieceHashResult r) {
       unit.test("004 hetimafile get ss", () {
         List<int> expect = [196, 42, 125, 9, 64, 47, 78, 143, 209, 15, 188, 87, 124, 199, 203, 157, 198, 52, 62, 142];
@@ -101,7 +101,7 @@ void test_bencode() {
     });
   }
   {
-    hetima.TorrentFileHelper h = new hetima.TorrentFileHelper();
+    hetima.TorrentPieceHashCreator h = new hetima.TorrentPieceHashCreator();
     html.HttpRequest file001 = new html.HttpRequest();
     html.HttpRequest file002 = new html.HttpRequest();
     file001.responseType = "blob";

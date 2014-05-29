@@ -10,38 +10,38 @@ class TorrentFile {
   static final String KEY_PIECE = "piece";
   static final String KEY_PATH = "path";
 
-  Map mMap = {};
+  Map mMetadata = {};
   data.ByteBuffer piece = null;
   int piece_length = 0;
 
   TorrentFile.nullobject() {
-    mMap = {};
+    mMetadata = {};
   }
 
   TorrentFile.loadTorrentFileBuffer(data.Uint8List buffer) {
-    mMap = Bencode.decode(buffer);
+    mMetadata = Bencode.decode(buffer);
   }
 
   TorrentFile.torentmap(Map map) {
-    mMap = map;
+    mMetadata = map;
   }
 
   String get announce {
-    if (mMap.containsKey(KEY_ANNOUNCE)) {
-      return objectToString(mMap[KEY_ANNOUNCE]);
+    if (mMetadata.containsKey(KEY_ANNOUNCE)) {
+      return objectToString(mMetadata[KEY_ANNOUNCE]);
     } else {
       return "";
     }
   }
 
   void set announce(String v) {
-    mMap[KEY_ANNOUNCE] = v;
+    mMetadata[KEY_ANNOUNCE] = v;
   }
 
   TorrentFileInfo mInfo = null;
   TorrentFileInfo get info {
     if (mInfo == null) {
-      mInfo = new TorrentFileInfo(mMap);
+      mInfo = new TorrentFileInfo(mMetadata);
     }
     return mInfo;
   }
