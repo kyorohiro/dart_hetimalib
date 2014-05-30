@@ -26,7 +26,7 @@ class TorrentFileCreator {
   async.Future<WriteResult> saveTorrentFile(TorrentFile target, HetimaFile output) {
     async.Completer<WriteResult> c = new async.Completer();
     data.Uint8List buffer = Bencode.encode(target.mMetadata);
-    output.write(buffer).then((WriteResult ret) {
+    output.write(buffer, -1).then((WriteResult ret) {
       c.complete(ret);
     });
     return c.future;

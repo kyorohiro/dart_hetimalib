@@ -44,7 +44,7 @@ class HetimaFileGet extends HetimaFile {
     _mPath = path;
   }
 
-  async.Future<WriteResult> write(core.Object buffer) {
+  async.Future<WriteResult> write(core.Object buffer, core.int start) {
     return new async.Completer<WriteResult>().future;
   }
 
@@ -132,10 +132,16 @@ class HetimaFileFS extends HetimaFile {
     return completer.future;
   }
 
-  async.Future<WriteResult> write(core.Object buffer) {
+  async.Future<WriteResult> write(core.Object buffer, core.int start) {
     init();
     async.Completer<WriteResult> completer = new async.Completer();
     _fileEntry.createWriter().then((html.FileWriter writer) {
+      writer.onWrite.listen((html.ProgressEvent e){
+        completer.complete(new WriteResult());
+      });
+      if(start > 0) {
+        writer.seek(start);
+      }
       writer.write(new html.Blob([buffer]));
     });
   }
