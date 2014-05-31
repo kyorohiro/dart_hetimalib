@@ -7,7 +7,7 @@ class HetimaFileBlob extends HetimaFile {
     _mBlob = bl;
   }
 
-  async.Future<WriteResult> write(core.Object o) {
+  async.Future<WriteResult> write(core.Object o, core.int start) {
     return null;
   }
 
@@ -111,51 +111,62 @@ class HetimaFileFS extends HetimaFile {
   HetimaFileFS(core.String name) {
     fileName = name;
   }
-  void init() {
+
+  async.Future<html.Entry> init() {
+    async.Completer<html.Entry> completer = new async.Completer();
     if (_fileEntry != null) {
-      return;
+      completer.complete(_fileEntry);
+      return completer.future;
     }
     html.window.requestFileSystem(1024).then((html.FileSystem e) {
-      e.root.getFile(fileName).then((html.Entry e) {
+      e.root.createFile(fileName).then((html.Entry e) {
         _fileEntry = (e as html.FileEntry);
+        completer.complete(_fileEntry);
+      }).catchError((es){
+        completer.complete(null);
       });
     });
+    return completer.future;
   }
 
   async.Future<core.int> getLength() {
-    init();
     async.Completer<core.int> completer = new async.Completer();
-    html.FileReader reader = new html.FileReader();
-    _fileEntry.file().then((html.File f) {
-      completer.complete(f.size);
+    init().then((e) {
+      html.FileReader reader = new html.FileReader();
+      _fileEntry.file().then((html.File f) {
+        completer.complete(f.size);
+      });
     });
     return completer.future;
   }
 
   async.Future<WriteResult> write(core.Object buffer, core.int start) {
-    init();
     async.Completer<WriteResult> completer = new async.Completer();
-    _fileEntry.createWriter().then((html.FileWriter writer) {
-      writer.onWrite.listen((html.ProgressEvent e){
-        completer.complete(new WriteResult());
+    init().then((e) {
+      _fileEntry.createWriter().then((html.FileWriter writer) {
+        writer.onWrite.listen((html.ProgressEvent e) {
+          completer.complete(new WriteResult());
+        });
+        if (start > 0) {
+          writer.seek(start);
+        }
+        writer.write(new html.Blob([buffer]));
       });
-      if(start > 0) {
-        writer.seek(start);
-      }
-      writer.write(new html.Blob([buffer]));
     });
+    return completer.future;
   }
 
   async.Future<ReadResult> read(core.int start, core.int end) {
-    init();
-    async.Completer<ReadResult> completer = new async.Completer();
-    html.FileReader reader = new html.FileReader();
-    _fileEntry.file().then((html.File f) {
-      reader.onLoad.listen((html.ProgressEvent e) {
-        completer.complete(reader.result);
+    async.Completer<ReadResult> c_ompleter = new async.Completer();
+    init().then((e) {
+      html.FileReader reader = new html.FileReader();
+      _fileEntry.file().then((html.File f) {
+        reader.onLoad.listen((html.ProgressEvent e) {
+          c_ompleter.complete(new ReadResult(ReadResult.OK, reader.result));
+        });
+        reader.readAsArrayBuffer(f.slice(start, end));
       });
-      reader.readAsArrayBuffer(f.slice(start, end));
     });
-    return completer.future;
+    return c_ompleter.future;
   }
 }

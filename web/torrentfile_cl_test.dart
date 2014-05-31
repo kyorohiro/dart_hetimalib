@@ -112,8 +112,7 @@ void test_bencode() {
       hetima_cl.HetimaFileBlob file = new hetima_cl.HetimaFileBlob(new html.Blob([file001.response, file002.response]));
       h.createPieceHash(file, 16 * 1024).then((hetima.CreatePieceHashResult r) {
         unit.test("005 hetimafile get double", () {
-          List<int> expect = 
-              [149,96,47,41,153,193,171,203,165,128,108,193,118,11,175,49,229,27,231,149];
+          List<int> expect = [149, 96, 47, 41, 153, 193, 171, 203, 165, 128, 108, 193, 118, 11, 175, 49, 229, 27, 231, 149];
           unit.expect(20, r.pieceBuffer.size());
           for (int i = 0; i < r.pieceBuffer.size(); i++) {
             unit.expect(expect[i], r.pieceBuffer.toList()[i]);
@@ -126,13 +125,25 @@ void test_bencode() {
     });
     file001.send();
   }
-
   {
     hetima_cl.HetimaFileGet file = new hetima_cl.HetimaFileGet("testdata/1kb/1k.txt");
     hetima.TorrentFileCreator c = new hetima.TorrentFileCreator();
     c.name = "1k.txt";
-    c.createFromSingleFile(file).then((hetima.TorrentFileCreatorResult e){
-      
+    c.announce = "http://www.example.com/tracker:6969";
+    c.createFromSingleFile(file).then((hetima.TorrentFileCreatorResult e) {
+      e.torrentFile;
+      List<int> expect = [196, 42, 125, 9, 64, 47, 78, 143, 209, 15, 188, 87, 124, 199, 203, 157, 198, 52, 62, 142];
+      unit.test("006 create torrent", () {
+        unit.expect(20, e.torrentFile.info.piece.length);
+        for (int i = 0; i < e.torrentFile.info.piece.length; i++) {
+          unit.expect(expect[i], e.torrentFile.info.piece[i]);
+        }
+        unit.expect(16 * 1024, e.torrentFile.info.piece_length);
+        unit.expect("http://www.example.com/tracker:6969", e.torrentFile.announce);
+        unit.expect(1, e.torrentFile.info.files.size);
+        unit.expect(1024, e.torrentFile.info.files.path[0].length);
+        unit.expect("1k.txt", e.torrentFile.info.files.path[0].pathAsString);
+      });
     });
   }
 }

@@ -8,18 +8,20 @@ class TorrentFileCreator {
   async.Future<TorrentFileCreatorResult> createFromSingleFile(HetimaFile target) {
     async.Completer<TorrentFileCreatorResult> ret = new async.Completer();
     TorrentPieceHashCreator helper = new TorrentPieceHashCreator();
+    target.getLength().then((int targetLength){
     helper.createPieceHash(target, piececSize).then((CreatePieceHashResult r) {
       Map file = {};
       Map info = {};
       file[TorrentFile.KEY_ANNOUNCE] = announce;
       file[TorrentFile.KEY_INFO] = info;
+      info[TorrentFile.KEY_NAME] = name;
       info[TorrentFile.KEY_PIECE_LENGTH] = piececSize;
-      info[TorrentFile.KEY_LENGTH] = r.pieceBuffer.size();
+      info[TorrentFile.KEY_LENGTH] = targetLength;
       info[TorrentFile.KEY_PIECE] = r.pieceBuffer.toUint8List();
       TorrentFileCreatorResult result = new TorrentFileCreatorResult(TorrentFileCreatorResult.OK);
       result.torrentFile = new TorrentFile.torentmap(file);
       ret.complete(result);
-    });
+    });});
     return ret.future;
   }
 
