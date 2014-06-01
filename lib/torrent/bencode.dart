@@ -121,7 +121,7 @@ class Bencoder {
 
   data.Uint8List enode(Object obj) {
     builder.clear();
-    _innerEenode(obj);
+    encodeObject(obj);
     return builder.toUint8List();
   }
 
@@ -139,7 +139,7 @@ class Bencoder {
     builder.appendString("d");
     for(var key in keys) {
       encodeString(key);
-      _innerEenode(obj[key]);
+      encodeObject(obj[key]);
     }
     builder.appendString("e");
   }
@@ -147,12 +147,12 @@ class Bencoder {
   void encodeList(List list) {
     builder.appendString("l");
     for(int i=0;i<list.length;i++) {
-      _innerEenode(list[i]);
+      encodeObject(list[i]);
     }
     builder.appendString("e");
   }
 
-  void _innerEenode(Object obj) {
+  void encodeObject(Object obj) {
     if(obj is num) {
       encodeNumber(obj);
     } else if(identical(obj, true)) {
