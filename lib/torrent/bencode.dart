@@ -130,6 +130,11 @@ class Bencoder {
     builder.appendString(""+buffer.length.toString()+":"+obj);
   }
 
+  void encodeUInt8List(data.Uint8List buffer) {
+    builder.appendString(""+buffer.lengthInBytes.toString()+":");
+    builder.appendUint8List(buffer, 0, buffer.length);
+  }
+
   void encodeNumber(num num) {
     builder.appendString("i"+num.toString()+"e");
   }
@@ -163,6 +168,10 @@ class Bencoder {
       encodeString("null");
     } else if(obj is String) {
       encodeString(obj);    
+    } else if(obj is data.ByteBuffer) { 
+      encodeUInt8List(new data.Uint8List.view(obj));   
+    } else if(obj is data.Uint8List) { 
+      encodeUInt8List(obj);   
     } else if(obj is List) {
       encodeList(obj);
     } else if(obj is Map) {
