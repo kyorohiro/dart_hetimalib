@@ -143,6 +143,7 @@ class HetimaFileFS extends HetimaFile {
     return completer.future;
   }
 
+
   async.Future<WriteResult> write(core.Object buffer, core.int start) {
     async.Completer<WriteResult> completer = new async.Completer();
     init().then((e) {
