@@ -112,6 +112,9 @@ class HetimaFileFS extends HetimaFile {
     fileName = name;
   }
 
+  async.Future<html.Entry> getEntry() {
+    return init();
+  }
   async.Future<html.Entry> init() {
     async.Completer<html.Entry> completer = new async.Completer();
     if (_fileEntry != null) {
