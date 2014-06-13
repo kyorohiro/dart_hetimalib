@@ -6,7 +6,7 @@ import '00_hetimafile_cl_test.dart' as hetimafilecl_test;
 
 void main() {
   print("start test");
-  torrentfilecl_test.test_bencode();
-  hetimafilecl_test.test_bencode();
+  torrentfilecl_test.main();
+  hetimafilecl_test.main();
 }
 

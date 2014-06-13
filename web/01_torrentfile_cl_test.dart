@@ -6,7 +6,7 @@ import 'dart:convert' as convert;
 import 'dart:html' as html;
 import 'dart:async' as async;
 
-void test_bencode() {
+void main() {
   unit.test("fs check", () {
     html.window.requestFileSystem(1024).then((html.FileSystem e) {
       print("fs:fullpath:" + e.root.fullPath);

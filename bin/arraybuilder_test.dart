@@ -1,7 +1,7 @@
 import 'package:unittest/unittest.dart' as unit;
 import 'package:hetima/hetima.dart' as hetima;
 
-void test_arraybuilder() {
+void main() {
   unit.test("arraybuilder: init", (){
    hetima.ArrayBuilder builder = new hetima.ArrayBuilder();
    unit.expect(0, builder.size());

@@ -7,25 +7,21 @@ import 'dart:html' as html;
 import 'dart:async' as async;
 
 void main() {
-  print("start test");
-  test_bencode();
-}
-void test_bencode() {
-  print("start");
-  {    
+  unit.test("A001", () {
+    bool isTested = false;
     hetima_cl.HetimaFileFS file = new hetima_cl.HetimaFileFS("test.txt");
-    file.write("test", 0).then((hetima.WriteResult r){
-      file.getLength().then((int length) {
-        unit.test("A001", (){
+    new async.Future.sync(() {
+      return file.write("test", 0).then((hetima.WriteResult r) {
+        return file.getLength().then((int length) {
           unit.expect(4, length);
-          file.read(0, 4).then((hetima.ReadResult r){
-            unit.test("A002", (){
-              unit.expect("test", convert.UTF8.decode(r.buffer.toList()));
-            });
+          return file.read(0, 4).then((hetima.ReadResult r) {
+            unit.expect("test", convert.UTF8.decode(r.buffer.toList()));
+            isTested = true;
           });
         });
       });
+    }).then((_) {
+      unit.expect(isTested, true);
     });
-  }
-  print("end");
+  });
 }

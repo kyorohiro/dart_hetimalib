@@ -3,7 +3,7 @@ import 'package:hetima/hetima.dart' as hetima;
 import 'dart:typed_data' as type;
 import 'dart:convert' as convert;
 
-void test_kbucket() {
+void main() {
   unit.test("kbucket: nodeid", () {
     hetima.NodeId nodeid = new hetima.NodeId.random();
     print(""+nodeid.toString());
