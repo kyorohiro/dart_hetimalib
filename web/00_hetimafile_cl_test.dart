@@ -7,7 +7,7 @@ import 'dart:html' as html;
 import 'dart:async' as async;
 
 void main() {
-  unit.test("A001", () {
+  unit.test("filesystem write/read", () {
     bool isTested = false;
     hetima_cl.HetimaFileFS file = new hetima_cl.HetimaFileFS("test.txt");
     new async.Future.sync(() {
