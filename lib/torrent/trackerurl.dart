@@ -6,14 +6,15 @@ class TrackerUrl
   static const String KEY_PEER_ID = "peer_id";
   static const String KEY_PORT = "port";
   static const String KEY_EVENT = "event";
-  static const String VALUE_EVENT_STARTEd = "started";
+  static const String VALUE_EVENT_STARTED = "started";
   static const String VALUE_EVENT_STOPPED = "stopped";
   static const String VALUE_EVENT_COMPLETED = "completed";
   static const String KEY_DOWNLOADED = "downloaded";
   static const String KEY_UPLOADED = "uploaded";
   static const String KEY_LEFT = "left";
   
-  String host ="127.0.0.1";
+  String trackerHost ="127.0.0.1";
+  int trackerPort = 6969;
   String path ="/announce";
   String scheme = "http";
   int port = 6969;
@@ -26,7 +27,7 @@ class TrackerUrl
   int left = 0;
 
   String toString() {
-    return scheme+"://"+host+":"+port.toString()+""+path+toHeader();
+    return scheme+"://"+trackerHost+":"+trackerPort.toString()+""+path+toHeader();
   }
 
   String toHeader() {
