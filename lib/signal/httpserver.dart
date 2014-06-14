@@ -1,10 +1,10 @@
 part of hetima_sv;
 
 class HttpServer {
-  core.String _rootpath = "../..";
+  String _rootpath = "../..";
   io.WebSocket _websocket;
-  core.int _port = 8081;
-  core.String _host = "localhost";
+  int _port = 8081;
+  String _host = "localhost";
 
 
   void handleError(io.HttpRequest req, io.HttpResponse res) {
@@ -12,7 +12,7 @@ class HttpServer {
     res.close();
   }
 
-  void handleDir(io.HttpRequest req, io.HttpResponse res, core.String path) {
+  void handleDir(io.HttpRequest req, io.HttpResponse res, String path) {
     io.Directory dir = new io.Directory(path);
     res.statusCode = 200;
     res.headers.set("Content-Type", "text/html");
@@ -25,7 +25,7 @@ class HttpServer {
   }
 
   void handleFile(io.HttpRequest req, io.HttpResponse res, io.File fpath) {
-    fpath.readAsBytes().then((core.List<core.int> buffer) {
+    fpath.readAsBytes().then((List<int> buffer) {
       res.statusCode = 200;
       if (fpath.path.endsWith(".txt")) {
         res.headers.set("Content-Type", "text/plain");
@@ -40,15 +40,15 @@ class HttpServer {
   }
 
   void onListen(io.HttpRequest request) {
-    core.print("onListen...:" + request.uri.path + "," + request.headers.host);
-    core.String path = _rootpath + request.uri.path;
+    print("onListen...:" + request.uri.path + "," + request.headers.host);
+    String path = _rootpath + request.uri.path;
     io.FileSystemEntity.isDirectory(path).then((isDir) {
       if (isDir == true) {
         handleDir(request, request.response, path);
         return;
       } else {
         io.File fpath = new io.File(path);
-        fpath.exists().then((core.bool isThere) {
+        fpath.exists().then((bool isThere) {
           if (isThere) {
             handleFile(request, request.response, fpath);
           } else {

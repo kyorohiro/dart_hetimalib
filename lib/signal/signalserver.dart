@@ -1,11 +1,11 @@
 part of hetima_sv;
 
 class SignalServer {
-  core.String _address = "localhost";
-  core.int port = 8082;
+  String _address = "localhost";
+  int port = 8082;
   io.HttpServer _server;
-  core.List<io.WebSocket> _temporaryConnectionList = new core.List();
-  core.Map<core.String, core.Map> _connectionList = new core.Map();
+  List<io.WebSocket> _temporaryConnectionList = new List();
+  Map<String, Map> _connectionList = new Map();
 
   void start() {
     io.HttpServer.bind(_address, port).then((io.HttpServer server) {
@@ -24,7 +24,7 @@ class SignalServer {
   }
 
   void onConnect(io.WebSocket socket) {
-    core.print("connect");
+    print("connect");
     _temporaryConnectionList.add(socket);
     socket.listen((dynmics) {
       onWsRceive(socket, dynmics);
@@ -35,27 +35,27 @@ class SignalServer {
     //*/
   }
 
-  void onWsRceive(io.WebSocket socket, core.Object message) {
-    if (message is core.String) {
-      core.print("receive:" + message);
+  void onWsRceive(io.WebSocket socket, Object message) {
+    if (message is String) {
+      print("receive:" + message);
     } else if (message is type.ByteBuffer) {
       type.ByteBuffer buffer = message;
       type.Uint8List accessBuffer = new type.Uint8List.view(buffer);
-      core.print(convert.JSON.encode(Bencode.decode(accessBuffer)));
+      print(convert.JSON.encode(Bencode.decode(accessBuffer)));
       onReceiveSignalMessage(socket, Bencode.decode(accessBuffer));
     } else if (message is type.Uint8List) {
       type.Uint8List buffer = message;
       type.Uint8List accessBuffer = buffer;
-      core.print(convert.JSON.encode(Bencode.decode(accessBuffer)));
+      print(convert.JSON.encode(Bencode.decode(accessBuffer)));
       onReceiveSignalMessage(socket, Bencode.decode(accessBuffer));
     } else {
-      core.print("warning:" + message.toString());
-      core.print("warning:" + message.runtimeType.toString());
+      print("warning:" + message.toString());
+      print("warning:" + message.runtimeType.toString());
     }
   }
 
-  void onReceiveSignalMessage(io.WebSocket socket, core.Map message) {
-    core.String action = convert.UTF8.decode(message["action"].toList());
+  void onReceiveSignalMessage(io.WebSocket socket, Map message) {
+    String action = convert.UTF8.decode(message["action"].toList());
     if (action == "join") {
       onJoin(socket, message);
     } else if (action == "pack") {
@@ -63,18 +63,18 @@ class SignalServer {
     }
   }
 
-  void onPack(io.WebSocket socket, core.Map message) {
-    core.String action = convert.UTF8.decode(message["action"].toList());
+  void onPack(io.WebSocket socket, Map message) {
+    String action = convert.UTF8.decode(message["action"].toList());
     
     if (action != "pack") {
       return;
     }
-    core.String from = convert.UTF8.decode(message["from"].toList());
-    core.String to = convert.UTF8.decode(message["to"].toList());
+    String from = convert.UTF8.decode(message["from"].toList());
+    String to = convert.UTF8.decode(message["to"].toList());
   
-    core.print("pack from="+from+",to="+to);
+    print("pack from="+from+",to="+to);
 
-    core.Map p = _connectionList[to];
+    Map p = _connectionList[to];
     if(p==null || p["socket"] == null) {
       return;
     }
@@ -82,12 +82,12 @@ class SignalServer {
     targetSocket.add(Bencode.encode(message).toList());
   }
 
-  void onJoin(io.WebSocket socket, core.Map message) {
-    core.String action = convert.UTF8.decode(message["action"].toList());
+  void onJoin(io.WebSocket socket, Map message) {
+    String action = convert.UTF8.decode(message["action"].toList());
     if (action != "join") {
       return;
     }
-    core.String id = convert.UTF8.decode(message["id"].toList());
+    String id = convert.UTF8.decode(message["id"].toList());
     {
       var pack = {};
       pack["socket"] = socket;
@@ -97,10 +97,10 @@ class SignalServer {
     {
       // respose peer list
       var pack = {};
-      core.List<core.String> peers = pack["peers"] = [];
+      List<String> peers = pack["peers"] = [];
       pack["action"] = "join";
       pack["mode"] = "response";
-      for (core.String key in _connectionList.keys) {
+      for (String key in _connectionList.keys) {
         peers.add(key);
       }
       socket.add(Bencode.encode(pack).toList());
@@ -108,22 +108,22 @@ class SignalServer {
     {
       // broadcast join message to peers.
       var pack = {};
-      core.List<core.String> peers = pack["peers"] = [];
+      List<String> peers = pack["peers"] = [];
       pack["action"] = "join";
       pack["mode"] = "broadcast";
       pack["from"] = id;
-      for (core.String key in _connectionList.keys) {
+      for (String key in _connectionList.keys) {
         io.WebSocket targetSocket = _connectionList[key]["socket"];
         targetSocket.add(Bencode.encode(pack).toList());
       }
-      core.print("fin onJoin");
+      print("fin onJoin");
     }
   }
 
-  void onWsDone(io.WebSocket socket, core.String message) {
-    core.print(message);
+  void onWsDone(io.WebSocket socket, String message) {
+    print(message);
     _temporaryConnectionList.remove(socket);
-    for (core.String key in _connectionList.keys) {
+    for (String key in _connectionList.keys) {
       if (_connectionList[key]["socket"] == socket) {
         _connectionList.remove(key);
         return;
@@ -131,7 +131,7 @@ class SignalServer {
     }
   }
 
-  void onError(core.String message) {
-    core.print(message);
+  void onError(String message) {
+    print(message);
   }
 }
