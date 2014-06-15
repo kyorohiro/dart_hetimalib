@@ -46,16 +46,19 @@ class TrackerClient {
             print("--[A3]-" + contents.runtimeType.toString());
             print("listen:" + contents.length.toString());
             print("ret:" + convert.UTF8.decode(contents));
-          }).onDone(() {
+          })
+          .onDone(() {
             print("--[A4]-");
             print("done");
+            ret.complete(new RequestResult());
           });
         });
       });
     })).catchError((e){
       ret.complete(new RequestResult());
+      print("##er end");
     }).then((e){
-      ret.complete(new RequestResult());      
+      print("###done end");
     });
     return ret.future;
   }

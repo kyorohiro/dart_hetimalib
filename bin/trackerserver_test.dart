@@ -12,7 +12,9 @@ void main() {
     TrackerClient client = new TrackerClient();
     client.trackerHost = "127.0.0.1";
     client.trackerPort = 6969;
-    client.request();    
+    client.request().then((RequestResult r){
+      print("fff");
+    });    
   });
  
 }
