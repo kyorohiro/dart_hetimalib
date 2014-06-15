@@ -7,6 +7,12 @@ void main() {
   print("---");
   TrackerServer tracker = new TrackerServer("127.0.0.1", 6969);
   tracker.add("dummy");
-  tracker.start();
+  tracker.start().then((StartResult result){
+    print("--[2]-");
+    TrackerClient client = new TrackerClient();
+    client.trackerHost = "127.0.0.1";
+    client.trackerPort = 6969;
+    client.request();    
+  });
  
 }
