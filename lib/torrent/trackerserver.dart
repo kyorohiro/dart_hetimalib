@@ -49,7 +49,11 @@ class TrackerServer {
       String downloadedAsString = parameter[TrackerUrl.KEY_DOWNLOADED];
       String uploadedAsString = parameter[TrackerUrl.KEY_UPLOADED];
       String leftAsString = parameter[TrackerUrl.KEY_LEFT];
-      request.response.write("d5:errore");
+      if(null == find(infoHashAsString)) {
+        request.response.write("d5:errore");
+      } else {
+        request.response.write("d2:oke");        
+      }
     } finally {
       request.response.close();
     }
