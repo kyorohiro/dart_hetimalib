@@ -31,6 +31,13 @@ class ArrayBuilder {
       _max = nextMax;
     }
   }
+
+  void appendByte(int v) {
+    update(1);
+    _buffer8[_length] = v;
+    _length += 1;    
+  }
+
   void appendString(String text) {
     List<int> code = convert.UTF8.encode(text);
     update(code.length);

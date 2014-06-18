@@ -41,7 +41,7 @@ class TrackerServer {
     request.response.statusCode = io.HttpStatus.OK;
     try {
       request.connectionInfo.remoteAddress;
-      Map<String,String> parameter = request.uri.queryParameters;
+      Map<String, String> parameter = request.uri.queryParameters;
       String portAsString = parameter[TrackerUrl.KEY_PORT];
       String eventAsString = parameter[TrackerUrl.KEY_EVENT];
       String infoHashAsString = parameter[TrackerUrl.KEY_INFO_HASH];
@@ -49,19 +49,19 @@ class TrackerServer {
       String downloadedAsString = parameter[TrackerUrl.KEY_DOWNLOADED];
       String uploadedAsString = parameter[TrackerUrl.KEY_UPLOADED];
       String leftAsString = parameter[TrackerUrl.KEY_LEFT];
-      if(null == find(infoHashAsString)) {
+      if (null == find(infoHashAsString)) {
         request.response.write("d5:errore");
       } else {
-        request.response.write("d2:oke");        
+        request.response.write("d2:oke");
       }
     } finally {
       request.response.close();
     }
   }
-  
+
   PeerList find(String infoHash) {
-    for(PeerList l in _list) {
-      if(l.isManagedInfo(infoHash)){
+    for (PeerList l in _list) {
+      if (l.isManagedInfo(infoHash)) {
         return l;
       }
     }
@@ -89,4 +89,18 @@ class PeerList {
 class StopResult {
 }
 class StartResult {
+}
+
+class PeerAddressCreator {
+  static async.Future<PeerAddress> PeerAddress(List<int>peerid, String host, int port) {
+    async.Completer<PeerAddress> ret;
+    io.InternetAddress.lookup(host).then((List<io.InternetAddress> adds){
+      if(adds.length == 0) {
+        ret.complete(null);        
+      } else {
+        ret.complete(new PeerAddress(peerid, host, adds[0], port));
+      }
+    });
+    return ret.future;
+  }
 }
