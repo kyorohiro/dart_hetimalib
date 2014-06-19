@@ -16,14 +16,23 @@ class PercentEncode
     14:"E", 15:"F"
    };
 
-  data.Uint8List decode(String message) {
+  static PercentEncode _sencoder = new PercentEncode();
+  static data.Uint8List decode (String message) {
+    return _sencoder.decodeWork(message);
+  }
+
+  static String encode(List<int> target) {
+    return _sencoder.encodeWork(target);
+  }
+
+  data.Uint8List decodeWork(String message) {
     builder.clear();
     List<int> target = convert.UTF8.encode(message);
     int count = target.length;
     for(int i=0;i<count;i++) {
       if(message[i] == '%') {
-        int f = 0xFF&DECODE_TABLE[message[i++]];
-        int e = 0xFF&DECODE_TABLE[message[i++]];
+        int f = 0xFF&DECODE_TABLE[message[++i]];
+        int e = 0xFF&DECODE_TABLE[message[++i]];
         int r = (f<<4)|e;
         builder.appendByte(r);
       }
@@ -31,7 +40,7 @@ class PercentEncode
     return builder.toUint8List();
   }
 
-  String encode(List<int> target) {
+  String encodeWork(List<int> target) {
     builder.clear();
     int count = target.length;
     for(int i=0;i<count;i++) {
@@ -39,7 +48,7 @@ class PercentEncode
         int e = ((0x0f&target[i]));
         builder.appendString("%"+ENCODE_TABLE[f] + ENCODE_TABLE[e]);
     }    
-    return builder.toString();
+    return builder.toText();
   }
 
 }
