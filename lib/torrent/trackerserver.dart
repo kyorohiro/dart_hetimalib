@@ -40,7 +40,6 @@ class TrackerServer {
   void onListen(io.HttpRequest request) {
     request.response.statusCode = io.HttpStatus.OK;
     try {
-      request.connectionInfo.remoteAddress;
       Map<String, String> parameter = request.uri.queryParameters;
       String portAsString = parameter[TrackerUrl.KEY_PORT];
       String eventAsString = parameter[TrackerUrl.KEY_EVENT];
