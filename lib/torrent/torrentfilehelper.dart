@@ -45,6 +45,17 @@ class TorrentFileCreatorResult {
   }
 }
 
+class TorrentInfoHashCreator {
+  async.Future<List<int>> createInfoHash(TorrentFile file) {
+    async.Completer<Object> compleator = new async.Completer();
+    data.Uint8List list = Bencode.encode(file.mMetadata[TorrentFile.KEY_INFO]);
+    crypto.SHA1 sha1 = new crypto.SHA1();
+    sha1.add(list.toList());
+    compleator.complete(sha1.close());
+    return compleator.future;
+  }
+}
+
 class TorrentPieceHashCreator {
 
   async.Future<CreatePieceHashResult> createPieceHash(HetimaFile file, int pieceLength) {
@@ -53,6 +64,7 @@ class TorrentPieceHashCreator {
     result.pieceLength = pieceLength;
     result.targetFile = file;
     _createPieceHash(compleater, result);
+    
     return compleater.future;
   }
 

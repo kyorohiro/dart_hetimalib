@@ -106,4 +106,24 @@ void main() {
       });
     });
   }
+
+  {
+    bool testable = false;
+    new async.Future.sync(() {
+      hetima_cl.HetimaFileGet file = new hetima_cl.HetimaFileGet("testdata/1k.txt.torrent");
+      return file.getLength().then((int length) {
+        return file.read(0, length).then((hetima.ReadResult r){
+          hetima.TorrentFile f = new hetima.TorrentFile.loadTorrentFileBuffer(r.buffer);
+          hetima.TorrentInfoHashCreator creator = new hetima.TorrentInfoHashCreator();
+          return creator.createInfoHash(f);
+        });
+      });
+    }).then((List<int> hash) {
+      unit.test("006 create torrent", () {
+      List<int> expect = [95, 198, 184, 162, 100, 99, 51, 245, 99, 157, 78, 149, 43, 155, 184, 173, 238, 18, 26, 189];
+      print("[Z[Z]Z]="+hash.toString());
+      unit.expect(hash, expect);
+      });
+    });
+  }
 }
