@@ -25,6 +25,9 @@ class TrackerUrl {
   int uploaded = 0;
   int left = 0;
 
+  void set announce(String announce) {
+    announce;
+  }
   String toString() {
     return scheme + "://" + trackerHost + ":" + trackerPort.toString() + "" + path + toHeader();
   }
@@ -32,6 +35,7 @@ class TrackerUrl {
   String toHeader() {
     return "?" + KEY_INFO_HASH + "=" + infoHashValue + "&" + KEY_PORT + "=" + port.toString() + "&" + KEY_PEER_ID + "=" + peerID + "&" + KEY_EVENT + "=" + event + "&" + KEY_UPLOADED + "=" + uploaded.toString() + "&" + KEY_DOWNLOADED + "=" + downloaded.toString() + "&" + KEY_LEFT + "=" + left.toString();
   }
+
 }
 
 class TrackerResponse {

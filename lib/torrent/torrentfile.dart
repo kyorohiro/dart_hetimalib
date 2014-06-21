@@ -50,6 +50,7 @@ class TorrentFile {
     TorrentInfoHashCreator creator = new TorrentInfoHashCreator();
     return creator.createInfoHash(this);
   }
+
 }
 
 class TorrentFileInfo {
