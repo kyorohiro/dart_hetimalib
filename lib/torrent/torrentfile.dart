@@ -90,6 +90,15 @@ class TorrentFileFiles {
     mInfo = info;
   }
 
+  int get dataSize {
+    int ret = 0;
+    List<TorrentFileFile> p = path;
+    for(TorrentFileFile f in p) {
+      ret +=f.length;
+    }
+    return ret;
+  }
+
   int get size {
     if (mInfo.mInfo.containsKey(TorrentFile.KEY_FILES)) {
       return (mInfo.mInfo[TorrentFile.KEY_FILES] as List).length;
