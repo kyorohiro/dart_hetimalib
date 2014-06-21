@@ -46,6 +46,10 @@ class TorrentFile {
     return mInfo;
   }
 
+  async.Future<List<int>> createInfoSha1() {
+    TorrentInfoHashCreator creator = new TorrentInfoHashCreator();
+    return creator.createInfoHash(this);
+  }
 }
 
 class TorrentFileInfo {
