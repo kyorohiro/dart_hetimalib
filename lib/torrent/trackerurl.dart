@@ -32,6 +32,7 @@ class TrackerUrl {
     scheme = url.scheme;
     path = url.path;
   }
+
   String toString() {
     return scheme + "://" + trackerHost + ":" + trackerPort.toString() + "" + path + toHeader();
   }
