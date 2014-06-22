@@ -8,5 +8,5 @@ import 'dart:convert' as convert;
 import 'dart:async' as async;
 part 'signal/signalserver.dart';
 part 'signal/httpserver.dart';
-part 'torrent/trackerserver.dart';
-part 'torrent/trackerclient.dart';
+part 'tracker/trackerserver.dart';
+part 'tracker/trackerclient.dart';
