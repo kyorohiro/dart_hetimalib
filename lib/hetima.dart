@@ -11,6 +11,7 @@ part 'util/arraybuilder.dart';
 part 'util/percentencode.dart';
 part 'util/httpurl.dart';
 part 'util/rfctable.dart';
+part 'util/shufflelinkedlist.dart';
 part 'torrent/bencode.dart';
 part 'torrent/hetimafile.dart';
 part 'torrent/torrentfile.dart';

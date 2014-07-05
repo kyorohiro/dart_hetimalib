@@ -1,10 +1,10 @@
 name: hetima
-version: 0.0.011
+version: 0.0.012
 author: kyorohiro
 description: A pub package
 homepage: https://github.com/kyorohiro/dart_hetimalib
 environment:
-  sdk: 1.4.3
+  sdk: 1.5.2
 dependencies:
   crypto: any
   unittest: any
