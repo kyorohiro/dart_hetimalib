@@ -4,18 +4,29 @@ class TrackerServer {
   String address;
   int port;
   io.HttpServer _server = null;
-  List<PeerList> _list = new List();
 
+  List<TrackerPeerManager> _peerManagerList = new List();
   TrackerServer(String _address, int _port) {
     address = _address;
     port = _port;
   }
 
   void add(String hash) {
-    PeerList peerlist = new PeerList(hash);
-    if (!_list.contains(peerlist)) {
-      _list.add(new PeerList(hash));
+    //
+    List<int>infoHash = PercentEncode.decode(hash);
+    bool isManaged = false;
+    for(TrackerPeerManager m in _peerManagerList) {
+      if(m.isManagedInfoHash(infoHash)) {
+        isManaged = true;
+      }
     }
+
+    if(isManaged == true) {
+      return;
+    }
+
+    TrackerPeerManager peerManager = new TrackerPeerManager(infoHash);
+    _peerManagerList.add(peerManager);
   }
 
   async.Future<StartResult> start() {
@@ -48,19 +59,28 @@ class TrackerServer {
       String downloadedAsString = parameter[TrackerUrl.KEY_DOWNLOADED];
       String uploadedAsString = parameter[TrackerUrl.KEY_UPLOADED];
       String leftAsString = parameter[TrackerUrl.KEY_LEFT];
-      if (null == find(infoHashAsString)) {
+      List<int> infoHash = PercentEncode.decode(infoHashAsString);
+      TrackerPeerManager manager = find(infoHash); 
+      io.InternetAddress addressAsInet = request.connectionInfo.remoteAddress;
+      String address = addressAsInet.address;
+      List<int> ip = addressAsInet.rawAddress;
+      if (null == manager) {
+        // unmanaged torrent data
         request.response.write("d5:errore");
       } else {
-        request.response.write("d2:oke");
+        // managed torrent data
+        manager.update(new TrackerRequest.fromMap(parameter, address, ip));
+        type.Uint8List buffer = Bencode.encode(manager.createResponse().createResponse(false));
+        request.response.write(buffer.buffer);
       }
     } finally {
       request.response.close();
     }
   }
 
-  PeerList find(String infoHash) {
-    for (PeerList l in _list) {
-      if (l.isManagedInfo(infoHash)) {
+  TrackerPeerManager find(List<int> infoHash) {
+    for (TrackerPeerManager l in _peerManagerList) {
+      if (l.isManagedInfoHash(infoHash)) {
         return l;
       }
     }
@@ -68,38 +88,8 @@ class TrackerServer {
   }
 }
 
-class PeerList {
-  String _hash = "";
-  PeerList(hash) {
-    _hash = hash;
-  }
-
-  operator ==(PeerList peerlist) {
-    return (_hash == peerlist._hash);
-  }
-
-  bool isManagedInfo(String infoHash) {
-    return _hash == infoHash;
-  }
-
-  String get hash => _hash;
-}
 
 class StopResult {
 }
 class StartResult {
-}
-
-class PeerAddressCreator {
-  static async.Future<PeerAddress> PeerAddress(List<int>peerid, String host, int port) {
-    async.Completer<PeerAddress> ret;
-    io.InternetAddress.lookup(host).then((List<io.InternetAddress> adds){
-      if(adds.length == 0) {
-        ret.complete(null);        
-      } else {
-        ret.complete(new PeerAddress(peerid, host, adds[0], port));
-      }
-    });
-    return ret.future;
-  }
 }
