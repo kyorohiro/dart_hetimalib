@@ -50,10 +50,12 @@ class TrackerResponse {
   static final String KEY_IP = "ip";
   static final String KEY_PORT = "port";
   static final String KEY_COMPACT = "compact";
+  static final String KEY_FAILURE_REASON = "failure reason";
 
   int interval = 10;
   List<PeerAddress> peers = [];
-
+  TrackerResponse() {
+  }
   TrackerResponse.bencode(data.Uint8List contents) {
     Map<String,Object> c = Bencode.decode(contents);
     interval = c[KEY_INTERVAL];

@@ -66,7 +66,9 @@ class TrackerServer {
       List<int> ip = addressAsInet.rawAddress;
       if (null == manager) {
         // unmanaged torrent data
-        request.response.write("d5:errore");
+        Map <String, Object> errorResponse = new Map();
+        errorResponse[TrackerResponse.KEY_FAILURE_REASON] = "unmanaged torrent data";
+        request.response.write(Bencode.encode(errorResponse));
       } else {
         // managed torrent data
         manager.update(new TrackerRequest.fromMap(parameter, address, ip));
