@@ -49,8 +49,27 @@ class TrackerResponse {
   static final String KEY_PEER_ID = "peer_id";
   static final String KEY_IP = "ip";
   static final String KEY_PORT = "port";
+  static final String KEY_COMPACT = "compact";
+
   int interval = 10;
   List<PeerAddress> peers = [];
+
+  TrackerResponse.bencode(data.Uint8List contents) {
+    Map<String,Object> c = Bencode.decode(contents);
+    interval = c[KEY_INTERVAL];
+    int compact = c[KEY_COMPACT];
+    if(compact == 1) {
+      
+    } else {
+      List<Object> wpeers= c[KEY_PEERS];
+      for(Map<String,Object> wpeer in wpeers) {
+        data.Uint8List ip = wpeer[KEY_IP];
+        data.Uint8List peeerid = wpeer[KEY_PEER_ID];
+        int port = wpeer[KEY_PORT];
+        peers.add(new PeerAddress(peeerid.toList(), "", ip.toList(), port));
+      }
+    }
+  }
 
   Map<String,Object> createResponse(bool isCompat) {
     Map ret = new Map();
@@ -62,8 +81,8 @@ class TrackerResponse {
       List wpeers = ret[KEY_PEERS] = [];
       for (PeerAddress p in peers) {
         Map wpeer = {};
-        wpeer[KEY_IP] = p.ipAsString;
-        wpeer[KEY_PEER_ID] = p.peerIdAsString;
+        wpeer[KEY_IP] = new data.Uint8List.fromList(p.ip);
+        wpeer[KEY_PEER_ID] = new data.Uint8List.fromList(p.peerId);
         wpeer[KEY_PORT] = p.port;
         wpeers.add(wpeer);
       }

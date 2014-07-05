@@ -33,8 +33,9 @@ class TrackerClient {
   String get header => trackerUrl.toHeader();
 
   async.Future<RequestResult> request() {
-    async.Completer<RequestResult> ret = new async.Completer();
+    async.Completer<RequestResult> completer = new async.Completer();
     io.HttpClient client = new io.HttpClient();
+    ArrayBuilder buffer = new ArrayBuilder();
     (new async.Future.sync(() {
       print("--[A0]-" + trackerHost + "," + trackerPort.toString() + "," + path + header);
       return client.get(trackerHost, trackerPort, path + header)
@@ -46,24 +47,31 @@ class TrackerClient {
             print("--[A3]-" + contents.runtimeType.toString());
             print("listen:" + contents.length.toString());
             print("ret:" + convert.UTF8.decode(contents));
+            buffer.appendIntList(contents, 0, contents.length);
           })
           .onDone(() {
             print("--[A4]-");
             print("done");
-            ret.complete(new RequestResult());
+            TrackerResponse response = new TrackerResponse();
+            completer.complete(new RequestResult(response, RequestResult.OK));
           });
         });
       });
     })).catchError((e){
-      ret.complete(new RequestResult());
+      completer.complete(new RequestResult(null,RequestResult.ERROR));
       print("##er end");
     }).then((e){
       print("###done end");
     });
-    return ret.future;
+    return completer.future;
   }
 }
 
 class RequestResult {
-
+  int code = 0;
+  static final int OK = 0;
+  static final int ERROR = -1;
+  TrackerResponse response = null;
+  RequestResult(TrackerResponse respose, int code) {
+  }
 }
