@@ -15,4 +15,6 @@ part 'torrent/bencode.dart';
 part 'torrent/hetimafile.dart';
 part 'torrent/torrentfile.dart';
 part 'torrent/torrentfilehelper.dart';
-part 'torrent/trackerurl.dart';
+part 'tracker/trackerurl.dart';
+part 'tracker/trackerpeermanager.dart';
+

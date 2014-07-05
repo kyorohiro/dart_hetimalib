@@ -52,7 +52,7 @@ class TrackerResponse {
   int interval = 10;
   List<PeerAddress> peers = [];
 
-  Map createResponse(bool isCompat) {
+  Map<String,Object> createResponse(bool isCompat) {
     Map ret = new Map();
     ret[KEY_INTERVAL] = interval;
     if (isCompat) {
@@ -62,8 +62,8 @@ class TrackerResponse {
       List wpeers = ret[KEY_PEERS] = [];
       for (PeerAddress p in peers) {
         Map wpeer = {};
-        wpeer[KEY_IP] = p.address;
-        wpeer[KEY_PEER_ID] = p.peerId;
+        wpeer[KEY_IP] = p.ipAsString;
+        wpeer[KEY_PEER_ID] = p.peerIdAsString;
         wpeer[KEY_PORT] = p.port;
         wpeers.add(wpeer);
       }
@@ -83,6 +83,13 @@ class PeerAddress {
     address = _address;
     ip = new List.from(_ip);
     port = _port;
+  }
+  
+  String get peerIdAsString => PercentEncode.encode(peerId);
+  String get portdAsString => port.toString();
+  String get ipAsString {
+    return ""+ip[0].toString()+"."+ip[1].toString()
+        +"."+ip[2].toString()+"."+ip[3].toString();
   }
 }
 
