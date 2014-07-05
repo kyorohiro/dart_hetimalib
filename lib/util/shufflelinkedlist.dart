@@ -35,4 +35,7 @@ class ShuffleLinkedList<X>
     return _shuffled[index];
   }
 
+  X getSequential(int index) {
+    return _sequential[index];
+  }
 }

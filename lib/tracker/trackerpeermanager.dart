@@ -24,21 +24,21 @@ class TrackerPeerManager {
     return true;
   }
 
-  List<PeerAddress> managedPeerAddress = new List();
+  ShuffleLinkedList<PeerAddress> managedPeerAddress = new ShuffleLinkedList();
   void update(TrackerRequest request) {
     if(!isManagedInfoHash(request.infoHash)) {
       return;
     }
-    managedPeerAddress.add(new PeerAddress(request.peerId,
+    managedPeerAddress.addLast(new PeerAddress(request.peerId,
         request.address, request.ip, request.port));
   }
 
   TrackerResponse createResponse() {
     TrackerResponse response = new TrackerResponse();
     response.interval = this.interval;
-    
+    managedPeerAddress.shuffle();    
     for(int i=0;i<50&&i<managedPeerAddress.length;i++) {
-      response.peers.add(managedPeerAddress[i]);
+      response.peers.add(managedPeerAddress.getShuffled(i));
     }
 
     return response;

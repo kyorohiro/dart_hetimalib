@@ -5,7 +5,7 @@ import 'package:hetima/hetima.dart';
 
 void main() {
   print("---");
-  unit.test("", () {
+  unit.test("compact=0 001", () {
     List<int> infoHash = PeerIdCreator.createPeerid("heti");
     List<int> peerId = PeerIdCreator.createPeerid("heti");
 
@@ -39,4 +39,61 @@ void main() {
       unit.expect(peers[0][TrackerResponse.KEY_PORT], 8080);
     }
   });
+
+  
+  unit.test("compact=0 002", () {
+    List<int> infoHash = PeerIdCreator.createPeerid("heti");
+    List<int> peerId01 = PeerIdCreator.createPeerid("heti");
+    List<int> peerId02 = PeerIdCreator.createPeerid("heti");
+
+    TrackerPeerManager manager = new TrackerPeerManager(infoHash);
+    Map<String, String> parameter001 = {
+      TrackerUrl.KEY_PORT: "8080",
+      TrackerUrl.KEY_EVENT: ""+TrackerUrl.VALUE_EVENT_STARTED,
+      TrackerUrl.KEY_INFO_HASH: ""+PercentEncode.encode(infoHash),
+      TrackerUrl.KEY_PEER_ID: ""+PercentEncode.encode(peerId01),
+      TrackerUrl.KEY_DOWNLOADED: "0",
+      TrackerUrl.KEY_UPLOADED: "0",
+      TrackerUrl.KEY_LEFT: "1024",
+    };
+    Map<String, String> parameter002 = {
+      TrackerUrl.KEY_PORT: "8081",
+      TrackerUrl.KEY_EVENT: ""+TrackerUrl.VALUE_EVENT_STARTED,
+      TrackerUrl.KEY_INFO_HASH: ""+PercentEncode.encode(infoHash),
+      TrackerUrl.KEY_PEER_ID: ""+PercentEncode.encode(peerId02),
+      TrackerUrl.KEY_DOWNLOADED: "0",
+      TrackerUrl.KEY_UPLOADED: "0",
+      TrackerUrl.KEY_LEFT: "1024",
+    };
+
+    {
+      TrackerRequest request1 = new TrackerRequest.fromMap(parameter001, "1.2.3.4", [1, 2, 3, 4]);
+      manager.update(request1);
+      TrackerRequest request2 = new TrackerRequest.fromMap(parameter002, "2.3.4.5", [2, 3, 4, 5]);
+      manager.update(request2);
+
+      TrackerResponse re = manager.createResponse();
+      Map<String, Object> responseAsMap = re.createResponse(false);
+      unit.expect(responseAsMap[TrackerResponse.KEY_INTERVAL], 60);
+      List<Map<String, Object>> peers = responseAsMap[TrackerResponse.KEY_PEERS];
+
+      if(peers[0][TrackerResponse.KEY_IP] == "1.2.3.4") {
+        unit.expect(peers[0][TrackerResponse.KEY_PEER_ID], PercentEncode.encode(peerId01));
+        unit.expect(peers[0][TrackerResponse.KEY_IP], "1.2.3.4");
+        unit.expect(peers[0][TrackerResponse.KEY_PORT], 8080);
+        unit.expect(peers[1][TrackerResponse.KEY_PEER_ID], PercentEncode.encode(peerId02));
+        unit.expect(peers[1][TrackerResponse.KEY_IP], "2.3.4.5");
+        unit.expect(peers[1][TrackerResponse.KEY_PORT], 8081);
+      } else {
+        unit.expect(peers[1][TrackerResponse.KEY_PEER_ID], PercentEncode.encode(peerId01));
+        unit.expect(peers[1][TrackerResponse.KEY_IP], "1.2.3.4");
+        unit.expect(peers[1][TrackerResponse.KEY_PORT], 8080);
+        unit.expect(peers[0][TrackerResponse.KEY_PEER_ID], PercentEncode.encode(peerId02));
+        unit.expect(peers[0][TrackerResponse.KEY_IP], "2.3.4.5");
+        unit.expect(peers[0][TrackerResponse.KEY_PORT], 8081);
+      }
+      
+    }
+  });
+
 }
