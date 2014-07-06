@@ -53,7 +53,8 @@ class TrackerServer {
   void onListen(io.HttpRequest request) {
     request.response.statusCode = io.HttpStatus.OK;
     try {
-      Map<String, Object> parameter = request.uri.queryParameters;
+      
+      Map<String, String> parameter = HttpUrlDecoder.queryMap(request.uri.query);
       String portAsString = parameter[TrackerUrl.KEY_PORT];
       String eventAsString = parameter[TrackerUrl.KEY_EVENT];
       String infoHashAsString = parameter[TrackerUrl.KEY_INFO_HASH];

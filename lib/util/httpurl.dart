@@ -31,6 +31,13 @@ class HttpUrlDecoder {
 
   static Map<String,String> queryMap(String query) {
     Map<String,String> ret = new Map();
+    List<String> pats = query.split("&");
+    for(String pat in pats) {
+      List<String> pa = pat.split("=");
+      String key = pa[0];
+      String value = pat.substring(key.length+1);
+      ret[key] = value;
+    }
     return ret;
   }
 

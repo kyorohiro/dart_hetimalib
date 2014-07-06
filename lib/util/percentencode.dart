@@ -35,6 +35,8 @@ class PercentEncode
         int e = 0xFF&DECODE_TABLE[message[++i]];
         int r = (f<<4)|e;
         builder.appendByte(r);
+      } else {
+        builder.appendString(message[i]);
       }
     }
     return builder.toUint8List();
