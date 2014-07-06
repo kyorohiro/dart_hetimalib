@@ -13,7 +13,9 @@ class TrackerServer {
 
   void add(String hash) {
     //
-    List<int>infoHash = PercentEncode.decode(hash);
+    
+    type.Uint8List infoHashAs = PercentEncode.decode(hash);
+    List<int> infoHash = infoHashAs.toList();
     bool isManaged = false;
     for(TrackerPeerManager m in _peerManagerList) {
       if(m.isManagedInfoHash(infoHash)) {
@@ -51,7 +53,7 @@ class TrackerServer {
   void onListen(io.HttpRequest request) {
     request.response.statusCode = io.HttpStatus.OK;
     try {
-      Map<String, String> parameter = request.uri.queryParameters;
+      Map<String, Object> parameter = request.uri.queryParameters;
       String portAsString = parameter[TrackerUrl.KEY_PORT];
       String eventAsString = parameter[TrackerUrl.KEY_EVENT];
       String infoHashAsString = parameter[TrackerUrl.KEY_INFO_HASH];
