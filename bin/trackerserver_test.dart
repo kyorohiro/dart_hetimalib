@@ -20,8 +20,7 @@ void main() {
       return client.request();
     });    
   }).then((RequestResult r){
-    r.code;
-    print("fff"+r.code);
+    print("fff"+r.code.toString());
   });  
  
 }
