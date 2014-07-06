@@ -4,6 +4,7 @@ class HttpUrl {
   String scheme = "http";
   String host = "127.0.0.1";
   String path = "";
+  String query = "";
   int port = 80;
 
   static HttpUrl decode() {
@@ -17,7 +18,9 @@ class HttpUrlDecoder {
   List<int> url = null;
   static List<int> SCHEME_HTTP = convert.UTF8.encode("http://");
   static List<int> SCHEME_HTTPS = convert.UTF8.encode("https://");
-  static List<int> PATH = convert.UTF8.encode(RfcTable.RFC3986_RESERVED_AS_STRING+RfcTable.RFC3986_UNRESERVED_AS_STRING);
+  static List<int> PATH = convert.UTF8.encode(RfcTable.RFC3986_PCHAR_AS_STRING + "/");
+  static List<int> QUERY = convert.UTF8.encode(RfcTable.RFC3986_RESERVED_AS_STRING + RfcTable.RFC3986_UNRESERVED_AS_STRING);
+
   HttpUrl decodeUrl(String _url) {
     url = convert.UTF8.encode(_url);
     index = 0;
@@ -27,6 +30,7 @@ class HttpUrlDecoder {
       ret.host = host();
       ret.port = port();
       ret.path = path();
+      ret.query = query();
     } catch (e) {
       return null;
     }
@@ -72,7 +76,7 @@ class HttpUrlDecoder {
         return "";
       }
       index++;
-      
+
       while (matchChar(PATH)) {
         ;
       }
@@ -83,7 +87,26 @@ class HttpUrlDecoder {
       pop();
     }
   }
-
+  String query() {
+    if (url.length <= index) {
+      return "";
+    }
+    if (!(url[index] == 0x3f)) {
+      return "";
+    }
+    index++;
+    try {
+      push();
+      while (matchChar(QUERY)) {
+        ;
+      }
+      List<int> pathAsList = last();
+      String pathAsString = convert.UTF8.decode(pathAsList);
+      return pathAsString;
+    } finally {
+      pop();
+    }
+  }
   int port() {
     try {
       push();
@@ -99,7 +122,7 @@ class HttpUrlDecoder {
         ;
       }
       List<int> portAsList = last();
-      if(portAsList.length <=1) {
+      if (portAsList.length <= 1) {
         return 80;
       }
       String portAsString = convert.UTF8.decode(portAsList);

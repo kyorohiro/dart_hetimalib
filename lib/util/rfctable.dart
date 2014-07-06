@@ -16,6 +16,8 @@ class RfcTable {
   static String GEM_DELIMS_AS_STRING = """:/?#[]@""";
   static String SUB_DELIMS_AS_STRING = """!\$&'()*+,;=""";
   static String PCT_ENCODED_AS_STRING = "%"+HEXDIG_AS_STRING;
+  static String RFC3986_SUB_DELIMS_AS_STRING = "!\$&'()*+,;=";
+  static String RFC3986_PCHAR_AS_STRING = RFC3986_UNRESERVED_AS_STRING+":@"+RFC3986_SUB_DELIMS_AS_STRING+"%";
   static List<int> ALPHA = convert.UTF8.encode(ALPHA_AS_STRING);
   static List<int> DIGIT = convert.UTF8.encode(DIGIT_AS_STRING);
   static List<int> RFC3986_UNRESERVED = convert.UTF8.encode(RFC3986_UNRESERVED_AS_STRING);

@@ -33,7 +33,8 @@ void main() {
      unit.expect(url.scheme, "https");
      unit.expect(url.host, "google.com");
      unit.expect(url.port, 18080);
-     unit.expect(url.path, "/xxx?sdfsdf=%01%02&aasdf_");
+     unit.expect(url.path, "/xxx");
+     unit.expect(url.query, "sdfsdf=%01%02&aasdf_");
   });
 
   // todo error or return null 
@@ -43,6 +44,7 @@ void main() {
      unit.expect(url.scheme, "https");
      unit.expect(url.host, "google.com");
      unit.expect(url.port, 18080);
-     unit.expect(url.path, "/xxx?sdfsdf=%01%02&aasdf_");
+     unit.expect(url.path, "/xxx");
+     unit.expect(url.query, "sdfsdf=%01%02&aasdf_");
   });
 }
