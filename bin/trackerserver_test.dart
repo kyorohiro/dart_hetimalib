@@ -1,4 +1,4 @@
-import 'package:unittest/unittest.dart';
+import 'package:unittest/unittest.dart' as unit;
 import 'dart:async' as async;
 import 'package:hetima/hetima_sv.dart';
 import 'package:hetima/hetima.dart';
@@ -9,6 +9,7 @@ void main() {
   List<int> peerId = PeerIdCreator.createPeerid("heti");
   TrackerServer tracker = new TrackerServer("127.0.0.1", 6969);
   tracker.add(PercentEncode.encode(infoHash));
+  TrackerPeerManager manager = tracker.find(infoHash);
   new async.Future.sync(() {
     return tracker.start().then((StartResult result){
       print("--[2]-");
@@ -20,7 +21,11 @@ void main() {
       return client.request();
     });    
   }).then((RequestResult r){
-    print("fff"+r.code.toString());
+    unit.test("",() {
+      unit.expect(r.code, RequestResult.OK);
+      unit.expect(r.response.interval, manager.interval);
+      unit.expect(r.response.peers[0].port, 6969);
+    });
   });  
  
 }

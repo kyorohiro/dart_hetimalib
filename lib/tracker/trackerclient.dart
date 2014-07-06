@@ -89,6 +89,8 @@ class RequestResult {
   static final int OK = 0;
   static final int ERROR = -1;
   TrackerResponse response = null;
-  RequestResult(TrackerResponse respose, int code) {
+  RequestResult(TrackerResponse _respose, int _code) {
+    code = _code;
+    response = _respose;
   }
 }
