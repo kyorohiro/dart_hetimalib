@@ -18,4 +18,7 @@ part 'torrent/torrentfile.dart';
 part 'torrent/torrentfilehelper.dart';
 part 'tracker/trackerurl.dart';
 part 'tracker/trackerpeermanager.dart';
+part 'tracker/trackerresponse.dart';
+part 'tracker/trackerrequest.dart';
+
 

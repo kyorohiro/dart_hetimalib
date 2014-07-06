@@ -1,5 +1,6 @@
 import 'package:unittest/unittest.dart' as unit;
 import 'dart:async' as async;
+import 'dart:typed_data' as type;
 import 'package:hetima/hetima_sv.dart';
 import 'package:hetima/hetima.dart';
 
@@ -34,7 +35,7 @@ void main() {
       Map<String, Object> responseAsMap = re.createResponse(false);
       unit.expect(responseAsMap[TrackerResponse.KEY_INTERVAL], 60);
       List<Map<String, Object>> peers = responseAsMap[TrackerResponse.KEY_PEERS];
-      unit.expect(peers[0][TrackerResponse.KEY_PEER_ID], PercentEncode.encode(peerId));
+      unit.expect(peers[0][TrackerResponse.KEY_PEER_ID], new type.Uint8List.fromList(peerId));
       unit.expect(peers[0][TrackerResponse.KEY_IP], "1.2.3.4");
       unit.expect(peers[0][TrackerResponse.KEY_PORT], 8080);
     }
@@ -78,17 +79,18 @@ void main() {
       List<Map<String, Object>> peers = responseAsMap[TrackerResponse.KEY_PEERS];
 
       if(peers[0][TrackerResponse.KEY_IP] == "1.2.3.4") {
-        unit.expect(peers[0][TrackerResponse.KEY_PEER_ID], PercentEncode.encode(peerId01));
+        unit.expect(peers[0][TrackerResponse.KEY_PEER_ID], new type.Uint8List.fromList(peerId01));
         unit.expect(peers[0][TrackerResponse.KEY_IP], "1.2.3.4");
         unit.expect(peers[0][TrackerResponse.KEY_PORT], 8080);
-        unit.expect(peers[1][TrackerResponse.KEY_PEER_ID], PercentEncode.encode(peerId02));
+        unit.expect(peers[1][TrackerResponse.KEY_PEER_ID], new type.Uint8List.fromList(peerId02));
         unit.expect(peers[1][TrackerResponse.KEY_IP], "2.3.4.5");
         unit.expect(peers[1][TrackerResponse.KEY_PORT], 8081);
       } else {
-        unit.expect(peers[1][TrackerResponse.KEY_PEER_ID], PercentEncode.encode(peerId01));
+        
+        unit.expect(peers[1][TrackerResponse.KEY_PEER_ID], new type.Uint8List.fromList(peerId01));
         unit.expect(peers[1][TrackerResponse.KEY_IP], "1.2.3.4");
         unit.expect(peers[1][TrackerResponse.KEY_PORT], 8080);
-        unit.expect(peers[0][TrackerResponse.KEY_PEER_ID], PercentEncode.encode(peerId02));
+        unit.expect(peers[0][TrackerResponse.KEY_PEER_ID], new type.Uint8List.fromList(peerId02));
         unit.expect(peers[0][TrackerResponse.KEY_IP], "2.3.4.5");
         unit.expect(peers[0][TrackerResponse.KEY_PORT], 8081);
       }
