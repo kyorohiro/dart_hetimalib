@@ -21,7 +21,25 @@ class HttpUrlDecoder {
   static List<int> PATH = convert.UTF8.encode(RfcTable.RFC3986_PCHAR_AS_STRING + "/");
   static List<int> QUERY = convert.UTF8.encode(RfcTable.RFC3986_RESERVED_AS_STRING + RfcTable.RFC3986_UNRESERVED_AS_STRING);
 
-  HttpUrl decodeUrl(String _url) {
+
+  static HttpUrlDecoder _sDecoder = new HttpUrlDecoder();
+
+  static HttpUrl decodeUrl(String _url) {
+    _sDecoder.clear();
+    return _sDecoder.innerDecodeUrl(_url);
+  }
+
+  static Map<String,String> queryMap(String query) {
+    Map<String,String> ret = new Map();
+    return ret;
+  }
+
+  void clear() {
+    index = 0;
+    url = null;
+  }
+
+  HttpUrl innerDecodeUrl(String _url) {
     url = convert.UTF8.encode(_url);
     index = 0;
     HttpUrl ret = new HttpUrl();
