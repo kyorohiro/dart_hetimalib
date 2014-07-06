@@ -46,12 +46,13 @@ class TrackerClient {
           return response.listen((List<int> contents) {
             print("--[A3]-" + contents.runtimeType.toString());
             print("listen:" + contents.length.toString());
-            print("ret:" + convert.UTF8.decode(contents));
-            buffer.appendIntList(contents, 0, contents.length);
+            print("ret:" + convert.UTF8.decode(contents.toList()));
+            buffer.appendUint8List(contents, 0, contents.length);
           })
           .onDone(() {
             print("--[A4]-");
             print("done");
+            //TrackerResponse response = new TrackerResponse.bencode(buffer.toUint8List());
             TrackerResponse response = new TrackerResponse();
             completer.complete(new RequestResult(response, RequestResult.OK));
           });

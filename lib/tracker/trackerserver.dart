@@ -68,12 +68,12 @@ class TrackerServer {
         // unmanaged torrent data
         Map <String, Object> errorResponse = new Map();
         errorResponse[TrackerResponse.KEY_FAILURE_REASON] = "unmanaged torrent data";
-        request.response.write(Bencode.encode(errorResponse));
+        request.response.add(Bencode.encode(errorResponse).toList());
       } else {
         // managed torrent data
         manager.update(new TrackerRequest.fromMap(parameter, address, ip));
         type.Uint8List buffer = Bencode.encode(manager.createResponse().createResponse(false));
-        request.response.write(buffer.buffer);
+        request.response.add(buffer.toList());
       }
     } finally {
       request.response.close();
