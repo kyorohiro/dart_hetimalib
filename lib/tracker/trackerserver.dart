@@ -62,6 +62,11 @@ class TrackerServer {
       String downloadedAsString = parameter[TrackerUrl.KEY_DOWNLOADED];
       String uploadedAsString = parameter[TrackerUrl.KEY_UPLOADED];
       String leftAsString = parameter[TrackerUrl.KEY_LEFT];
+      String compactAsString = parameter[TrackerUrl.KEY_COMPACT];
+      bool isCompact = false;
+      if(compactAsString != null && compactAsString == "1") {
+        isCompact = true;
+      }
       List<int> infoHash = PercentEncode.decode(infoHashAsString);
       TrackerPeerManager manager = find(infoHash); 
       io.InternetAddress addressAsInet = request.connectionInfo.remoteAddress;
@@ -75,7 +80,7 @@ class TrackerServer {
       } else {
         // managed torrent data
         manager.update(new TrackerRequest.fromMap(parameter, address, ip));
-        type.Uint8List buffer = Bencode.encode(manager.createResponse().createResponse(false));
+        type.Uint8List buffer = Bencode.encode(manager.createResponse().createResponse(isCompact));
         request.response.add(buffer.toList());
       }
     } finally {
