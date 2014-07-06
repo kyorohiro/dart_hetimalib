@@ -11,6 +11,7 @@ class TrackerUrl {
   static const String KEY_DOWNLOADED = "downloaded";
   static const String KEY_UPLOADED = "uploaded";
   static const String KEY_LEFT = "left";
+  static final String KEY_COMPACT = "compact";
 
   String trackerHost = "127.0.0.1";
   int trackerPort = 6969;

@@ -7,7 +7,6 @@ class TrackerResponse {
   static final String KEY_PEER_ID = "peer_id";
   static final String KEY_IP = "ip";
   static final String KEY_PORT = "port";
-  static final String KEY_COMPACT = "compact";
   static final String KEY_FAILURE_REASON = "failure reason";
 
   int interval = 10;
