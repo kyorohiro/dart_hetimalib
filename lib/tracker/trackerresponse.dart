@@ -46,7 +46,7 @@ class TrackerResponse {
         builder.appendIntList(p.ip, 0, p.ip.length);
         builder.appendIntList(ArrayBuilder.parseShortByte(p.port, ArrayBuilder.BYTEORDER_BIG_ENDIAN), 0, 2);
       }
-      ret[KEY_PEER_ID] = builder.toUint8List();
+      ret[KEY_PEERS] = builder.toUint8List();
     } else {
       List wpeers = ret[KEY_PEERS] = [];
       for (PeerAddress p in peers) {

@@ -54,6 +54,7 @@ void main() {
       TrackerUrl.KEY_DOWNLOADED: "0",
       TrackerUrl.KEY_UPLOADED: "0",
       TrackerUrl.KEY_LEFT: "1024",
+      TrackerUrl.KEY_COMPACT: "1",
     };
 
     {
@@ -67,12 +68,15 @@ void main() {
       TrackerRequest request = new TrackerRequest.fromMap(parameter, "1.2.3.4", [1, 2, 3, 4]);
       manager.update(request);
       TrackerResponse re = manager.createResponse();
-      Map<String, Object> responseAsMap = re.createResponse(false);
+      Map<String, Object> responseAsMap = re.createResponse(true);
       unit.expect(responseAsMap[TrackerResponse.KEY_INTERVAL], 60);
-      List<Map<String, Object>> peers = responseAsMap[TrackerResponse.KEY_PEERS];
-      unit.expect(peers[0][TrackerResponse.KEY_PEER_ID], new type.Uint8List.fromList(peerId));
-      unit.expect(peers[0][TrackerResponse.KEY_IP], "1.2.3.4");
-      unit.expect(peers[0][TrackerResponse.KEY_PORT], 8080);
+      type.Uint8List peers = responseAsMap[TrackerResponse.KEY_PEERS];
+      unit.expect(peers[0], 1);
+      unit.expect(peers[1], 2);
+      unit.expect(peers[2], 3);
+      unit.expect(peers[3], 4);
+      unit.expect(peers[4], 0x1F);
+      unit.expect(peers[5], 0x90);
     }
   });
   unit.test("compact=0 002", () {
