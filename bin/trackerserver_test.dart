@@ -16,7 +16,7 @@ void main() {
       TrackerClient client = new TrackerClient();
       client.trackerHost = "127.0.0.1";
       client.trackerPort = 6969;
-      client.peerID =PercentEncode.encode(peerId);
+      client.peerID = PercentEncode.encode(peerId);
       client.infoHash = PercentEncode.encode(infoHash);
       return client.request();
     });    

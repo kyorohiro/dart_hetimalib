@@ -12,18 +12,16 @@ class TrackerServer {
   }
 
   void add(String hash) {
-    //
-    
     type.Uint8List infoHashAs = PercentEncode.decode(hash);
     List<int> infoHash = infoHashAs.toList();
     bool isManaged = false;
-    for(TrackerPeerManager m in _peerManagerList) {
-      if(m.isManagedInfoHash(infoHash)) {
+    for (TrackerPeerManager m in _peerManagerList) {
+      if (m.isManagedInfoHash(infoHash)) {
         isManaged = true;
       }
     }
 
-    if(isManaged == true) {
+    if (isManaged == true) {
       return;
     }
 
@@ -53,28 +51,30 @@ class TrackerServer {
   void onListen(io.HttpRequest request) {
     request.response.statusCode = io.HttpStatus.OK;
     try {
-      
+
       Map<String, String> parameter = HttpUrlDecoder.queryMap(request.uri.query);
-      String portAsString = parameter[TrackerUrl.KEY_PORT];
-      String eventAsString = parameter[TrackerUrl.KEY_EVENT];
+      //
+      //String portAsString = parameter[TrackerUrl.KEY_PORT];
+      //String eventAsString = parameter[TrackerUrl.KEY_EVENT];
       String infoHashAsString = parameter[TrackerUrl.KEY_INFO_HASH];
-      String peeridAsString = parameter[TrackerUrl.KEY_PEER_ID];
-      String downloadedAsString = parameter[TrackerUrl.KEY_DOWNLOADED];
-      String uploadedAsString = parameter[TrackerUrl.KEY_UPLOADED];
-      String leftAsString = parameter[TrackerUrl.KEY_LEFT];
+      //String peeridAsString = parameter[TrackerUrl.KEY_PEER_ID];
+      //String downloadedAsString = parameter[TrackerUrl.KEY_DOWNLOADED];
+      //String uploadedAsString = parameter[TrackerUrl.KEY_UPLOADED];
+      //String leftAsString = parameter[TrackerUrl.KEY_LEFT];
       String compactAsString = parameter[TrackerUrl.KEY_COMPACT];
       bool isCompact = false;
-      if(compactAsString != null && compactAsString == "1") {
+      if (compactAsString != null && compactAsString == "1") {
         isCompact = true;
       }
       List<int> infoHash = PercentEncode.decode(infoHashAsString);
-      TrackerPeerManager manager = find(infoHash); 
+      TrackerPeerManager manager = find(infoHash);
       io.InternetAddress addressAsInet = request.connectionInfo.remoteAddress;
-      String address = addressAsInet.address;
+      // String address = addressAsInet.address;
       List<int> ip = addressAsInet.rawAddress;
+
       if (null == manager) {
         // unmanaged torrent data
-        Map <String, Object> errorResponse = new Map();
+        Map<String, Object> errorResponse = new Map();
         errorResponse[TrackerResponse.KEY_FAILURE_REASON] = "unmanaged torrent data";
         request.response.add(Bencode.encode(errorResponse).toList());
       } else {
@@ -83,8 +83,12 @@ class TrackerServer {
         type.Uint8List buffer = Bencode.encode(manager.createResponse().createResponse(isCompact));
         request.response.add(buffer.toList());
       }
+    } catch (e) {
+      print("error:" + e.toString());
     } finally {
-      request.response.close();
+      try {
+        request.response.close();
+      } catch (f) {}
     }
   }
 
