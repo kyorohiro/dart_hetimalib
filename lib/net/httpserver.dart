@@ -1,10 +1,11 @@
 part of hetima_sv;
 
 class HttpServer {
-  String _rootpath = "../..";
+  String rootpath = "../..";
+  int port = 8081;
+  String host = "localhost";
+
   io.WebSocket _websocket;
-  int _port = 8081;
-  String _host = "localhost";
 
   Map<String,Map> redirect = {"/redirect":{"scheme":"http","host":"localhost","port":8081,"path":"/"}};
 
@@ -23,7 +24,7 @@ class HttpServer {
     res.headers.set("Content-Type", "text/html");
 
     dir.list().listen((io.FileSystemEntity e) {
-      res.write(("<a href=http://" + req.headers.host + ":" + _port.toString() + "" + e.path.substring(_rootpath.length) + ">" + e.path + "</a><br>"));
+      res.write(("<a href=http://" + req.headers.host + ":" + port.toString() + "" + e.path.substring(rootpath.length) + ">" + e.path + "</a><br>"));
     }).onDone(() {
       res.close();
     });
@@ -67,7 +68,7 @@ class HttpServer {
     print("onListen...:" + request.uri.scheme+","
           + request.headers.host+","+request.uri.path + ","
           + ","+request.uri.port.toString()+","+request.uri.query);
-    String path = _rootpath + request.uri.path;
+    String path = rootpath + request.uri.path;
     // redirect
     for(String r in redirect.keys) {
       if(r == request.uri.path) {
@@ -95,7 +96,7 @@ class HttpServer {
   }
 
   void start() {
-    io.HttpServer.bind(_host, _port).then((io.HttpServer server) {
+    io.HttpServer.bind(host, port).then((io.HttpServer server) {
       server.listen(onListen);
     });
   }
