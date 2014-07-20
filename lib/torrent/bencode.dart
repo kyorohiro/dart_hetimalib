@@ -13,17 +13,17 @@ class Bencode {
   }
 
   static String toText(Object oo, String key, String def) {
-    if (!(oo is Map)) {
-      return def;
-    }
-    Map p = oo as Map;
-    if (!p.containsKey(key)) {
-      return def;
-    }
-    if (!(p[key] is data.Uint8List)) {
-      return def;
-    }
     try {
+      if (!(oo is Map)) {
+        return def;
+      }
+      Map p = oo as Map;
+      if (!p.containsKey(key)) {
+        return def;
+      }
+      if (!(p[key] is data.Uint8List)) {
+        return def;
+      }
       return convert.UTF8.decode((p[key] as data.Uint8List).toList());
     } catch (e) {
       return def;
@@ -31,17 +31,17 @@ class Bencode {
   }
 
   static num toNum(Object oo, String key, num def) {
-    if (!(oo is Map)) {
-      return def;
-    }
-    Map p = oo as Map;
-    if (!p.containsKey(key)) {
-      return def;
-    }
-    if (!(p[key] is num)) {
-      return def;
-    }
     try {
+      if (!(oo is Map)) {
+        return def;
+      }
+      Map p = oo as Map;
+      if (!p.containsKey(key)) {
+        return def;
+      }
+      if (!(p[key] is num)) {
+        return def;
+      }
       return p[key];
     } catch (e) {
       return def;
@@ -49,31 +49,39 @@ class Bencode {
   }
 
   static List toList(Object oo, String key) {
-    if (!(oo is Map)) {
+    try {
+      if (!(oo is Map)) {
+        return [];
+      }
+      Map p = oo as Map;
+      if (!p.containsKey(key)) {
+        return [];
+      }
+      if (!(p[key] is List)) {
+        return [];
+      }
+      return p[key];
+    } catch (e) {
       return [];
     }
-    Map p = oo as Map;
-    if (!p.containsKey(key)) {
-      return [];
-    }
-    if (!(p[key] is List)) {
-      return [];
-    }
-     return p[key];
   }
 
   static Map toMap(Object oo, String key) {
-    if (!(oo is Map)) {
+    try {
+      if (!(oo is Map)) {
+        return {};
+      }
+      Map p = oo as Map;
+      if (!p.containsKey(key)) {
+        return {};
+      }
+      if (!(p[key] is Map)) {
+        return {};
+      }
+      return p[key];
+    } catch (e) {
       return {};
     }
-    Map p = oo as Map;
-    if (!p.containsKey(key)) {
-      return {};
-    }
-    if (!(p[key] is Map)) {
-      return {};
-    }
-     return p[key];
   }
 }
 
