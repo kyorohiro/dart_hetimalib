@@ -4,11 +4,9 @@ class TrackerServer {
   String address;
   int port;
   io.HttpServer _server = null;
-
   List<TrackerPeerManager> _peerManagerList = new List();
-  TrackerServer(String _address, int _port) {
-    address = _address;
-    port = _port;
+
+  TrackerServer() {
   }
 
   void add(String hash) {
