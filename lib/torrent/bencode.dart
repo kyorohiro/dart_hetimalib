@@ -47,6 +47,34 @@ class Bencode {
       return def;
     }
   }
+
+  static List toList(Object oo, String key) {
+    if (!(oo is Map)) {
+      return [];
+    }
+    Map p = oo as Map;
+    if (!p.containsKey(key)) {
+      return [];
+    }
+    if (!(p[key] is List)) {
+      return [];
+    }
+     return p[key];
+  }
+
+  static Map toMap(Object oo, String key) {
+    if (!(oo is Map)) {
+      return {};
+    }
+    Map p = oo as Map;
+    if (!p.containsKey(key)) {
+      return {};
+    }
+    if (!(p[key] is Map)) {
+      return {};
+    }
+     return p[key];
+  }
 }
 
 class Bdecoder {
