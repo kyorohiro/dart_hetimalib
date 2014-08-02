@@ -4,6 +4,7 @@ class TrackerPeerManager {
   List<int> _managdInfoHash = new List();
   List<int> get managedInfoHash => _managdInfoHash;
   int interval = 60;
+  int max = 200;
 
   TrackerPeerManager(List<int> infoHash) {
     _managdInfoHash = infoHash.toList();
@@ -31,6 +32,9 @@ class TrackerPeerManager {
     }
     managedPeerAddress.addLast(new PeerAddress(request.peerId,
         request.address, request.ip, request.port));
+    if(managedPeerAddress.length > max) {
+      managedPeerAddress.removeHead();
+    }
   }
 
   TrackerResponse createResponse() {
@@ -40,7 +44,6 @@ class TrackerPeerManager {
     for(int i=0;i<50&&i<managedPeerAddress.length;i++) {
       response.peers.add(managedPeerAddress.getShuffled(i));
     }
-
     return response;
   }
 }

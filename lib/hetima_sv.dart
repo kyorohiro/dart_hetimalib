@@ -10,3 +10,4 @@ part 'signal/signalserver.dart';
 part 'net/httpserver.dart';
 part 'tracker/trackerserver.dart';
 part 'tracker/trackerclient.dart';
+part 'torrent/torrentclient.dart';

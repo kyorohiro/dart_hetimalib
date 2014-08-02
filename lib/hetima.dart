@@ -20,5 +20,6 @@ part 'tracker/trackerurl.dart';
 part 'tracker/trackerpeermanager.dart';
 part 'tracker/trackerresponse.dart';
 part 'tracker/trackerrequest.dart';
+part 'net/hetisocket.dart';
 
 

@@ -4,5 +4,6 @@ author: kyorohiro
 description: A pub package
 homepage: https://github.com/kyorohiro/dart_hetimalib
 dependencies:
+  chrome: any
   crypto: any
   unittest: any

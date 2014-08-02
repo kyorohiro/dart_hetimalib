@@ -6,7 +6,9 @@ class ShuffleLinkedList<X>
   List<X> _shuffled = new List();
 
   void addLast(X value) {
-    if(_sequential.contains(value)){return;}
+    if(_sequential.contains(value)){
+      return;
+    }
     _sequential.add(value);
     _shuffled.add(value);
   }

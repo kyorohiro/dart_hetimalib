@@ -60,7 +60,7 @@ class TrackerServer {
   void onListen(io.HttpRequest request) {
     request.response.statusCode = io.HttpStatus.OK;
     try {
-      if(outputLog) { print("TrackerServer#onListen"); }
+      if(outputLog) { print("TrackerServer#onListen" + request.uri.toString()); }
       Map<String, String> parameter = HttpUrlDecoder.queryMap(request.uri.query);
       //
       //String portAsString = parameter[TrackerUrl.KEY_PORT];
@@ -91,7 +91,7 @@ class TrackerServer {
         // managed torrent data
         manager.update(new TrackerRequest.fromMap(parameter, address, ip));
         type.Uint8List buffer = Bencode.encode(manager.createResponse().createResponse(isCompact));
-        if(outputLog) { print("TrackerServer#onListen:###managed"+PercentEncode.encode(buffer)); }
+        if(outputLog) { print("TrackerServer#onListen:###managed"+PercentEncode.encode(buffer.toList())); }
         request.response.add(buffer.toList());
       }
     } catch (e) {
