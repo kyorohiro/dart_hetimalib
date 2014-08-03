@@ -51,6 +51,7 @@ class HetiServerSocketManager {
   void addServer(chrome.CreateInfo info, HetiServerSocketChrome socket) {
     _serverList[info.socketId] = socket;
   }
+
   void removeServer(chrome.CreateInfo info) {
     _serverList.remove(info.socketId);
   }

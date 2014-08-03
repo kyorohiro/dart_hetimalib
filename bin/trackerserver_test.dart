@@ -7,7 +7,9 @@ void main() {
   print("---");
   List<int> infoHash = PeerIdCreator.createPeerid("heti");
   List<int> peerId = PeerIdCreator.createPeerid("heti");
-  TrackerServer tracker = new TrackerServer("127.0.0.1", 6969);
+  TrackerServer tracker = new TrackerServer();
+  tracker.address = "127.0.0.1";
+  tracker.port = 6969;
   tracker.add(PercentEncode.encode(infoHash));
   TrackerPeerManager manager = tracker.find(infoHash);
   new async.Future.sync(() {

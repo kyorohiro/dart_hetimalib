@@ -7,6 +7,7 @@ import 'dart:core';
 import 'package:crypto/crypto.dart' as crypto;
 part 'util/kbucket.dart';
 part 'util/uuid.dart';
+part 'util/easyparser.dart';
 part 'util/arraybuilder.dart';
 part 'util/percentencode.dart';
 part 'util/httpurl.dart';
