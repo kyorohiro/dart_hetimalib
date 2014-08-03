@@ -147,10 +147,11 @@ class HetiSocketChrome extends HetiSocket {
     new async.Future.sync(() {
       chrome.sockets.tcp.create().then((chrome.CreateInfo info) {
         chrome.sockets.tcp.connect(info.socketId, peerAddress, peerPort).then((core.int e) {
-          ;
+          completer.complete(new HetiSocketChrome(info.socketId));
         });
       });
     }).catchError((e) {
+      completer.complete(null);
     });
     return completer.future;
   }
