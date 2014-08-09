@@ -45,7 +45,7 @@ class HetiTestTicket {
 
   String toString() {
     if(_isFin == false&& _result == true) {
-      return "TIMEOUT";
+      return "["+_id+"]"+"TIMEOUT";
     } else {
       return "["+_id+"]"+(_result==true?"OK":"NG")+":"+_message;
     }

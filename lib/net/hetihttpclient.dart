@@ -38,7 +38,7 @@ class HetiHttpGet {
   }
 }
 
-//rfc2616 7230
+//rfc2616 rfc7230
 class HetiHttpResponse {
   static List<int> PATH = convert.UTF8.encode(RfcTable.RFC3986_PCHAR_AS_STRING + "/");
   static List<int> QUERY = convert.UTF8.encode(RfcTable.RFC3986_RESERVED_AS_STRING + RfcTable.RFC3986_UNRESERVED_AS_STRING);
@@ -59,6 +59,42 @@ class HetiHttpResponse {
     return null;
   }
 
+  static async.Future<HetiHttpResponseHeaderField> decodeHeaderField(EasyParser parser)  {
+    HetiHttpResponseHeaderField result = new HetiHttpResponseHeaderField();
+    async.Completer<HetiHttpResponseHeaderField> completer = new async.Completer();
+    decodeFieldName(parser).then((String v){
+      result.fieldName = v;
+      return parser.nextString(":");
+    }).then((String v){
+      return decodeOWS(parser);
+    }).then((String v){
+      return decodeFieldValue(parser);
+    }).then((String v){
+      result.fieldValue = v;
+      return decodeCrlf(parser);
+    }).then((String v){
+      completer.complete(result);      
+    }).catchError((e){
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
+  static async.Future<String> decodeFieldName(EasyParser parser) {
+    async.Completer<String> completer = new async.Completer();
+    parser.nextBytePatternByUnmatch(new EasyParserIncludeMatcher(RfcTable.TCHAR)).then((List<int> v) {
+      completer.complete(convert.UTF8.decode(v));
+    });
+    return completer.future;
+  }
+  
+  static async.Future<String> decodeFieldValue(EasyParser parser) {
+    async.Completer<String> completer = new async.Completer();
+    parser.nextBytePatternByUnmatch(new FieldValueMatcher()).then((List<int> v) {
+      completer.complete(convert.UTF8.decode(v));
+    });
+    return completer.future;
+  }
   //
   // Http-version
   static async.Future<String> decodeHttpVersion(EasyParser parser) {
@@ -93,7 +129,7 @@ class HetiHttpResponse {
     int ret = 0;
     try {
       parser.nextBytePatternWithLength(new EasyParserIncludeMatcher(RfcTable.DIGIT), 3).then((List<int> v) {
-        ret = 100*(v[0] - 48) + 10*(v[1] - 48) + (v[2] - 48);
+        ret = 100 * (v[0] - 48) + 10 * (v[1] - 48) + (v[2] - 48);
         completer.complete(ret.toString());
       });
     } catch (e) {
@@ -118,19 +154,40 @@ class HetiHttpResponse {
     async.Completer<HetiHttpResponseStatusLine> completer = new async.Completer();
     decodeHttpVersion(parser).then((String v) {
       result.version = v;
-      return parser.nextString(" ");
+      return decodeSP(parser);
     }).then((String v) {
       return decodeStatusCode(parser);
     }).then((String v) {
       result.statusCode = int.parse(v);
-      return parser.nextString(" ");
+      return decodeSP(parser);
     }).then((onValue) {
       return decodeReasonPhrase(parser);
     }).then((String v) {
       result.statusPhrase = v;
       return decodeCrlf(parser);
-    }).then((String v){
+    }).then((String v) {
       completer.complete(result);
+    });
+    return completer.future;
+  }
+
+
+  static async.Future<String> decodeOWS(EasyParser parser) {
+    async.Completer completer = new async.Completer();
+    parser.nextBytePatternByUnmatch(new EasyParserIncludeMatcher(RfcTable.OWS)).then((List<int> v) {
+      completer.complete(convert.UTF8.decode(v));
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
+  static async.Future<String> decodeSP(EasyParser parser) {
+    async.Completer completer = new async.Completer();
+    parser.nextBytePatternByUnmatch(new EasyParserIncludeMatcher(RfcTable.SP)).then((List<int> v) {
+      completer.complete(convert.UTF8.decode(v));
+    }).catchError((e) {
+      completer.completeError(e);
     });
     return completer.future;
   }
@@ -146,13 +203,13 @@ class HetiHttpResponse {
       parser.pop();
       crlf = false;
       return parser.nextString("\n");
-    }).then((e){
-        if(crlf == true) {
-          completer.complete("\r\n");
-        } else {
-          completer.complete("\n");          
-        }
-    }).catchError((e){
+    }).then((e) {
+      if (crlf == true) {
+        completer.complete("\r\n");
+      } else {
+        completer.complete("\n");
+      }
+    }).catchError((e) {
       completer.completeError(e);
     });
     return completer.future;
@@ -180,9 +237,25 @@ class TextMatcher extends EasyParserMatcher {
   }
 }
 
-class HetiHttpResponseStatusLine 
-{
+class FieldValueMatcher extends EasyParserMatcher {
+  @override
+  bool match(int target) {
+    if (target == 0x0D || target == 0x0A) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+}
+
+// reason-phrase  = *( HTAB / SP / VCHAR / obs-text )
+class HetiHttpResponseStatusLine {
   String version = "";
   int statusCode = -1;
   String statusPhrase = "";
+}
+
+class HetiHttpResponseHeaderField {
+  String fieldName = "";
+  String fieldValue = "";
 }

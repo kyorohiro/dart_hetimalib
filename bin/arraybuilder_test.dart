@@ -106,7 +106,7 @@ void main() {
   
   {
     String v = "";
-    hetima.HetiTestTicket ticket = test.test("asdh", 3000);
+    hetima.HetiTestTicket ticket = test.test("decodeCrlf_1", 3000);
     new async.Future.sync(() {
       hetima.ArrayBuilder builder = new hetima.ArrayBuilder();
       hetima.EasyParser parser = new hetima.EasyParser(builder);
@@ -125,7 +125,7 @@ void main() {
 
   {
     String v = "";
-    hetima.HetiTestTicket ticket = test.test("asdh", 3000);
+    hetima.HetiTestTicket ticket = test.test("decodeCrlf_2", 3000);
     new async.Future.sync(() {
       hetima.ArrayBuilder builder = new hetima.ArrayBuilder();
       hetima.EasyParser parser = new hetima.EasyParser(builder);
@@ -155,11 +155,33 @@ void main() {
     }).then((hetima.HetiHttpResponseStatusLine v) {
       ticket.assertTrue("statusCode"+v.statusCode.toString(), v.statusCode ==200);
       ticket.assertTrue("statusCode"+v.version, v.version == "HTTP/1.1");
-      ticket.assertTrue("statusCode"+v.statusPhrase, v.statusCode == "tes test test");
+      ticket.assertTrue("statusCode"+v.statusPhrase, v.statusPhrase == "tes test test");
     }).catchError((e){
       ticket.assertTrue("", false);      
     }).whenComplete((){
       ticket.fin();
     });
   }
+  
+  {
+    String v = "";
+    hetima.HetiTestTicket ticket = test.test("decodeHeaderField_1f", 3000);
+    new async.Future.sync(() {
+      hetima.ArrayBuilder builder = new hetima.ArrayBuilder();
+      hetima.EasyParser parser = new hetima.EasyParser(builder);
+      async.Future<hetima.HetiHttpResponseHeaderField> ret = hetima.HetiHttpResponse.decodeHeaderField(parser);
+      builder.appendString("test:   aaa\r\n");
+      builder.fin();
+      return ret;
+    }).then((hetima.HetiHttpResponseHeaderField v) {
+      ticket.assertTrue("fn="+v.fieldName+":", v.fieldName ==  "test");
+      ticket.assertTrue("fv="+v.fieldValue+":", v.fieldValue ==  "aaa");
+    }).catchError((e){
+      ticket.assertTrue("", false);      
+    }).whenComplete((){
+      ticket.fin();
+    });
+  }
+
+  
 }

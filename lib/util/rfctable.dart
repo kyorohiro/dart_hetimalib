@@ -10,7 +10,13 @@ class RfcTable {
       +"""`abcdefghijklmno###"""
       +"""pqrstuvwxyz{|}~""";
 
-  static String  SP_STRING = " ";
+  static String TCHAR_STRING = 
+      """!#\$%&'*+-.^_`|~"""
+      + ALPHA_AS_STRING
+      + DIGIT_AS_STRING;
+
+  static String OWS_STRING = SP_STRING +"\t";
+  static String SP_STRING = " ";
   static String ALPHA_AS_STRING = 
        "abcdefghijklmnopqrstuvwxyz"
       +"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -37,7 +43,10 @@ class RfcTable {
   static List<int> HEXDIG = convert.UTF8.encode(HEXDIG_AS_STRING);
   static List<int> PCT_ENCODED = convert.UTF8.encode(PCT_ENCODED_AS_STRING);
   static List<int> VCHAR = convert.UTF8.encode(VCHAR_STRING);
-
+  static List<int> TCHAR = convert.UTF8.encode(TCHAR_STRING);
+  static List<int> OWS = convert.UTF8.encode(OWS_STRING);
+  static List<int> SP = convert.UTF8.encode(SP_STRING);
+   
   //  obs-text = %x80-FF
   static List<int> OBS_TEXT = [
                                0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89,
