@@ -183,5 +183,22 @@ void main() {
     });
   }
 
-  
+  {
+    String v = "";
+    hetima.HetiTestTicket ticket = test.test("decodeHeaderField_2f", 3000);
+    new async.Future.sync(() {
+      hetima.ArrayBuilder builder = new hetima.ArrayBuilder();
+      hetima.EasyParser parser = new hetima.EasyParser(builder);
+      async.Future<hetima.HetiHttpResponseHeaderField> ret = hetima.HetiHttpResponse.decodeHeaderField(parser);
+      builder.appendString("test   aaa\r\n");
+      builder.fin();
+      return ret;
+    }).then((hetima.HetiHttpResponseHeaderField v) {
+      ticket.assertTrue("", false);      
+    }).catchError((e){
+      ticket.assertTrue("", true);      
+    }).whenComplete((){
+      ticket.fin();
+    });
+  }
 }
