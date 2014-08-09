@@ -43,23 +43,30 @@ class HetiHttpResponse {
   static List<int> PATH = convert.UTF8.encode(RfcTable.RFC3986_PCHAR_AS_STRING + "/");
   static List<int> QUERY = convert.UTF8.encode(RfcTable.RFC3986_RESERVED_AS_STRING + RfcTable.RFC3986_UNRESERVED_AS_STRING);
 
-  static async.Future<HetiHttpResponse> decode(ArrayBuilder builder) {
-    EasyParser parser = new EasyParser(builder);
-    try {
-      parser.nextString("HTTP" + "/").then((String v) {
-      }).then((e) {
-        return parser.nextBytePattern(new EasyParserIncludeMatcher(RfcTable.DIGIT));
-      }).then((e) {
-        parser.nextString(".");
-      }).then((e) {
-        return parser.nextBytePattern(new EasyParserIncludeMatcher(RfcTable.DIGIT));
+
+  static async.Future<List<HetiHttpResponseHeaderField>> decodeHeaderFields(EasyParser parser) {
+    async.Completer<List<HetiHttpResponseHeaderField>> completer = new async.Completer();
+    List<HetiHttpResponseHeaderField> result = new List();
+    async.Future p() {
+      return decodeHeaderField(parser).then((HetiHttpResponseHeaderField v) {
+        result.add(v);
+        return p();
       });
-    } catch (e) {
     }
-    return null;
+  
+    p().catchError((e) {
+      return decodeCrlf(parser);
+    }).catchError((e){
+      completer.completeError(e);
+    }).then((e){
+      completer.complete(result);      
+    });
+
+    return completer.future;
   }
 
-  static async.Future<HetiHttpResponseHeaderField> decodeHeaderField(EasyParser parser)  {
+  
+  static async.Future<HetiHttpResponseHeaderField> decodeHeaderField(EasyParser parser) {
     HetiHttpResponseHeaderField result = new HetiHttpResponseHeaderField();
     async.Completer<HetiHttpResponseHeaderField> completer = new async.Completer();
     decodeFieldName(parser).then((String v){
