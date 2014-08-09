@@ -4,7 +4,7 @@ import 'dart:async' as async;
 
 void main() {
   hetima.HetiTest test = new hetima.HetiTest("tt");
-/*
+
   unit.test("arraybuilder: init", () {
     hetima.ArrayBuilder builder = new hetima.ArrayBuilder();
     unit.expect(0, builder.size());
@@ -200,7 +200,6 @@ void main() {
       ticket.fin();
     });
   }
-*/
   {
     String v = "";
     hetima.HetiTestTicket ticket = test.test("decodeHeaderFields_1f", 3000);
@@ -217,6 +216,31 @@ void main() {
       ticket.assertTrue("fv0="+v[0].fieldValue+":", v[0].fieldValue ==  "aaa");
       ticket.assertTrue("fn1="+v[1].fieldName+":", v[1].fieldName ==  "test2");
       ticket.assertTrue("fv1="+v[1].fieldValue+":", v[1].fieldValue ==  "bbb");
+    }).catchError((e){
+      ticket.assertTrue("", false);      
+    }).whenComplete((){
+      ticket.fin();
+    });
+  }
+
+  {
+    String v = "";
+    hetima.HetiTestTicket ticket = test.test("decodeHeaderFields_1f", 3000);
+    new async.Future.sync(() {
+      hetima.ArrayBuilder builder = new hetima.ArrayBuilder();
+      hetima.EasyParser parser = new hetima.EasyParser(builder);
+      async.Future<hetima.HetiHttpMessageWithoutBody> ret = 
+          hetima.HetiHttpResponse.decodeHttpMessage(parser);
+      builder.appendString("HTTP/1.1 200 tes test test\r\n");
+      builder.appendString("test1:   aaa\r\n");
+      builder.appendString("test2:   bbb\r\n\r\n");
+      builder.fin();
+      return ret;
+    }).then((hetima.HetiHttpMessageWithoutBody v) {
+      ticket.assertTrue("fn0="+v.headerField[0].fieldName+":", v.headerField[0].fieldName ==  "test1");
+      ticket.assertTrue("fv0="+v.headerField[0].fieldValue+":", v.headerField[0].fieldValue ==  "aaa");
+      ticket.assertTrue("fn1="+v.headerField[1].fieldName+":", v.headerField[1].fieldName ==  "test2");
+      ticket.assertTrue("fv1="+v.headerField[1].fieldValue+":", v.headerField[1].fieldValue ==  "bbb");
     }).catchError((e){
       ticket.assertTrue("", false);      
     }).whenComplete((){

@@ -44,6 +44,21 @@ class HetiHttpResponse {
   static List<int> QUERY = convert.UTF8.encode(RfcTable.RFC3986_RESERVED_AS_STRING + RfcTable.RFC3986_UNRESERVED_AS_STRING);
 
 
+  static async.Future<HetiHttpMessageWithoutBody> decodeHttpMessage(EasyParser parser) {
+    async.Completer<HetiHttpMessageWithoutBody> completer = new async.Completer();
+    HetiHttpMessageWithoutBody result = new HetiHttpMessageWithoutBody();
+    decodeStatusline(parser).then((HetiHttpResponseStatusLine line) {
+      result.line = line;      
+      return decodeHeaderFields(parser);
+    }).then((List<HetiHttpResponseHeaderField> httpfields){
+      result.headerField = httpfields;
+      completer.complete(result);
+    }).catchError((e){
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+  
   static async.Future<List<HetiHttpResponseHeaderField>> decodeHeaderFields(EasyParser parser) {
     async.Completer<List<HetiHttpResponseHeaderField>> completer = new async.Completer();
     List<HetiHttpResponseHeaderField> result = new List();
@@ -208,6 +223,7 @@ class HetiHttpResponse {
     parser.nextString("\r\n").catchError((e) {
       parser.back();
       parser.pop();
+      parser.push();
       crlf = false;
       return parser.nextString("\n");
     }).then((e) {
@@ -218,6 +234,8 @@ class HetiHttpResponse {
       }
     }).catchError((e) {
       completer.completeError(e);
+    }).whenComplete((){
+      parser.pop();      
     });
     return completer.future;
   }
@@ -265,4 +283,13 @@ class HetiHttpResponseStatusLine {
 class HetiHttpResponseHeaderField {
   String fieldName = "";
   String fieldValue = "";
+}
+
+// HTTP-message   = start-line
+// *( header-field CRLF )
+// CRLF
+// [ message-body ]
+class HetiHttpMessageWithoutBody {
+  HetiHttpResponseStatusLine line = new HetiHttpResponseStatusLine();
+  List<HetiHttpResponseHeaderField> headerField = new List();
 }
