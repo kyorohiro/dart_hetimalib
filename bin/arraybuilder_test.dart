@@ -3,6 +3,8 @@ import 'package:hetima/hetima.dart' as hetima;
 import 'dart:async' as async;
 
 void main() {
+  hetima.HetiTest test = new hetima.HetiTest("tt");
+///*
   unit.test("arraybuilder: init", () {
     hetima.ArrayBuilder builder = new hetima.ArrayBuilder();
     unit.expect(0, builder.size());
@@ -53,6 +55,7 @@ void main() {
   });
 
   {
+    hetima.HetiTestTicket ticket = test.test("httpversion", 3000);
     String v = "";
     new async.Future.sync(() {
       hetima.ArrayBuilder builder = new hetima.ArrayBuilder();
@@ -61,11 +64,102 @@ void main() {
       builder.appendString("HTTP/1.1");
       return ret;
     }).then((String v) {
-      print("asdf=" + v);
-      unit.test("", () {
-        unit.expect("HTTP/1.1", v);
-      });
+      ticket.assertTrue("v", "HTTP/1.1"== v);
+      ticket.fin();
     });
   }
 
+
+  {
+    hetima.HetiTestTicket ticket = test.test("reasonphase", 3000);
+    String v = "";
+    new async.Future.sync(() {
+      hetima.ArrayBuilder builder = new hetima.ArrayBuilder();
+      hetima.EasyParser parser = new hetima.EasyParser(builder);
+      async.Future<String> ret = hetima.HetiHttpResponse.decodeReasonPhrase(parser);
+      builder.appendString("aaa bbb");
+      builder.appendString(" ccc");
+      builder.appendString("\r\n");
+      return ret;
+    }).then((String v) {
+      ticket.assertTrue(""+v, "aaa bbb ccc" == v);
+      ticket.fin();
+    });
+  }
+  
+  {
+    String v = "";
+    hetima.HetiTestTicket ticket = test.test("reasonphase_2", 3000);
+    new async.Future.sync(() {
+      hetima.ArrayBuilder builder = new hetima.ArrayBuilder();
+      hetima.EasyParser parser = new hetima.EasyParser(builder);
+      async.Future<String> ret = hetima.HetiHttpResponse.decodeReasonPhrase(parser);
+      builder.appendString("aaa bbb");
+      builder.appendString(" ccc");
+      builder.fin();
+      return ret;
+    }).then((String v) {
+      ticket.assertTrue(""+v, "aaa bbb ccc" == v);
+      ticket.fin();
+    });
+  }
+  
+  {
+    String v = "";
+    hetima.HetiTestTicket ticket = test.test("asdh", 3000);
+    new async.Future.sync(() {
+      hetima.ArrayBuilder builder = new hetima.ArrayBuilder();
+      hetima.EasyParser parser = new hetima.EasyParser(builder);
+      async.Future<String> ret = hetima.HetiHttpResponse.decodeCrlf(parser);
+      builder.appendString("\n");
+      builder.fin();
+      return ret;
+    }).then((String v) {
+      ticket.assertTrue(""+v, "\n" == v);
+    }).catchError((e){
+      
+    }).whenComplete((){
+      ticket.fin();
+    });
+  }
+
+  {
+    String v = "";
+    hetima.HetiTestTicket ticket = test.test("asdh", 3000);
+    new async.Future.sync(() {
+      hetima.ArrayBuilder builder = new hetima.ArrayBuilder();
+      hetima.EasyParser parser = new hetima.EasyParser(builder);
+      async.Future<String> ret = hetima.HetiHttpResponse.decodeCrlf(parser);
+      builder.appendString(" ");
+      builder.fin();
+      return ret;
+    }).then((String v) {
+      ticket.assertTrue("f="+v+":", false);
+    }).catchError((e){
+      ticket.assertTrue("", true);      
+    }).whenComplete((){
+      ticket.fin();
+    });
+  }
+  //*/
+  {
+    String v = "";
+    hetima.HetiTestTicket ticket = test.test("statusline", 3000);
+    new async.Future.sync(() {
+      hetima.ArrayBuilder builder = new hetima.ArrayBuilder();
+      hetima.EasyParser parser = new hetima.EasyParser(builder);
+      async.Future<hetima.HetiHttpResponseStatusLine> ret = hetima.HetiHttpResponse.decodeStatusline(parser);
+      builder.appendString("HTTP/1.1 200 tes test test\r\n");
+      builder.fin();
+      return ret;
+    }).then((hetima.HetiHttpResponseStatusLine v) {
+      ticket.assertTrue("statusCode"+v.statusCode.toString(), v.statusCode ==200);
+      ticket.assertTrue("statusCode"+v.version, v.version == "HTTP/1.1");
+      ticket.assertTrue("statusCode"+v.statusPhrase, v.statusCode == "tes test test");
+    }).catchError((e){
+      ticket.assertTrue("", false);      
+    }).whenComplete((){
+      ticket.fin();
+    });
+  }
 }

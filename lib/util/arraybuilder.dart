@@ -4,6 +4,7 @@ class ArrayBuilder {
   int _max = 1024;
   data.Uint8List _buffer8;
   int _length = 0;
+  bool immutable = false;
 
   async.Completer completer = new async.Completer();
   List<int> completerResult = null;
@@ -26,7 +27,8 @@ class ArrayBuilder {
       completerResult.add(get(index));
     }
 
-    if (completerResultLength <= completerResult.length) {
+
+    if ((completerResultLength <= completerResult.length)||(index>=length && immutable)) {
       completer.complete(completerResult);
       completerResult = null;
       completerResultLength = 0;
@@ -63,7 +65,19 @@ class ArrayBuilder {
     }
   }
 
+  void fin() {
+    if (completerResult != null) {
+      completer.complete(completerResult);
+      completerResult = null;
+      completerResultLength = 0;
+    }
+    immutable = true;
+  }
+
   void appendByte(int v) {
+    if(immutable) {
+      return;
+    }
     update(1);
     _buffer8[_length] = v;
     _length += 1;

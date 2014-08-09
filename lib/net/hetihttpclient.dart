@@ -86,25 +86,103 @@ class HetiHttpResponse {
 
 
   //
-  // Status Code 
+  // Status Code
   // DIGIT DIGIT DIGIT
   static async.Future<String> decodeStatusCode(EasyParser parser) {
     async.Completer<String> completer = new async.Completer();
     int ret = 0;
     try {
-      parser.nextBytePatternWithLength(new EasyParserIncludeMatcher(RfcTable.DIGIT), 3).then((List<int> v){
-        ret = (v[0]-48) + (v[1]-48) + (v[2]-48);
+      parser.nextBytePatternWithLength(new EasyParserIncludeMatcher(RfcTable.DIGIT), 3).then((List<int> v) {
+        ret = 100*(v[0] - 48) + 10*(v[1] - 48) + (v[2] - 48);
         completer.complete(ret.toString());
       });
-    } catch(e) {
+    } catch (e) {
       throw new EasyParseError();
     }
     return completer.future;
   }
 
 
-  //Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF
-  async.Future<Object> statusline() {
-    return null;
+  static async.Future<String> decodeReasonPhrase(EasyParser parser) {
+    async.Completer<String> completer = new async.Completer();
+    parser.nextBytePatternByUnmatch(new TextMatcher()).then((List<int> vv) {
+      String v = convert.UTF8.decode(vv);
+      completer.complete(v);
+    });
+    return completer.future;
   }
+
+  //Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF
+  static async.Future<HetiHttpResponseStatusLine> decodeStatusline(EasyParser parser) {
+    HetiHttpResponseStatusLine result = new HetiHttpResponseStatusLine();
+    async.Completer<HetiHttpResponseStatusLine> completer = new async.Completer();
+    decodeHttpVersion(parser).then((String v) {
+      result.version = v;
+      return parser.nextString(" ");
+    }).then((String v) {
+      return decodeStatusCode(parser);
+    }).then((String v) {
+      result.statusCode = int.parse(v);
+      return parser.nextString(" ");
+    }).then((onValue) {
+      return decodeReasonPhrase(parser);
+    }).then((String v) {
+      result.statusPhrase = v;
+      return decodeCrlf(parser);
+    }).then((String v){
+      completer.complete(result);
+    });
+    return completer.future;
+  }
+
+  //
+  static async.Future<String> decodeCrlf(EasyParser parser) {
+    async.Completer completer = new async.Completer();
+    bool lf = true;
+    bool crlf = true;
+    parser.push();
+    parser.nextString("\r\n").catchError((e) {
+      parser.back();
+      parser.pop();
+      crlf = false;
+      return parser.nextString("\n");
+    }).then((e){
+        if(crlf == true) {
+          completer.complete("\r\n");
+        } else {
+          completer.complete("\n");          
+        }
+    }).catchError((e){
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+}
+
+// reason-phrase  = *( HTAB / SP / VCHAR / obs-text )
+class TextMatcher extends EasyParserMatcher {
+  @override
+  bool match(int target) {
+    //  VCHAR = 0x21-0x7E
+    //  obs-text = %x80-FF
+    //  SP = 0x30
+    //  HTAB = 0x09
+    if (0x21 <= target && target <= 0x7E) {
+      return true;
+    }
+    if (0x80 <= target && target <= 0xFF) {
+      return true;
+    }
+    if (target == 0x20 || target == 0x09) {
+      return true;
+    }
+    return false;
+  }
+}
+
+class HetiHttpResponseStatusLine 
+{
+  String version = "";
+  int statusCode = -1;
+  String statusPhrase = "";
 }

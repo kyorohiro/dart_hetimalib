@@ -31,11 +31,13 @@ class EasyParser {
     List<int> encoded = convert.UTF8.encode(value);
     buffer.getByteFuture(index, encoded.length).then((List<int> v) {
       if (v.length != encoded.length) {
-        throw new EasyParseError();
+        completer.completeError(new EasyParseError());
+        return;
       }
-      for (int e in v) {
+      for (int e in encoded) {
         if (e != buffer.get(index)) {
-          throw new EasyParseError();
+          completer.completeError(new EasyParseError());
+          return;
         }
         index++;
       }
@@ -47,8 +49,12 @@ class EasyParser {
   async.Future<int> nextBytePattern(EasyParserMatcher matcher) {
     async.Completer completer = new async.Completer();
     buffer.getByteFuture(index, 1).then((List<int> v) {
+      if(v.length < 1) {
+        throw new EasyParseError();        
+      }
       if (matcher.match(v[0])) {
-        completer.complete(v);
+        index++;
+        completer.complete(v[0]);
       } else {
         throw new EasyParseError();
       }
@@ -59,16 +65,43 @@ class EasyParser {
   async.Future<List<int>> nextBytePatternWithLength(EasyParserMatcher matcher, int length) {
     async.Completer completer = new async.Completer();
     buffer.getByteFuture(index, length).then((List<int> va) {
+      if(va.length < length) {
+        completer.completeError(new EasyParseError());
+      }
       for (int v in va) {
         bool find = false;
         find = matcher.match(v);
         if (find == false) {
-          throw new EasyParseError();
+          completer.completeError(new EasyParseError());
         }
+        index++;
       }
       completer.complete(va);
-      throw new EasyParseError();
     });
+    return completer.future;
+  }
+
+  async.Future<List<int>> nextBytePatternByUnmatch(EasyParserMatcher matcher) {
+    async.Completer completer = new async.Completer();
+    List<int> ret = new List<int>();
+    async.Future<Object> p() {
+      return buffer.getByteFuture(index, 1).then((List<int> va) {
+        if(va.length<1) {
+          completer.complete(ret);          
+        }
+        else if(matcher.match(va[0])) {
+          ret.add(va[0]);
+          index++;
+          return p();
+        } else if(buffer.immutable) {
+          completer.complete(ret);
+        } else {
+          completer.complete(ret);
+        }
+        
+      });
+    };
+    p();
     return completer.future;
   }
 
@@ -96,6 +129,7 @@ class EasyParserIncludeMatcher extends EasyParserMatcher {
     return include.contains(target);
   }
 }
+
 class EasyParseError extends Error {
   EasyParseError();
 }
