@@ -1,8 +1,19 @@
 import 'package:unittest/unittest.dart';
 import 'dart:async' as async;
+import 'package:hetima/hetima.dart' as hetima;
+import 'package:hetima/hetima_cl.dart' as hetima_cl;
 
 void main() {
-  print("---");
+  print("--##-");
+  hetima_cl.HetiSocketBuilderChrome builder = new hetima_cl.HetiSocketBuilderChrome();
+  hetima.HetiHttpClient client = new hetima.HetiHttpClient(builder);
+  client.get("www.google.com", 80, "/");
+  
+  
+  
+  print("--/##-");
+  
+  /*
   async.Future<String> one() {
     print("one");
     return new async.Future.value("one");
@@ -21,7 +32,6 @@ void main() {
     return new async.Future.value("four");
   }
 
-  /*
   print("1");
   one().then((_)=>two()).then((_) => three())
   .then((_)=>four()).catchError((e){

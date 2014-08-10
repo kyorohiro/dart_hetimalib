@@ -2,7 +2,7 @@ part of hetima_cl;
 
 class HetiSocketBuilderChrome extends HetiSocketBuilder {
   HetiSocket createClient() {
-    return null;
+    return new HetiSocketChrome.empty();
   }
 
   async.Future<HetiServerSocket> startServer(core.String address, core.int port) {
@@ -110,6 +110,9 @@ class HetiSocketChrome extends HetiSocket {
   core.int clientSocketId;
   async.StreamController<HetiReceiveInfo> _controller = new async.StreamController();
 
+  HetiSocketChrome.empty() {
+  }
+
   HetiSocketChrome(core.int _clientSocketId) {
     HetiServerSocketManager.getInstance().addClient(_clientSocketId, this);
     chrome.sockets.tcp.setPaused(_clientSocketId, false);
@@ -148,10 +151,17 @@ class HetiSocketChrome extends HetiSocket {
     new async.Future.sync(() {
       chrome.sockets.tcp.create().then((chrome.CreateInfo info) {
         chrome.sockets.tcp.connect(info.socketId, peerAddress, peerPort).then((core.int e) {
-          completer.complete(new HetiSocketChrome(info.socketId));
+          {
+            chrome.sockets.tcp.setPaused(info.socketId, false);
+            clientSocketId = info.socketId;
+            HetiServerSocketManager.getInstance().addClient(info.socketId, this);
+            completer.complete(this);
+          }
+//          completer.complete(new HetiSocketChrome(info.socketId));
         });
       });
     }).catchError((e) {
+      core.print(e.toString());
       completer.complete(null);
     });
     return completer.future;

@@ -23,5 +23,6 @@ part 'tracker/trackerresponse.dart';
 part 'tracker/trackerrequest.dart';
 part 'net/hetisocket.dart';
 part 'net/hetihttpclient.dart';
+part 'net/hetihttpresponse.dart';
 part 'test/hetitest.dart';
 
