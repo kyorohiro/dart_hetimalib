@@ -26,7 +26,10 @@ void main() {
       } else {
         print("--##AA02-");
         res.body.onFin().then((e){
-          print("--##AA02 BB-");
+          print("--##AA02 BB-" + res.body.size().toString());
+          res.body.getByteFuture(0, res.body.size()).then((List<int> v) {
+            print("--##AA03 BB-"+convert.UTF8.decode(v));
+          });
         });
       }
     });
