@@ -8,7 +8,11 @@ class HetiTest
   HetiTest(String id) {
     _id = id;
   }
+
   HetiTestTicket test(String id, int timeout_ms) {
+    if(ticketMap.containsKey(id)) {
+      throw new Error();
+    }
     HetiTestTicket ticket = new HetiTestTicket(id);
     ticketMap[id] = ticket;
     ticket.onFin().then((bool r){
