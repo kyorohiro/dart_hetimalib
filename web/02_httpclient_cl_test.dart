@@ -10,7 +10,25 @@ void main() {
   print("--##-");
   hetima_cl.HetiSocketBuilderChrome builder = new hetima_cl.HetiSocketBuilderChrome();
   hetima.HetiHttpClient client = new hetima.HetiHttpClient(builder);
-  client.connect("157.7.205.138", 80).then((int v){
-    client.get("157.7.205.138", 80, "/");;    
+  client.connect("www.yahoo.co.jp", 80).then((int v){//"157.7.205.138"
+//  client.connect("157.7.205.138", 80).then((int v){//
+    client.get("157.7.205.138", 80, "/").then((hetima.HetiHttpClientResponse res) {
+      for(hetima.HetiHttpResponseHeaderField f in res.message.headerField) {
+        print(f.fieldName+":"+f.fieldValue);
+      }
+      int len = res.getContentLength();
+      print("--##AA00-");
+      if(len != -1) {
+        print("--##AA01-");
+        res.body.getByteFuture(0, len).then((List<int> v) {
+          print("--##AA01 AA-");
+        });
+      } else {
+        print("--##AA02-");
+        res.body.onFin().then((e){
+          print("--##AA02 BB-");
+        });
+      }
+    });
   });
 }

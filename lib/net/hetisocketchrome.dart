@@ -40,11 +40,21 @@ class HetiServerSocketManager {
     });
 
     chrome.sockets.tcp.onReceive.listen((chrome.ReceiveInfo info) {
-      core.print("--receive " + info.socketId.toString());
+      core.print("--receive " + info.socketId.toString()+","+info.data.getBytes().length.toString());
       HetiSocketChrome socket = _clientList[info.socketId];
       if (socket != null) {
         socket.onReceiveInternal(info);
+        chrome.sockets.tcp.getInfo(socket.clientSocketId).then((chrome.SocketInfo inf){
+          core.print("###DF# "+ inf.connected.toString()+","+inf.paused.toString());
+          if(inf.connected == false) {
+            socket.close();
+          }
+        });
       }
+    });
+    chrome.sockets.tcp.onReceiveError.listen((chrome.ReceiveErrorInfo info) {
+      core.print("--receive error "+info.socketId.toString()+","+info.resultCode.toString()); 
+      HetiSocketChrome socket = _clientList[info.socketId];
     });
   }
 
@@ -168,9 +178,16 @@ class HetiSocketChrome extends HetiSocket {
   }
 
   void close() {
+    super.close();
+    if(_isClose) {
+      return;
+    }
     updateTime();
-    chrome.sockets.tcp.close(clientSocketId);
+    chrome.sockets.tcp.close(clientSocketId).then((d){
+      core.print("##closed()");
+    });
     HetiServerSocketManager.getInstance().removeClient(clientSocketId);
+    _isClose = true;
   }
-
+  core.bool _isClose= false;
 }
