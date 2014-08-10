@@ -24,12 +24,24 @@ class HetiHttpClient {
     ArrayBuilder builder = new ArrayBuilder();
     builder.appendString("GET" + " " + path + " " + "HTTP/1.1" + "\r\n");
     builder.appendString("Host:" + " " + host + "\r\n\r\n");
+
     socket.onReceive().listen((HetiReceiveInfo info) {
       String r = convert.UTF8.decode(socket.buffer.toList());
       print("\r\n######\r\n"+r+"\r\n#####\r\n");
     });
     socket.send(builder.toList()).then((HetiSendInfo info) {
       print("\r\n======"+info.resultCode.toString()+"\r\n");
+    });
+
+    EasyParser parser = new EasyParser(socket.buffer);
+    HetiHttpResponse.decodeHttpMessage(parser).then((HetiHttpMessageWithoutBody message) {
+      print("\r\n#AAAAA#\r\n");      
+      for(HetiHttpResponseHeaderField field in message.headerField) {
+        print(""+field.fieldName+":"+field.fieldValue);
+      }
+      print("\r\n#BBBBB#\r\n");
+    }).catchError((e){
+      print("\r\n#CCCCC#\r\n");      
     });
     return null;
   }
