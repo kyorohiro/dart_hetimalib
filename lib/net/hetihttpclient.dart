@@ -71,12 +71,13 @@ class HetiHttpResponse {
   
     p().catchError((e) {
       return decodeCrlf(parser);
-    }).catchError((e){
-      completer.completeError(e);
     }).then((e){
       completer.complete(result);      
-    });
-
+    })
+    .catchError((e){
+      completer.completeError(e);
+    })
+;
     return completer.future;
   }
 
