@@ -10,17 +10,18 @@ class HetiHttpResponse {
     async.Completer<HetiHttpMessageWithoutBody> completer = new async.Completer();
     HetiHttpMessageWithoutBody result = new HetiHttpMessageWithoutBody();
     decodeStatusline(parser).then((HetiHttpResponseStatusLine line) {
-      result.line = line;      
+      result.line = line;
       return decodeHeaderFields(parser);
-    }).then((List<HetiHttpResponseHeaderField> httpfields){
+    }).then((List<HetiHttpResponseHeaderField> httpfields) {
       result.headerField = httpfields;
+      result.index = parser.index;
       completer.complete(result);
-    }).catchError((e){
+    }).catchError((e) {
       completer.completeError(e);
     });
     return completer.future;
   }
-  
+
   static async.Future<List<HetiHttpResponseHeaderField>> decodeHeaderFields(EasyParser parser) {
     async.Completer<List<HetiHttpResponseHeaderField>> completer = new async.Completer();
     List<HetiHttpResponseHeaderField> result = new List();
@@ -30,36 +31,34 @@ class HetiHttpResponse {
         return p();
       });
     }
-  
+
     p().catchError((e) {
       return decodeCrlf(parser);
-    }).then((e){
-      completer.complete(result);      
-    })
-    .catchError((e){
+    }).then((e) {
+      completer.complete(result);
+    }).catchError((e) {
       completer.completeError(e);
-    })
-;
+    });
     return completer.future;
   }
 
-  
+
   static async.Future<HetiHttpResponseHeaderField> decodeHeaderField(EasyParser parser) {
     HetiHttpResponseHeaderField result = new HetiHttpResponseHeaderField();
     async.Completer<HetiHttpResponseHeaderField> completer = new async.Completer();
-    decodeFieldName(parser).then((String v){
+    decodeFieldName(parser).then((String v) {
       result.fieldName = v;
       return parser.nextString(":");
-    }).then((String v){
+    }).then((String v) {
       return decodeOWS(parser);
-    }).then((String v){
+    }).then((String v) {
       return decodeFieldValue(parser);
-    }).then((String v){
+    }).then((String v) {
       result.fieldValue = v;
       return decodeCrlf(parser);
-    }).then((String v){
-      completer.complete(result);      
-    }).catchError((e){
+    }).then((String v) {
+      completer.complete(result);
+    }).catchError((e) {
       completer.completeError(e);
     });
     return completer.future;
@@ -72,7 +71,7 @@ class HetiHttpResponse {
     });
     return completer.future;
   }
-  
+
   static async.Future<String> decodeFieldValue(EasyParser parser) {
     async.Completer<String> completer = new async.Completer();
     parser.nextBytePatternByUnmatch(new FieldValueMatcher()).then((List<int> v) {
@@ -197,8 +196,8 @@ class HetiHttpResponse {
       }
     }).catchError((e) {
       completer.completeError(e);
-    }).whenComplete((){
-      parser.pop();      
+    }).whenComplete(() {
+      parser.pop();
     });
     return completer.future;
   }
@@ -253,6 +252,16 @@ class HetiHttpResponseHeaderField {
 // CRLF
 // [ message-body ]
 class HetiHttpMessageWithoutBody {
+  int index = 0;
   HetiHttpResponseStatusLine line = new HetiHttpResponseStatusLine();
   List<HetiHttpResponseHeaderField> headerField = new List();
+
+  HetiHttpResponseHeaderField find(String fieldName) {
+    for (HetiHttpResponseHeaderField field in headerField) {
+      if (field != null && field.fieldName == fieldName) {
+        return field;
+      }
+    }
+    return null;
+  }
 }

@@ -1,10 +1,9 @@
 part of hetima;
 
-class ArrayBuilder {
+class ArrayBuilder extends HetimaBuilder {
   int _max = 1024;
   data.Uint8List _buffer8;
   int _length = 0;
-  bool immutable = false;
 
   async.Completer completer = new async.Completer();
   List<int> completerResult = null;

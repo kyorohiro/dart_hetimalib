@@ -25,4 +25,5 @@ part 'net/hetisocket.dart';
 part 'net/hetihttpclient.dart';
 part 'net/hetihttpresponse.dart';
 part 'test/hetitest.dart';
+part 'util/hetimabuilder.dart';
 

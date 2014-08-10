@@ -15,7 +15,9 @@ abstract class HetiSocket {
   async.Future<HetiSocket> connect(String peerAddress, int peerPort) ;
   async.Future<HetiSendInfo> send(List<int> data);
   async.Stream<HetiReceiveInfo> onReceive();
-  void close();
+  void close() {
+    buffer.immutable = true;
+  }
   void updateTime() {
     lastUpdateTime = (new DateTime.now()).millisecondsSinceEpoch;
   }
