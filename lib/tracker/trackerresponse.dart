@@ -24,7 +24,7 @@ class TrackerResponse {
       for(int i=0;i<wpeers.length;i+=6) {
         List<int> wpeer = [wpeers[i+0],wpeers[i+1],wpeers[i+2],wpeers[i+3]];
         List<int> port = [wpeers[i+4],wpeer[i+5]];
-        peers.add(new PeerAddress([], "", wpeer.toList(), ArrayBuilder.parseInt(port, 0, 2)));        
+        peers.add(new PeerAddress([], "", wpeer.toList(), HetimaBuilder.parseInt(port, 0, 2)));        
       }
     } else {
       List<Object> wpeers= c[KEY_PEERS];
@@ -44,7 +44,7 @@ class TrackerResponse {
       ArrayBuilder builder = new ArrayBuilder();
       for (PeerAddress p in peers) {
         builder.appendIntList(p.ip, 0, p.ip.length);
-        builder.appendIntList(ArrayBuilder.parseShortByte(p.port, ArrayBuilder.BYTEORDER_BIG_ENDIAN), 0, 2);
+        builder.appendIntList(HetimaBuilder.parseShortByte(p.port, HetimaBuilder.BYTEORDER_BIG_ENDIAN), 0, 2);
       }
       ret[KEY_PEERS] = builder.toUint8List();
     } else {

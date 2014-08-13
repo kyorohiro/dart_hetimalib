@@ -73,9 +73,7 @@ class HetiHttpClient {
       if(transferEncodingField == null || transferEncodingField.fieldValue != "chunked") {
         result.body = new HetimaBuilderAdapter(socket.buffer, message.index);
       } else {
-        // todo
         result.body = new ChunkedBuilderAdapter(new HetimaBuilderAdapter(socket.buffer, message.index)).start();
-//        result.body = new ArrayBuilderAdapter(socket.buffer, message.index);
       }
       completer.complete(result);
     }).catchError((e) {
