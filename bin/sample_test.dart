@@ -4,16 +4,6 @@ import 'package:hetima/hetima.dart' as hetima;
 import 'package:hetima/hetima_cl.dart' as hetima_cl;
 
 void main() {
-  print("--##-");
-  hetima_cl.HetiSocketBuilderChrome builder = new hetima_cl.HetiSocketBuilderChrome();
-  hetima.HetiHttpClient client = new hetima.HetiHttpClient(builder);
-  client.get("www.google.com", 80, "/");
-  
-  
-  
-  print("--/##-");
-  
-  /*
   async.Future<String> one() {
     print("one");
     return new async.Future.value("one");
@@ -40,8 +30,6 @@ void main() {
   .then((value) {
         print("The value is $value");
    });
-*/
-  /*
 //  print("2");
   new async.Future.sync((){
   one().then((_){
@@ -57,8 +45,6 @@ void main() {
         print("The value is $value");
    });
   });
-  */
-  /*
   one().then((_){
     throw new Error();
     return two();
@@ -93,5 +79,5 @@ void main() {
   })
   .catchError((_) {
     print("error 1");
-  });*/
+  });
 }

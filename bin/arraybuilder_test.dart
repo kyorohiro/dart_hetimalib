@@ -24,7 +24,7 @@ void main() {
 
   unit.test("arraybuilder: big/little", () {
     {
-      List<int> ret = hetima.ArrayBuilder.parseLongByte(0xFF, hetima.ArrayBuilder.BYTEORDER_BIG_ENDIAN);
+      List<int> ret = hetima.HetimaBuilder.parseLongByte(0xFF, hetima.HetimaBuilder.BYTEORDER_BIG_ENDIAN);
       unit.expect(ret[0], 0x00);
       unit.expect(ret[1], 0x00);
       unit.expect(ret[2], 0x00);
@@ -33,23 +33,23 @@ void main() {
       unit.expect(ret[5], 0x00);
       unit.expect(ret[6], 0x00);
       unit.expect(ret[7], 0xFF);
-      int v = hetima.ArrayBuilder.parseLong(ret, 0, hetima.ArrayBuilder.BYTEORDER_BIG_ENDIAN);
+      int v = hetima.HetimaBuilder.parseLong(ret, 0, hetima.HetimaBuilder.BYTEORDER_BIG_ENDIAN);
       unit.expect(v, 0xFF);
     }
     {
-      List<int> ret = hetima.ArrayBuilder.parseIntByte(0xFF, hetima.ArrayBuilder.BYTEORDER_BIG_ENDIAN);
+      List<int> ret = hetima.HetimaBuilder.parseIntByte(0xFF, hetima.HetimaBuilder.BYTEORDER_BIG_ENDIAN);
       unit.expect(ret[0], 0x00);
       unit.expect(ret[1], 0x00);
       unit.expect(ret[2], 0x00);
       unit.expect(ret[3], 0xFF);
-      int v = hetima.ArrayBuilder.parseInt(ret, 0, hetima.ArrayBuilder.BYTEORDER_BIG_ENDIAN);
+      int v = hetima.HetimaBuilder.parseInt(ret, 0, hetima.HetimaBuilder.BYTEORDER_BIG_ENDIAN);
       unit.expect(v, 0xFF);
     }
     {
-      List<int> ret = hetima.ArrayBuilder.parseShortByte(0xFF, hetima.ArrayBuilder.BYTEORDER_BIG_ENDIAN);
+      List<int> ret = hetima.HetimaBuilder.parseShortByte(0xFF, hetima.HetimaBuilder.BYTEORDER_BIG_ENDIAN);
       unit.expect(ret[0], 0x00);
       unit.expect(ret[1], 0xFF);
-      int v = hetima.ArrayBuilder.parseShort(ret, 0, hetima.ArrayBuilder.BYTEORDER_BIG_ENDIAN);
+      int v = hetima.HetimaBuilder.parseShort(ret, 0, hetima.HetimaBuilder.BYTEORDER_BIG_ENDIAN);
       unit.expect(v, 0xFF);
     }
   });

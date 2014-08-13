@@ -71,10 +71,10 @@ class HetiHttpClient {
       result.message = message;
       HetiHttpResponseHeaderField transferEncodingField = message.find("Transfer-Encoding");
       if(transferEncodingField == null || transferEncodingField.fieldValue != "chunked") {
-        result.body = new ArrayBuilderAdapter(socket.buffer, message.index);
+        result.body = new HetimaBuilderAdapter(socket.buffer, message.index);
       } else {
         // todo
-        result.body = new ChunkedBuilderAdapter(new ArrayBuilderAdapter(socket.buffer, message.index)).start();
+        result.body = new ChunkedBuilderAdapter(new HetimaBuilderAdapter(socket.buffer, message.index)).start();
 //        result.body = new ArrayBuilderAdapter(socket.buffer, message.index);
       }
       completer.complete(result);
