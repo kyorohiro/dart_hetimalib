@@ -3,8 +3,8 @@ part of hetima;
 class EasyParser {
   int index = 0;
   List<int> stack = new List();
-  ArrayBuilder buffer = null;
-  EasyParser(ArrayBuilder builder) {
+  HetimaBuilder buffer = null;
+  EasyParser(HetimaBuilder builder) {
     buffer = builder;
   }
 
@@ -34,11 +34,13 @@ class EasyParser {
         completer.completeError(new EasyParseError());
         return;
       }
+      int i=0;
       for (int e in encoded) {
-        if (e != buffer.get(index)) {
+        if (e != v[i]) {
           completer.completeError(new EasyParseError());
           return;
         }
+        i++;
         index++;
       }
       completer.complete(value);
@@ -105,14 +107,6 @@ class EasyParser {
     return completer.future;
   }
 
-  List<int> current() {
-    List<int> ret = new List();
-    int i = proxy;
-    for ( ; i < index; i++) {
-      ret.add(buffer.get(i));
-    }
-    return ret;
-  }
 }
 
 abstract class EasyParserMatcher {

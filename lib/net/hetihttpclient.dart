@@ -18,12 +18,16 @@ class HetiHttpClientResponse {
 class HetiHttpClient {
   HetiSocketBuilder _builder;
   HetiSocket socket = null;
+  String host;
+  int port;
 
   HetiHttpClient(HetiSocketBuilder builder) {
     _builder = builder;
   }
 
-  async.Future<int> connect(String host, int port) {
+  async.Future<int> connect(String _host, int _port) {
+    host = _host;
+    port = _port;
     async.Completer<int> completer = new async.Completer();
     socket = _builder.createClient();
     socket.connect(host, port).then((HetiSocket socket) {
@@ -36,17 +40,26 @@ class HetiHttpClient {
     return completer.future;
   }
 
-  async.Future<HetiHttpClientResponse> get(String host, int port, String path) {
+  async.Future<HetiHttpClientResponse> get(String path, [Map<String, String> header]) {
     async.Completer<HetiHttpClientResponse> completer = new async.Completer();
+
+    Map<String, String> headerTmp = {};
+    headerTmp["Host"] = host;
+    headerTmp["Connection"] = "close";
+    for (String key in header.keys) {
+      headerTmp[key] = header[key];
+    }
+
     ArrayBuilder builder = new ArrayBuilder();
-    builder.appendString("GET" + " " + path + " " + "HTTP/1.0" + "\r\n");
-    builder.appendString("Host:" + " " + host + "\r\n");
-    builder.appendString("Connection: close\r\n");
+    builder.appendString("GET" + " " + path + " " + "HTTP/1.1" + "\r\n");
+    for (String key in headerTmp.keys) {
+      builder.appendString("" + key + ": " + headerTmp[key] + "\r\n");
+    }
     builder.appendString("\r\n");
-    
+
     socket.onReceive().listen((HetiReceiveInfo info) {
-      //String r = convert.UTF8.decode(socket.buffer.toList());
-      //print("\r\n######\r\n" + r + "\r\n#####\r\n");
+      String r = convert.UTF8.decode(info.data);
+    //  print("\r\n######\r\n" + r + "\r\n#####\r\n");
     });
     socket.send(builder.toList()).then((HetiSendInfo info) {
       print("\r\n======" + info.resultCode.toString() + "\r\n");
@@ -54,15 +67,16 @@ class HetiHttpClient {
 
     EasyParser parser = new EasyParser(socket.buffer);
     HetiHttpResponse.decodeHttpMessage(parser).then((HetiHttpMessageWithoutBody message) {
-    /* print("\r\n#AAAAA#\r\n");
-      for (HetiHttpResponseHeaderField field in message.headerField) {
-        print("" + field.fieldName + ":" + field.fieldValue);
-      }
-      print("\r\n#BBBBB#\r\n");
-      */
       HetiHttpClientResponse result = new HetiHttpClientResponse();
       result.message = message;
-      result.body = new ArrayBuilderAdapter(socket.buffer, message.index);
+      HetiHttpResponseHeaderField transferEncodingField = message.find("Transfer-Encoding");
+      if(transferEncodingField == null || transferEncodingField.fieldValue != "chunked") {
+        result.body = new ArrayBuilderAdapter(socket.buffer, message.index);
+      } else {
+        // todo
+        result.body = new ChunkedBuilderAdapter(new ArrayBuilderAdapter(socket.buffer, message.index)).start();
+//        result.body = new ArrayBuilderAdapter(socket.buffer, message.index);
+      }
       completer.complete(result);
     }).catchError((e) {
       print("\r\n#CCCCC#\r\n");

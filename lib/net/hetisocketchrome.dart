@@ -39,21 +39,26 @@ class HetiServerSocketManager {
       core.print("--accept error");
     });
 
+    core.bool closeChecking = false;
     chrome.sockets.tcp.onReceive.listen((chrome.ReceiveInfo info) {
-      core.print("--receive " + info.socketId.toString()+","+info.data.getBytes().length.toString());
+      core.print("--receive " + info.socketId.toString() + "," + info.data.getBytes().length.toString());
       HetiSocketChrome socket = _clientList[info.socketId];
       if (socket != null) {
         socket.onReceiveInternal(info);
-        chrome.sockets.tcp.getInfo(socket.clientSocketId).then((chrome.SocketInfo inf){
-          core.print("###DF# "+ inf.connected.toString()+","+inf.paused.toString());
-          if(inf.connected == false) {
-            socket.close();
-          }
-        });
+        if (closeChecking == false) {
+          closeChecking = true;
+          chrome.sockets.tcp.getInfo(socket.clientSocketId).then((chrome.SocketInfo inf) {
+            closeChecking = false;
+            core.print("###DF# " + inf.connected.toString() + "," + inf.paused.toString());
+            if (inf.connected == false) {
+              socket.close();
+            }
+          });
+        }
       }
     });
     chrome.sockets.tcp.onReceiveError.listen((chrome.ReceiveErrorInfo info) {
-      core.print("--receive error "+info.socketId.toString()+","+info.resultCode.toString()); 
+      core.print("--receive error " + info.socketId.toString() + "," + info.resultCode.toString());
       HetiSocketChrome socket = _clientList[info.socketId];
     });
   }
@@ -167,7 +172,7 @@ class HetiSocketChrome extends HetiSocket {
             HetiServerSocketManager.getInstance().addClient(info.socketId, this);
             completer.complete(this);
           }
-//          completer.complete(new HetiSocketChrome(info.socketId));
+          //          completer.complete(new HetiSocketChrome(info.socketId));
         });
       });
     }).catchError((e) {
@@ -179,15 +184,15 @@ class HetiSocketChrome extends HetiSocket {
 
   void close() {
     super.close();
-    if(_isClose) {
+    if (_isClose) {
       return;
     }
     updateTime();
-    chrome.sockets.tcp.close(clientSocketId).then((d){
+    chrome.sockets.tcp.close(clientSocketId).then((d) {
       core.print("##closed()");
     });
     HetiServerSocketManager.getInstance().removeClient(clientSocketId);
     _isClose = true;
   }
-  core.bool _isClose= false;
+  core.bool _isClose = false;
 }

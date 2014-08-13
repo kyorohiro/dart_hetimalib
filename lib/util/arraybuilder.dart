@@ -27,7 +27,7 @@ class ArrayBuilder extends HetimaBuilder {
     }
 
 
-    if ((completerResultLength <= completerResult.length)||(index>=length && immutable)) {
+    if ((completerResultLength <= completerResult.length)||(immutable)) {
       completer.complete(completerResult);
       completerResult = null;
       completerResultLength = 0;
