@@ -4,7 +4,7 @@ abstract class HetimaBuilder {
 
   async.Future<List<int>> getByteFuture(int index, int length);
 
-  int size();
+  async.Future<int> getLength();
 
 
   async.Completer completerFin = new async.Completer(); 
@@ -142,8 +142,14 @@ class HetimaBuilderAdapter extends HetimaBuilder {
     _startIndex = startIndex;
   }
 
-  int size() {
-    return _base.size() - _startIndex;
+  async.Future<int> getLength() {
+    async.Completer<int> completer = new async.Completer();
+    _base.getLength().then((int v){
+      completer.complete(v - _startIndex);
+    }).catchError((e){
+      completer.completeError(e);
+    });
+    return completer.future;
   }
 
   async.Future<bool> onFin() {

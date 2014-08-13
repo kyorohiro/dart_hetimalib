@@ -45,7 +45,13 @@ class ArrayBuilder extends HetimaBuilder {
   }
 
   int size() {
-    return _length;
+    return _length;    
+  }
+
+  async.Future<int> getLength() {
+    async.Completer<int> completer = new async.Completer();
+    completer.complete(_length);
+    return completer.future;
   }
 
   void update(int plusLength) {

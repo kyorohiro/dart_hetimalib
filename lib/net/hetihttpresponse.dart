@@ -333,8 +333,8 @@ class ChunkedBuilderAdapter extends HetimaBuilder {
     return complter.future;
   }
 
-  int size() {
-    return _buffer.size();
+  async.Future<int> getLength() {
+    _buffer.getLength();
   }
 
   async.Future<bool> onFin() {
