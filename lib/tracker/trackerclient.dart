@@ -43,15 +43,17 @@ class TrackerClient {
     async.Completer<RequestResult> completer = new async.Completer();
 
     HetiHttpClient currentClient = new HetiHttpClient(_socketBuilder);
+    HetiHttpClientResponse httpResponse = null;
     print("--[A0]-" + trackerHost + "," + trackerPort.toString() + "," + path + header);
     currentClient.connect(trackerHost, trackerPort).then((int state) {
       return currentClient.get(path, {"Connection" : "close"});
     }).then((HetiHttpClientResponse response){
+      httpResponse = response;
       return TrackerResponse.createFromContent(response.body).then((TrackerResponse trackerResponse) {
-        completer.complete(new RequestResult(trackerResponse, RequestResult.OK));
+        completer.complete(new RequestResult(trackerResponse, RequestResult.OK, httpResponse));
       });
     }).catchError((e) {
-      completer.complete(new RequestResult(null, RequestResult.ERROR));
+      completer.complete(new RequestResult(null, RequestResult.ERROR, httpResponse));
       print("##er end");
     }).whenComplete(() {
       currentClient.close();
@@ -66,8 +68,10 @@ class RequestResult {
   static final int OK = 0;
   static final int ERROR = -1;
   TrackerResponse response = null;
-  RequestResult(TrackerResponse _respose, int _code) {
+  HetiHttpClientResponse httpResponse = null;
+  RequestResult(TrackerResponse _respose, int _code, HetiHttpClientResponse _httpResponse) {
     code = _code;
     response = _respose;
+    httpResponse = _httpResponse;
   }
 }
