@@ -27,4 +27,5 @@ part 'net/hetihttpclient.dart';
 part 'net/hetihttpresponse.dart';
 part 'test/hetitest.dart';
 part 'lo/hetimabuilder.dart';
+part 'lo/hetibencode.dart';
 

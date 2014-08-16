@@ -26,6 +26,10 @@ class EasyParser {
     return stack.last;
   }
 
+  async.Future<List<int>> getPeek(int length) {
+    return buffer.getByteFuture(index, length);
+  }
+
   async.Future<String> nextString(String value) {
     async.Completer completer = new async.Completer();
     List<int> encoded = convert.UTF8.encode(value);
