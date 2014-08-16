@@ -23,15 +23,16 @@ class HetiBdecoder {
           completer.complete(n);
         });
       } else if (0x30 <= v[0] && v[0] <= 0x39) {//0-9
-        return decodeBytes(parser).then((List<int> v){
+        return decodeBytes(parser).then((List<int> v) {
+          completer.complete(v);
+        });
+      } else if (0x6c == v[0]) {// l
+        return decodeList(parser).then((List<Object> v) {
           completer.complete(v);
         });
       }
-      /* else if (0x69 == buffer[index]) {// i
-        return decodeNumber(buffer);
-      } else if (0x6c == buffer[index]) {// l
-        return decodeList(buffer);
-      } else if (0x64 == buffer[index]) {// d
+      /*
+      else if (0x64 == buffer[index]) {// d
         return decodeDiction(buffer);
       }
       */
@@ -42,28 +43,46 @@ class HetiBdecoder {
     return completer.future;
   }
 
-  Map decodeDiction(data.Uint8List buffer) {
-    Map ret = new Map();
-    if (buffer[index++] != 0x64) {
-      throw new BencodeParseError("bendiction", buffer, index);
-    }
-
-    ret = decodeDictionElements(buffer);
-
-    if (buffer[index++] != 0x65) {
-      throw new BencodeParseError("bendiction", buffer, index);
-    }
-    return ret;
+  async.Future<Map> decodeDiction(EasyParser parser) {
+    async.Completer<Map> completer = new async.Completer();
+    Map ret = {};
+    parser.nextString("d").then((String v) {
+      return decodeDictionElements(parser);
+    }).then((Map l) {
+      ret = l;
+    }).then((String v) {
+      return parser.nextString("e");
+    }).then((e) {
+      completer.complete(ret);
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
   }
 
-  Map decodeDictionElements(data.Uint8List buffer) {
+  async.Future<Map> decodeDictionElements(EasyParser parser) {
+    async.Completer<Map> completer = new async.Completer();
     Map ret = new Map();
-    while (index < buffer.length && buffer[index] != 0x65) {
-      data.Uint8List keyAsList = decodeBenObject(buffer);
-      String key = convert.UTF8.decode(keyAsList.toList());
-      ret[key] = decodeBenObject(buffer);
-    }
-    return ret;
+    async.Future<Object> elem() {
+      String key = "";
+      return decodeString(parser).then((String v) {
+        key = v;
+        return decodeBenObject(parser);
+      }).then((Object v) {
+        ret[key] = v;
+        return parser.getPeek(1);
+      }).then((List<int> v) {
+        if (v[0] == 0x65) { //e
+          completer.complete(ret);
+        } else {
+          elem();
+        }
+      }).catchError((e){
+        completer.completeError(e);
+      });
+    };
+    elem();
+    return completer.future;
   }
 
   async.Future<List<Object>> decodeList(EasyParser parser) {
@@ -93,15 +112,13 @@ class HetiBdecoder {
         return parser.getPeek(1).then((List<int> v) {
           if (v.length == 0) {
             completer.completeError(new HetiBencodeParseError("list elm"));
-          }
-          else if (v[0] == 0x65) { //e
+          } else if (v[0] == 0x65) { //e
             completer.complete(ret);
-          }
-          else {
+          } else {
             return elem();
           }
         });
-      }).catchError((e){
+      }).catchError((e) {
         completer.completeError(e);
       });
     }
