@@ -45,9 +45,7 @@ class TrackerClient {
     HetiHttpClient currentClient = new HetiHttpClient(_socketBuilder);
     print("--[A0]-" + trackerHost + "," + trackerPort.toString() + "," + path + header);
     currentClient.connect(trackerHost, trackerPort).then((int state) {
-      Map<String, String> t = {};
-      t["Connection"] = "close";
-      return currentClient.get(path, t);
+      return currentClient.get(path, {"Connection" : "close"});
     }).then((HetiHttpClientResponse response){
       return TrackerResponse.createFromContent(response.body).then((TrackerResponse trackerResponse) {
         completer.complete(new RequestResult(trackerResponse, RequestResult.OK));
