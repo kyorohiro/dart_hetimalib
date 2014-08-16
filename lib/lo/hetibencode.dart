@@ -22,11 +22,12 @@ class HetiBdecoder {
         return decodeNumber(parser).then((int n) {
           completer.complete(n);
         });
+      } else if (0x30 <= v[0] && v[0] <= 0x39) {//0-9
+        return decodeBytes(parser).then((List<int> v){
+          completer.complete(v);
+        });
       }
-      /*
-      if (0x30 <= buffer[index] && buffer[index] <= 0x39) {//0-9
-        return decodeBytes(buffer);
-      } else if (0x69 == buffer[index]) {// i
+      /* else if (0x69 == buffer[index]) {// i
         return decodeNumber(buffer);
       } else if (0x6c == buffer[index]) {// l
         return decodeList(buffer);
@@ -65,25 +66,50 @@ class HetiBdecoder {
     return ret;
   }
 
-  List decodeList(data.Uint8List buffer) {
-    List ret = new List();
-    if (buffer[index++] != 0x6c) {
-      throw new BencodeParseError("benlist", buffer, index);
-    }
-    ret = decodeListElemets(buffer);
-    if (buffer[index++] != 0x65) {
-      throw new BencodeParseError("benlist", buffer, index);
-    }
-    return ret;
+  async.Future<List<Object>> decodeList(EasyParser parser) {
+    async.Completer<List<Object>> completer = new async.Completer();
+    List<Object> ret = [];
+    parser.nextString("l").then((String v) {
+      return decodeListElement(parser);
+    }).then((List<Object> l) {
+      ret = l;
+    }).then((String v) {
+      return parser.nextString("e");
+    }).then((e) {
+      completer.complete(ret);
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
   }
 
-  List decodeListElemets(data.Uint8List buffer) {
-    List ret = new List();
-    while (index < buffer.length && buffer[index] != 0x65) {
-      ret.add(decodeBenObject(buffer));
+  async.Future<List<Object>> decodeListElement(EasyParser parser) {
+    async.Completer<List<Object>> completer = new async.Completer();
+    List<Object> ret = new List();
+
+    async.Future<Object> elem() {
+      return decodeBenObject(parser).then((Object v) {
+        ret.add(v);
+        return parser.getPeek(1).then((List<int> v) {
+          if (v.length == 0) {
+            completer.completeError(new HetiBencodeParseError("list elm"));
+          }
+          else if (v[0] == 0x65) { //e
+            completer.complete(ret);
+          }
+          else {
+            return elem();
+          }
+        });
+      }).catchError((e){
+        completer.completeError(e);
+      });
     }
-    return ret;
+    elem();
+
+    return completer.future;
   }
+
 
   async.Future<int> decodeNumber(EasyParser parser) {
     async.Completer<int> completer = new async.Completer();
@@ -106,10 +132,10 @@ class HetiBdecoder {
     decodeBytes(parser).then((List<int> v) {
       try {
         completer.complete(convert.UTF8.decode(v));
-      } catch(e) {
+      } catch (e) {
         completer.completeError(e);
       }
-    }).catchError((e){
+    }).catchError((e) {
       completer.completeError(e);
     });
     return completer.future;
@@ -118,21 +144,21 @@ class HetiBdecoder {
   async.Future<List<int>> decodeBytes(EasyParser parser) {
     async.Completer<List<int>> completer = new async.Completer();
     int length = 0;
-    parser.nextBytePatternByUnmatch(new EasyParserIncludeMatcher(RfcTable.DIGIT))
-    .then((List<int> lengthList) {
+    parser.nextBytePatternByUnmatch(new EasyParserIncludeMatcher(RfcTable.DIGIT)).then((List<int> lengthList) {
       if (lengthList.length == 0) {
-        completer.completeError(new HetiBencodeParseError("byte:length=0"));;
+        completer.completeError(new HetiBencodeParseError("byte:length=0"));
+        ;
         return null;
       }
       length = intList2int(lengthList);
       return parser.nextString(":");
-    }).then((v){
+    }).then((v) {
       return parser.nextBuffer(length);
-    }).then((List<int> value){
-      if(value.length == length) {
-        completer.complete(value);       
+    }).then((List<int> value) {
+      if (value.length == length) {
+        completer.complete(value);
       } else {
-        completer.completeError(new HetiBencodeParseError("byte:length:"+value.length.toString()+"=="+length.toString()));        
+        completer.completeError(new HetiBencodeParseError("byte:length:" + value.length.toString() + "==" + length.toString()));
       }
     });
     return completer.future;
