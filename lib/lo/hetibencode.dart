@@ -163,9 +163,7 @@ class HetiBdecoder {
     int length = 0;
     parser.nextBytePatternByUnmatch(new EasyParserIncludeMatcher(RfcTable.DIGIT)).then((List<int> lengthList) {
       if (lengthList.length == 0) {
-        completer.completeError(new HetiBencodeParseError("byte:length=0"));
-        ;
-        return null;
+        throw new HetiBencodeParseError("byte:length=0");
       }
       length = intList2int(lengthList);
       return parser.nextString(":");
@@ -175,8 +173,10 @@ class HetiBdecoder {
       if (value.length == length) {
         completer.complete(value);
       } else {
-        completer.completeError(new HetiBencodeParseError("byte:length:" + value.length.toString() + "==" + length.toString()));
+        throw new HetiBencodeParseError("byte:length:" + value.length.toString() + "==" + length.toString());
       }
+    }).catchError((e){
+      completer.completeError(e);
     });
     return completer.future;
   }
