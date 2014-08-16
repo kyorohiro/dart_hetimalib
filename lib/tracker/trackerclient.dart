@@ -39,6 +39,10 @@ class TrackerClient {
     _socketBuilder = builder;
   }
 
+  // todo support redirect 
+  async.Future<RequestResult> requestWithSupportRedirect(int redirectMax) {
+  }
+
   async.Future<RequestResult> request() {
     async.Completer<RequestResult> completer = new async.Completer();
 
