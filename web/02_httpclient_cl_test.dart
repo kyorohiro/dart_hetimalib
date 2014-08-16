@@ -13,7 +13,7 @@ void main() {
   //  client.connect("www.yahoo.co.jp", 80).then((int v){//"157.7.205.138"
   client.connect("www.google.com", 80).then((int v) {//"157.7.205.138"
     //  client.connect("157.7.205.138", 80).then((int v){//
-    Map<String,String> t = {};
+    Map<String, String> t = {};
     t["Connection"] = "keep-alive";
     client.get("/?gfe_rd=cr&ei=uBjrU9voAcfJ8gfR84DoCw&gws_rd=cr", t).then((hetima.HetiHttpClientResponse res) {
       for (hetima.HetiHttpResponseHeaderField f in res.message.headerField) {
@@ -31,9 +31,12 @@ void main() {
         } else {
           print("--##AA02-");
           res.body.onFin().then((e) {
-            print("--##AA02 BB-" + res.body.size().toString());
-            res.body.getByteFuture(0, res.body.size()).then((List<int> v) {
-              print("--##AA03 BB-" + convert.UTF8.decode(v));
+            res.body.getLength().then((int size) {
+              client.close();
+              print("--##AA02 BB-" + size.toString());
+              res.body.getByteFuture(0, size).then((List<int> v) {
+                print("--##AA03 BB-" + convert.UTF8.decode(v));
+              });
             });
           });
         }

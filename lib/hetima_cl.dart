@@ -14,7 +14,7 @@ part 'signal/hetimapeer.dart';
 part 'signal/hetimapeer/bucket.dart';
 part 'signal/hetimapeer/adapter.dart';
 part 'signal/hetimapeer/directcommand.dart';
-part 'torrent/hetimafilecl.dart';
+part 'lo/hetimafilecl.dart';
 part 'net/hetisocketchrome.dart';
 
 

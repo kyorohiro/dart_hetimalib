@@ -7,8 +7,9 @@ import 'dart:core';
 import 'package:crypto/crypto.dart' as crypto;
 part 'util/kbucket.dart';
 part 'util/uuid.dart';
-part 'util/easyparser.dart';
-part 'util/arraybuilder.dart';
+part 'lo/byteorder.dart';
+part 'lo/easyparser.dart';
+part 'lo/arraybuilder.dart';
 part 'util/percentencode.dart';
 part 'util/httpurl.dart';
 part 'util/rfctable.dart';
@@ -25,5 +26,5 @@ part 'net/hetisocket.dart';
 part 'net/hetihttpclient.dart';
 part 'net/hetihttpresponse.dart';
 part 'test/hetitest.dart';
-part 'util/hetimabuilder.dart';
+part 'lo/hetimabuilder.dart';
 
