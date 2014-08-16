@@ -15,10 +15,13 @@ class HetiBdecoder {
   }
 
   async.Future<Object> decodeBenObject(EasyParser parser) {
+    async.Completer completer = new async.Completer();
     parser.getPeek(1).then((List<int> v) {
       if (0x69 == v[0]) {
         // i
-        return decodeNumber(parser);
+        return decodeNumber(parser).then((int n) {
+          completer.complete(n);
+        });
       }
       /*
       if (0x30 <= buffer[index] && buffer[index] <= 0x39) {//0-9
@@ -32,7 +35,10 @@ class HetiBdecoder {
       }
       */
       throw new HetiBencodeParseError("benobject");
+    }).catchError((e) {
+      completer.completeError(e);
     });
+    return completer.future;
   }
 
   Map decodeDiction(data.Uint8List buffer) {
@@ -81,10 +87,10 @@ class HetiBdecoder {
 
   async.Future<int> decodeNumber(EasyParser parser) {
     async.Completer<int> completer = new async.Completer();
+    int num = 0;
     parser.nextString("i").then((String v) {
       return  parser.nextBytePatternByUnmatch(new EasyParserIncludeMatcher(RfcTable.DIGIT)); 
     }).then((List<int> numList) {
-      int num = 0;
       for(int n in numList) {
         num *=10;
         num +=(n-48);

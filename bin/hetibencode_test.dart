@@ -12,8 +12,11 @@ void main() {
     unit.expect("i1024e", convert.UTF8.decode(out.toList()));
     hetima.ArrayBuilder builder = new hetima.ArrayBuilder();
     hetima.EasyParser parser = new hetima.EasyParser(builder);
-    hetima.HetiBencode.decode(parser).then((int v){
+    hetima.HetiBencode.decode(parser).then((Object o){
+      int v = o;
       ticket.assertTrue("v="+v.toString(), v == 1024);
+    }).whenComplete((){
+      ticket.fin();
     });
     builder.appendUint8List(out, 0,out.length);
   }
