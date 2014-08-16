@@ -15,7 +15,7 @@ part 'util/httpurl.dart';
 part 'util/rfctable.dart';
 part 'util/shufflelinkedlist.dart';
 part 'torrent/bencode.dart';
-part 'torrent/hetimafile.dart';
+part 'lo/hetimafile.dart';
 part 'torrent/torrentfile.dart';
 part 'torrent/torrentfilehelper.dart';
 part 'tracker/trackerurl.dart';
