@@ -30,6 +30,17 @@ class EasyParser {
     return buffer.getByteFuture(index, length);
   }
 
+  async.Future<List<int>> nextBuffer(int length) {
+    async.Completer<List<int>> completer = new async.Completer();
+    buffer.getByteFuture(index, length).then((List<int> v) {
+      index += v.length;
+      completer.complete(v);
+    }).catchError((e){
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
   async.Future<String> nextString(String value) {
     async.Completer completer = new async.Completer();
     List<int> encoded = convert.UTF8.encode(value);
@@ -87,6 +98,7 @@ class EasyParser {
     return completer.future;
   }
 
+  
   async.Future<List<int>> nextBytePatternByUnmatch(EasyParserMatcher matcher) {
     async.Completer completer = new async.Completer();
     List<int> ret = new List<int>();

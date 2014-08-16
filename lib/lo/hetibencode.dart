@@ -89,35 +89,62 @@ class HetiBdecoder {
     async.Completer<int> completer = new async.Completer();
     int num = 0;
     parser.nextString("i").then((String v) {
-      return  parser.nextBytePatternByUnmatch(new EasyParserIncludeMatcher(RfcTable.DIGIT)); 
+      return parser.nextBytePatternByUnmatch(new EasyParserIncludeMatcher(RfcTable.DIGIT));
     }).then((List<int> numList) {
-      for(int n in numList) {
-        num *=10;
-        num +=(n-48);
-      }
+      num = intList2int(numList);
       return parser.nextString("e");
-    }).then((String v){
+    }).then((String v) {
       completer.complete(num);
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
+  async.Future<String> decodeString(EasyParser parser) {
+    async.Completer<String> completer = new async.Completer();
+    decodeBytes(parser).then((List<int> v) {
+      try {
+        completer.complete(convert.UTF8.decode(v));
+      } catch(e) {
+        completer.completeError(e);
+      }
     }).catchError((e){
       completer.completeError(e);
     });
     return completer.future;
   }
 
-  data.Uint8List decodeBytes(data.Uint8List buffer) {
+  async.Future<List<int>> decodeBytes(EasyParser parser) {
+    async.Completer<List<int>> completer = new async.Completer();
     int length = 0;
-    while (index < buffer.length && buffer[index] != 0x3a) {
-      if (!(0x30 <= buffer[index] && buffer[index] <= 0x39)) {
-        throw new BencodeParseError("benstring", buffer, index);
+    parser.nextBytePatternByUnmatch(new EasyParserIncludeMatcher(RfcTable.DIGIT))
+    .then((List<int> lengthList) {
+      if (lengthList.length == 0) {
+        completer.completeError(new HetiBencodeParseError("byte:length=0"));;
+        return null;
       }
-      length = length * 10 + (buffer[index++] - 0x30);
+      length = intList2int(lengthList);
+      return parser.nextString(":");
+    }).then((v){
+      return parser.nextBuffer(length);
+    }).then((List<int> value){
+      if(value.length == length) {
+        completer.complete(value);       
+      } else {
+        completer.completeError(new HetiBencodeParseError("byte:length:"+value.length.toString()+"=="+length.toString()));        
+      }
+    });
+    return completer.future;
+  }
+
+  static int intList2int(List<int> numList) {
+    int num = 0;
+    for (int n in numList) {
+      num *= 10;
+      num += (n - 48);
     }
-    if (buffer[index++] != 0x3a) {
-      throw new BencodeParseError("benstring", buffer, index);
-    }
-    data.Uint8List ret = new data.Uint8List.fromList(buffer.sublist(index, index + length));
-    index += length;
-    return ret;
+    return num;
   }
 }
 
@@ -125,7 +152,7 @@ class HetiBencodeParseError implements Exception {
 
   String log = "";
   HetiBencodeParseError(String s) {
-    log = s + "#"  + super.toString();
+    log = s + "#" + super.toString();
   }
 
   String toString() {

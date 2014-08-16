@@ -20,4 +20,20 @@ void main() {
     });
     builder.appendUint8List(out, 0,out.length);
   }
+
+  {
+    hetima.HetiTestTicket ticket = test.test("string", 3000);
+    type.Uint8List out = hetima.Bencode.encode("hetimatan");
+    hetima.ArrayBuilder builder = new hetima.ArrayBuilder();
+    hetima.EasyParser parser = new hetima.EasyParser(builder);
+
+    hetima.HetiBdecoder decoder = new hetima.HetiBdecoder();
+    decoder.decodeString(parser).then((Object o){
+      String v = o;
+      ticket.assertTrue("v="+v.toString(), v == "hetimatan");
+    }).whenComplete((){
+      ticket.fin();
+    });
+    builder.appendUint8List(out, 0,out.length);
+  }
 }
