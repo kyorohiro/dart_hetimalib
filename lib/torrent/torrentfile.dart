@@ -80,7 +80,7 @@ class TorrentFileInfo {
   int get piece_length {
     return mInfo[TorrentFile.KEY_PIECE_LENGTH];
   }
-
+  
   data.Uint8List get piece {
     return mInfo[TorrentFile.KEY_PIECE];
   }
@@ -156,6 +156,10 @@ String objectToString(Object v) {
   if (v is String) {
     return v;
   } else {
-    return convert.UTF8.decode((v as data.Uint8List).toList());
+    if(v is data.Uint8List) {
+      return convert.UTF8.decode((v as data.Uint8List).toList());
+    } else {
+      return convert.UTF8.decode(v);      
+    }
   }
 }

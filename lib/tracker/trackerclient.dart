@@ -7,7 +7,7 @@ class TrackerClient {
     trackerUrl.trackerHost = host;
   }
 
-  int get trackerPort => 6969;
+  int get trackerPort => trackerUrl.trackerPort;
   void set trackerPort(int port) {
     trackerUrl.trackerPort = port;
   }
@@ -72,9 +72,20 @@ class TrackerClient {
       return currentClient.get(path, {"Connection" : "close"});
     }).then((HetiHttpClientResponse response){
       httpResponse = response;
+      response.body.onFin().then((bool e){
+        response.body.getLength().then((int length){
+          response.body.getByteFuture(0, length).then((List<int> value) {
+            try {
+            print("## "+convert.UTF8.decode(value));
+            } catch(e) {
+              print("## error");              
+            }
+          });
+        });
+      });/*
       return TrackerResponse.createFromContent(response.body).then((TrackerResponse trackerResponse) {
         completer.complete(new TrackerRequestResult(trackerResponse, TrackerRequestResult.OK, httpResponse));
-      });
+      });*/
     }).catchError((e) {
       completer.complete(new TrackerRequestResult(null, TrackerRequestResult.ERROR, httpResponse));
       print("##er end");

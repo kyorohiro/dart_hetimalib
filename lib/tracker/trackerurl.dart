@@ -29,7 +29,8 @@ class TrackerUrl {
   void set announce(String announce) {
     HttpUrlDecoder decoder = new HttpUrlDecoder();
     HttpUrl url = decoder.innerDecodeUrl(announce);
-    path = url.host;
+    trackerHost = url.host;
+    trackerPort = url.port;
     scheme = url.scheme;
     path = url.path;
   }

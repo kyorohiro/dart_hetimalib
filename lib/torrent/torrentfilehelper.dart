@@ -48,6 +48,12 @@ class TorrentFileCreatorResult {
 class TorrentInfoHashCreator {
   async.Future<List<int>> createInfoHash(TorrentFile file) {
     async.Completer<Object> compleator = new async.Completer();
+    Object o = file.mMetadata[TorrentFile.KEY_INFO];
+    if(o is data.Uint8List) {
+      print("## 1");
+    } else {
+      print("## 2");      
+    }
     data.Uint8List list = Bencode.encode(file.mMetadata[TorrentFile.KEY_INFO]);
     crypto.SHA1 sha1 = new crypto.SHA1();
     sha1.add(list.toList());

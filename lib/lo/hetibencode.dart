@@ -24,14 +24,14 @@ class HetiBdecoder {
         });
       } else if (0x30 <= v[0] && v[0] <= 0x39) {//0-9
         return decodeBytes(parser).then((List<int> v) {
-          completer.complete(v);
+          // todo? byte data is data.Uint8List; 
+          completer.complete(new data.Uint8List.fromList(v));
         });
       } else if (0x6c == v[0]) {// l
         return decodeList(parser).then((List<Object> v) {
           completer.complete(v);
         });
-      }
-      else if (0x64 == v[0]) {// d
+      } else if (0x64 == v[0]) {// d
         return decodeDiction(parser).then((Map dict) {
           completer.complete(dict);
         });

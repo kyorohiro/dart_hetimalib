@@ -13,6 +13,11 @@ class ArrayBuilder extends HetimaBuilder {
     _buffer8 = new data.Uint8List(_max);
   }
 
+  ArrayBuilder.fromList(data.Uint8List buffer) {
+    _buffer8 = buffer;
+    _length = buffer.length;
+  }
+
   async.Future<List<int>> getByteFuture(int index, int length) {
     completerResult = new List();
     completerResultLength = length;
