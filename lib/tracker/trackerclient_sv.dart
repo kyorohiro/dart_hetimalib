@@ -32,8 +32,8 @@ class TrackerClientSv {
   }
   String get header => trackerUrl.toHeader();
 
-  async.Future<RequestResult> request() {
-    async.Completer<RequestResult> completer = new async.Completer();
+  async.Future<RequestResultSv> request() {
+    async.Completer<RequestResultSv> completer = new async.Completer();
     io.HttpClient client = new io.HttpClient();
     (new async.Future.sync(() {
       print("--[A0]-" + trackerHost + "," + trackerPort.toString() + "," + path + header);
@@ -46,7 +46,7 @@ class TrackerClientSv {
         );
       });
     })).catchError((e) {
-      completer.complete(new RequestResult(null, RequestResult.ERROR));
+      completer.complete(new RequestResultSv(null, RequestResultSv.ERROR));
       print("##er end");
     }).then((e) {
       print("###done end");
@@ -54,7 +54,7 @@ class TrackerClientSv {
     return completer.future;
   }
 
-  void responseHandle(io.HttpClientResponse response, async.Completer<RequestResult> completer) /**/
+  void responseHandle(io.HttpClientResponse response, async.Completer<RequestResultSv> completer) /**/
   {
     print("--[A2]-");
     int redirectNum = 0;
@@ -62,7 +62,7 @@ class TrackerClientSv {
       response.redirect().then((io.HttpClientResponse response) {
         redirectNum++;
         if(redirectNum>5) {
-          completer.complete(new RequestResult(null, RequestResult.ERROR));
+          completer.complete(new RequestResultSv(null, RequestResultSv.ERROR));
         }
         responseHandle(response, completer);
       });
@@ -79,17 +79,17 @@ class TrackerClientSv {
       print("done");
       TrackerResponse response = new TrackerResponse.bencode(buffer.toUint8List());
       //TrackerResponse response = new TrackerResponse();
-      completer.complete(new RequestResult(response, RequestResult.OK));
+      completer.complete(new RequestResultSv(response, RequestResultSv.OK));
     });
   }
 }
 
-class RequestResult {
+class RequestResultSv {
   int code = 0;
   static final int OK = 0;
   static final int ERROR = -1;
   TrackerResponse response = null;
-  RequestResult(TrackerResponse _respose, int _code) {
+  RequestResultSv(TrackerResponse _respose, int _code) {
     code = _code;
     response = _respose;
   }

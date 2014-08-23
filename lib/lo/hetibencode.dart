@@ -31,11 +31,11 @@ class HetiBdecoder {
           completer.complete(v);
         });
       }
-      /*
-      else if (0x64 == buffer[index]) {// d
-        return decodeDiction(buffer);
+      else if (0x64 == v[0]) {// d
+        return decodeDiction(parser).then((Map dict) {
+          completer.complete(dict);
+        });
       }
-      */
       throw new HetiBencodeParseError("benobject");
     }).catchError((e) {
       completer.completeError(e);
