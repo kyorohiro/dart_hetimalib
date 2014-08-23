@@ -279,7 +279,8 @@ class HetiHttpMessageWithoutBody {
 
   HetiHttpResponseHeaderField find(String fieldName) {
     for (HetiHttpResponseHeaderField field in headerField) {
-      if (field != null && field.fieldName == fieldName) {
+      print(""+field.fieldName.toLowerCase() +"== "+fieldName.toLowerCase());
+      if (field != null && field.fieldName.toLowerCase() == fieldName.toLowerCase()) {
         return field;
       }
     }

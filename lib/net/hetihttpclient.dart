@@ -58,7 +58,7 @@ class HetiHttpClient {
     builder.appendString("\r\n");
 
     socket.onReceive().listen((HetiReceiveInfo info) {
-      String r = convert.UTF8.decode(info.data);
+     // String r = convert.UTF8.decode(info.data);
     //  print("\r\n######\r\n" + r + "\r\n#####\r\n");
     });
     socket.send(builder.toList()).then((HetiSendInfo info) {
