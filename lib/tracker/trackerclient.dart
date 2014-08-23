@@ -72,18 +72,6 @@ class TrackerClient {
       return currentClient.get(path+header, {"Connection" : "close"});
     }).then((HetiHttpClientResponse response){
       httpResponse = response;
-      /*
-      response.body.onFin().then((bool e){
-        response.body.getLength().then((int length){
-          response.body.getByteFuture(0, length).then((List<int> value) {
-            try {
-            print("## "+convert.UTF8.decode(value));
-            } catch(e) {
-              print("## error");              
-            }
-          });
-        });
-      });*/
       return TrackerResponse.createFromContent(response.body);
     }).then((TrackerResponse trackerResponse) {
       completer.complete(new TrackerRequestResult(trackerResponse, TrackerRequestResult.OK, httpResponse));
