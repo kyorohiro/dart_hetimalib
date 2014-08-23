@@ -81,8 +81,9 @@ class TrackerServer {
       io.InternetAddress addressAsInet = request.connectionInfo.remoteAddress;
       List<int> ip = addressAsInet.rawAddress;
       updateResponse(request.uri.query, ip);
-      request.response.add(createResponse(request.uri.query));
+      List<int> cont = createResponse(request.uri.query);
       request.response.statusCode = io.HttpStatus.OK;
+      request.response.add(cont);
     } catch (e) {
       request.response.statusCode = io.HttpStatus.BAD_REQUEST;
       print("error:" + e.toString());
