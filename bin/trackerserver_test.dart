@@ -22,9 +22,9 @@ void main() {
       client.infoHash = PercentEncode.encode(infoHash);
       return client.request();
     });    
-  }).then((RequestResult r){
+  }).then((TrackerRequestResult r){
     unit.test("",() {
-      unit.expect(r.code, RequestResult.OK);
+      unit.expect(r.code, TrackerRequestResult.OK);
       unit.expect(r.response.interval, manager.interval);
       unit.expect(r.response.peers[0].port, 6969);
     });
