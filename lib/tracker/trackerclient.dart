@@ -69,9 +69,10 @@ class TrackerClient {
     HetiHttpClientResponse httpResponse = null;
     print("--[A0]-" + trackerHost + "," + trackerPort.toString() + "," + path + header);
     currentClient.connect(trackerHost, trackerPort).then((int state) {
-      return currentClient.get(path, {"Connection" : "close"});
+      return currentClient.get(path+header, {"Connection" : "close"});
     }).then((HetiHttpClientResponse response){
       httpResponse = response;
+      /*
       response.body.onFin().then((bool e){
         response.body.getLength().then((int length){
           response.body.getByteFuture(0, length).then((List<int> value) {
@@ -82,10 +83,10 @@ class TrackerClient {
             }
           });
         });
-      });/*
-      return TrackerResponse.createFromContent(response.body).then((TrackerResponse trackerResponse) {
-        completer.complete(new TrackerRequestResult(trackerResponse, TrackerRequestResult.OK, httpResponse));
       });*/
+      return TrackerResponse.createFromContent(response.body);
+    }).then((TrackerResponse trackerResponse) {
+      completer.complete(new TrackerRequestResult(trackerResponse, TrackerRequestResult.OK, httpResponse));
     }).catchError((e) {
       completer.complete(new TrackerRequestResult(null, TrackerRequestResult.ERROR, httpResponse));
       print("##er end");
