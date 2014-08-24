@@ -11,14 +11,14 @@ class TrackerPeerManager {
   }
 
   bool isManagedInfoHash(List<int> infoHash) {
-    if(infoHash == null) {
+    if (infoHash == null) {
       return false;
     }
-    if(_managdInfoHash.length != infoHash.length) {
+    if (_managdInfoHash.length != infoHash.length) {
       return false;
     }
-    for(int i=0;i<_managdInfoHash.length;i++) {
-      if(infoHash[i] != _managdInfoHash[i]) {
+    for (int i = 0; i < _managdInfoHash.length; i++) {
+      if (infoHash[i] != _managdInfoHash[i]) {
         return false;
       }
     }
@@ -27,12 +27,11 @@ class TrackerPeerManager {
 
   ShuffleLinkedList<PeerAddress> managedPeerAddress = new ShuffleLinkedList();
   void update(TrackerRequest request) {
-    if(!isManagedInfoHash(request.infoHash)) {
+    if (!isManagedInfoHash(request.infoHash)) {
       return;
     }
-    managedPeerAddress.addLast(new PeerAddress(request.peerId,
-        request.address, request.ip, request.port));
-    if(managedPeerAddress.length > max) {
+    managedPeerAddress.addLast(new PeerAddress(request.peerId, request.address, request.ip, request.port));
+    if (managedPeerAddress.length > max) {
       managedPeerAddress.removeHead();
     }
   }
@@ -40,11 +39,10 @@ class TrackerPeerManager {
   TrackerResponse createResponse() {
     TrackerResponse response = new TrackerResponse();
     response.interval = this.interval;
-    managedPeerAddress.shuffle();    
-    for(int i=0;i<50&&i<managedPeerAddress.length;i++) {
+    managedPeerAddress.shuffle();
+    for (int i = 0; i < 50 && i < managedPeerAddress.length; i++) {
       response.peers.add(managedPeerAddress.getShuffled(i));
     }
     return response;
   }
 }
-

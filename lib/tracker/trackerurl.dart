@@ -57,7 +57,23 @@ class PeerAddress {
     ip = new List.from(_ip);
     port = _port;
   }
-  
+
+  bool operator == (other) {
+    if(other is PeerAddress) {
+      if(other.peerId.length != peerId.length) {
+        return false;
+      }
+      for(int i=0;i<peerId.length;i++) {
+        if(other.peerId[i] != peerId[i]) {
+          return false;
+        }
+      }
+      return true;
+    }else {
+      return false;
+    }
+  }
+
   String get peerIdAsString => PercentEncode.encode(peerId);
   String get portdAsString => port.toString();
   String get ipAsString {
