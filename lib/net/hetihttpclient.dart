@@ -46,8 +46,10 @@ class HetiHttpClient {
     Map<String, String> headerTmp = {};
     headerTmp["Host"] = host;
     headerTmp["Connection"] = "close";
-    for (String key in header.keys) {
-      headerTmp[key] = header[key];
+    if (header != null) {
+      for (String key in header.keys) {
+        headerTmp[key] = header[key];
+      }
     }
 
     ArrayBuilder builder = new ArrayBuilder();
@@ -58,8 +60,8 @@ class HetiHttpClient {
     builder.appendString("\r\n");
 
     socket.onReceive().listen((HetiReceiveInfo info) {
-     // String r = convert.UTF8.decode(info.data);
-    //  print("\r\n######\r\n" + r + "\r\n#####\r\n");
+      // String r = convert.UTF8.decode(info.data);
+      //  print("\r\n######\r\n" + r + "\r\n#####\r\n");
     });
     socket.send(builder.toList()).then((HetiSendInfo info) {
       print("\r\n======" + info.resultCode.toString() + "\r\n");
@@ -70,7 +72,7 @@ class HetiHttpClient {
       HetiHttpClientResponse result = new HetiHttpClientResponse();
       result.message = message;
       HetiHttpResponseHeaderField transferEncodingField = message.find("Transfer-Encoding");
-      if(transferEncodingField == null || transferEncodingField.fieldValue != "chunked") {
+      if (transferEncodingField == null || transferEncodingField.fieldValue != "chunked") {
         result.body = new HetimaBuilderAdapter(socket.buffer, message.index);
       } else {
         result.body = new ChunkedBuilderAdapter(new HetimaBuilderAdapter(socket.buffer, message.index)).start();
