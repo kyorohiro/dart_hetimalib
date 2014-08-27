@@ -63,10 +63,11 @@ void main() {
     ticket.assertTrue("", adressA != adressB);
     ticket.fin();
   }
+  /*
   {
     hetima_sv.TrackerServer server = new hetima_sv.TrackerServer();
     server.add("dummy");
     server.updateResponse("", [127, 0, 0, 2]);
     
-  }
+  }*/
 }
