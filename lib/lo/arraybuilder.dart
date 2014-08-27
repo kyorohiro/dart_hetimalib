@@ -6,8 +6,7 @@ class ArrayBuilder extends HetimaBuilder {
   int _length = 0;
 
   async.Completer completer = new async.Completer();
-  List<int> completerResult = null;
-  int completerResultLength = 0;
+  List<GetByteFutureInfo> mGetByteFutreList = new List();
 
   ArrayBuilder() {
     _buffer8 = new data.Uint8List(_max);
@@ -19,8 +18,9 @@ class ArrayBuilder extends HetimaBuilder {
   }
 
   async.Future<List<int>> getByteFuture(int index, int length) {
-    completerResult = new List();
-    completerResultLength = length;
+    GetByteFutureInfo info = new GetByteFutureInfo();
+    info.completerResult = new List();
+    info.completerResultLength = length;
 
     if (completer.isCompleted) {
       completer = new async.Completer();
@@ -28,14 +28,16 @@ class ArrayBuilder extends HetimaBuilder {
 
     int v = index;
     for (index; index < size() && index < (length + v); index++) {
-      completerResult.add(get(index));
+      info.completerResult.add(get(index));
     }
 
 
-    if ((completerResultLength <= completerResult.length)||(immutable)) {
-      completer.complete(completerResult);
-      completerResult = null;
-      completerResultLength = 0;
+    if ((info.completerResultLength <= info.completerResult.length) || (immutable)) {
+      completer.complete(info.completerResult);
+      info.completerResult = null;
+      info.completerResultLength = 0;
+    } else {
+      mGetByteFutreList.add(info);
     }
 
     return completer.future;
@@ -50,7 +52,7 @@ class ArrayBuilder extends HetimaBuilder {
   }
 
   int size() {
-    return _length;    
+    return _length;
   }
 
   async.Future<int> getLength() {
@@ -76,30 +78,40 @@ class ArrayBuilder extends HetimaBuilder {
   }
 
   void fin() {
-    if (completerResult != null) {
-      completer.complete(completerResult);
-      completerResult = null;
-      completerResultLength = 0;
+    for (GetByteFutureInfo f in mGetByteFutreList) {
+      if (f.completerResult != null) {
+        completer.complete(f.completerResult);
+        f.completerResult = null;
+        f.completerResultLength = 0;
+      }
     }
+    mGetByteFutreList.clear();
     immutable = true;
   }
 
   void appendByte(int v) {
-    if(immutable) {
+    if (immutable) {
       return;
     }
     update(1);
     _buffer8[_length] = v;
     _length += 1;
 
-    if (!completer.isCompleted && completerResult != null) {
-      completerResult.add(v);
-    }
+    List<GetByteFutureInfo> removeList = new List();
+    for (GetByteFutureInfo f in mGetByteFutreList) {
+      if (!completer.isCompleted && f.completerResult != null) {
+        f.completerResult.add(v);
+      }
 
-    if (completerResult != null && completerResultLength <= completerResult.length) {
-      completer.complete(completerResult);
-      completerResult = null;
-      completerResultLength = 0;
+      if (f.completerResult != null && f.completerResultLength <= f.completerResult.length) {
+        completer.complete(f.completerResult);
+        f.completerResult = null;
+        f.completerResultLength = 0;
+        removeList.add(f);
+      }
+    }
+    for (GetByteFutureInfo f in removeList) {
+      mGetByteFutreList.remove(f);
     }
   }
 
@@ -137,4 +149,9 @@ class ArrayBuilder extends HetimaBuilder {
     return convert.UTF8.decode(toList());
   }
 
+}
+
+class GetByteFutureInfo {
+  List<int> completerResult = new List();
+  int completerResultLength = 0;
 }

@@ -286,6 +286,18 @@ class HetiHttpMessageWithoutBody {
     }
     return null;
   }
+  int get contentLength {
+    HetiHttpResponseHeaderField field = find(RfcTable.HEADER_FIELD_CONTENT_LENGTH);
+    if(field == null) {
+      return -1;
+    }
+    try {
+      return int.parse(field.fieldValue);
+    } catch(e) {
+      return -1;
+    }
+    
+  }
 }
 
 class ChunkedBuilderAdapter extends HetimaBuilder {

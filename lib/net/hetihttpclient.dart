@@ -64,7 +64,7 @@ class HetiHttpClient {
       //  print("\r\n######\r\n" + r + "\r\n#####\r\n");
     });
     socket.send(builder.toList()).then((HetiSendInfo info) {
-      print("\r\n======" + info.resultCode.toString() + "\r\n");
+      //print("\r\n======" + info.resultCode.toString() + "\r\n");
     });
 
     EasyParser parser = new EasyParser(socket.buffer);
@@ -74,12 +74,17 @@ class HetiHttpClient {
       HetiHttpResponseHeaderField transferEncodingField = message.find("Transfer-Encoding");
       if (transferEncodingField == null || transferEncodingField.fieldValue != "chunked") {
         result.body = new HetimaBuilderAdapter(socket.buffer, message.index);
+        if(result.message.contentLength > 0) {
+         result.body.getByteFuture(message.index + result.message.contentLength-1, 1).then((e){
+           result.body.immutable = true;
+         });
+        }
       } else {
         result.body = new ChunkedBuilderAdapter(new HetimaBuilderAdapter(socket.buffer, message.index)).start();
       }
       completer.complete(result);
     }).catchError((e) {
-      print("\r\n#CCCCC#\r\n");
+     // print("\r\n#CCCCC#\r\n");
       completer.completeError(e);
     });
     return completer.future;
