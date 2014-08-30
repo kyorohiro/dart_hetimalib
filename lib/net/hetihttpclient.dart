@@ -59,14 +59,41 @@ class HetiHttpClient {
     }
     builder.appendString("\r\n");
 
-    socket.onReceive().listen((HetiReceiveInfo info) {
-      // String r = convert.UTF8.decode(info.data);
-      //  print("\r\n######\r\n" + r + "\r\n#####\r\n");
-    });
-    socket.send(builder.toList()).then((HetiSendInfo info) {
-      //print("\r\n======" + info.resultCode.toString() + "\r\n");
-    });
+    socket.onReceive().listen((HetiReceiveInfo info) {});
+    socket.send(builder.toList()).then((HetiSendInfo info) {});
 
+    handleResponse(completer);
+    return completer.future;
+  }
+
+  // todo
+  async.Future<HetiHttpClientResponse> post(String path, List<int> body, [Map<String, String> header]) {
+    async.Completer<HetiHttpClientResponse> completer = new async.Completer();
+
+    Map<String, String> headerTmp = {};
+    headerTmp["Host"] = host;
+    headerTmp["Connection"] = "close";
+    if (header != null) {
+      for (String key in header.keys) {
+        headerTmp[key] = header[key];
+      }
+    }
+
+    ArrayBuilder builder = new ArrayBuilder();
+    builder.appendString("POST" + " " + path + " " + "HTTP/1.1" + "\r\n");
+    for (String key in headerTmp.keys) {
+      builder.appendString("" + key + ": " + headerTmp[key] + "\r\n");
+    }
+    builder.appendString("\r\n");
+
+    socket.onReceive().listen((HetiReceiveInfo info) {});
+    socket.send(builder.toList()).then((HetiSendInfo info) {});
+
+    handleResponse(completer);
+    return completer.future;
+  }
+
+  void handleResponse(async.Completer<HetiHttpClientResponse> completer) {
     EasyParser parser = new EasyParser(socket.buffer);
     HetiHttpResponse.decodeHttpMessage(parser).then((HetiHttpMessageWithoutBody message) {
       HetiHttpClientResponse result = new HetiHttpClientResponse();
@@ -84,10 +111,8 @@ class HetiHttpClient {
       }
       completer.complete(result);
     }).catchError((e) {
-     // print("\r\n#CCCCC#\r\n");
       completer.completeError(e);
     });
-    return completer.future;
   }
 
   void close() {
