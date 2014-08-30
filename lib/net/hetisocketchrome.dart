@@ -14,20 +14,20 @@ class HetiSocketBuilderChrome extends HetiSocketBuilder {
   }
 }
 
-class HetiServerSocketManager {
+class HetiChromeSocketManager {
   core.Map<core.int, HetiServerSocket> _serverList = new core.Map();
   core.Map<core.int, HetiSocket> _clientList = new core.Map();
   core.Map<core.int, HetiUdpSocket> _udpList = new core.Map();
-  static final HetiServerSocketManager _instance = new HetiServerSocketManager._internal();
-  factory HetiServerSocketManager() {
+  static final HetiChromeSocketManager _instance = new HetiChromeSocketManager._internal();
+  factory HetiChromeSocketManager() {
     return _instance;
   }
 
-  HetiServerSocketManager._internal() {
+  HetiChromeSocketManager._internal() {
     manageServerSocket();
   }
 
-  static HetiServerSocketManager getInstance() {
+  static HetiChromeSocketManager getInstance() {
     return _instance;
   }
 
@@ -98,7 +98,7 @@ class HetiServerSocketManager {
     _udpList[socketId] = socket;
   }
 
-  void removeUsp(core.int socketId) {
+  void removeUdp(core.int socketId) {
     _udpList.remove(socketId);
   }
 
@@ -112,7 +112,7 @@ class HetiServerSocketChrome extends HetiServerSocket {
       return chrome.sockets.tcpServer.create().then((chrome.CreateInfo info) {
         return chrome.sockets.tcpServer.listen(info.socketId, address, port).then((core.int backlog) {
           HetiServerSocketChrome server = new HetiServerSocketChrome._internal(info);
-          HetiServerSocketManager.getInstance().addServer(info, server);
+          HetiChromeSocketManager.getInstance().addServer(info, server);
           completer.complete(server);
         });
       });
@@ -139,7 +139,7 @@ class HetiServerSocketChrome extends HetiServerSocket {
 
   void close() {
     chrome.sockets.tcpServer.close(_mInfo.socketId);
-    HetiServerSocketManager.getInstance().removeServer(_mInfo);
+    HetiChromeSocketManager.getInstance().removeServer(_mInfo);
   }
 
 }
@@ -152,7 +152,7 @@ class HetiSocketChrome extends HetiSocket {
   }
 
   HetiSocketChrome(core.int _clientSocketId) {
-    HetiServerSocketManager.getInstance().addClient(_clientSocketId, this);
+    HetiChromeSocketManager.getInstance().addClient(_clientSocketId, this);
     chrome.sockets.tcp.setPaused(_clientSocketId, false);
     clientSocketId = _clientSocketId;
   }
@@ -192,10 +192,9 @@ class HetiSocketChrome extends HetiSocket {
           {
             chrome.sockets.tcp.setPaused(info.socketId, false);
             clientSocketId = info.socketId;
-            HetiServerSocketManager.getInstance().addClient(info.socketId, this);
+            HetiChromeSocketManager.getInstance().addClient(info.socketId, this);
             completer.complete(this);
           }
-          //          completer.complete(new HetiSocketChrome(info.socketId));
         });
       });
     }).catchError((e) {
@@ -214,7 +213,7 @@ class HetiSocketChrome extends HetiSocket {
     chrome.sockets.tcp.close(clientSocketId).then((d) {
       core.print("##closed()");
     });
-    HetiServerSocketManager.getInstance().removeClient(clientSocketId);
+    HetiChromeSocketManager.getInstance().removeClient(clientSocketId);
     _isClose = true;
   }
   core.bool _isClose = false;
@@ -232,6 +231,7 @@ class HetiUdpSocketChrome extends HetiUdpSocket {
     async.Completer<core.int> completer = new async.Completer();
     chrome.sockets.udp.create().then((chrome.CreateInfo info) {
       _info = info;
+      HetiChromeSocketManager.getInstance().addUdp(info.socketId, this);
       return chrome.sockets.udp.bind(_info.socketId, address, port);
     }).then((core.int v) {
       completer.complete(v);
@@ -248,6 +248,7 @@ class HetiUdpSocketChrome extends HetiUdpSocket {
     receiveStream.add(new HetiReceiveUdpInfo(info.data.getBytes(), remoteAddress, remotePort));
   }
   async.Future close() {
+    HetiChromeSocketManager.getInstance().removeUdp(_info.socketId);
     return chrome.sockets.udp.close(_info.socketId);
   }
 
