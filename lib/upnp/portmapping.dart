@@ -39,17 +39,26 @@ class UpnpPortMapping {
   void init() {
     socket = _socketBuilder.createUdpClient();
     socket.bind("0.0.0.0", 0);
-    socket.onReceive().listen(onReceive);
+    socket.onReceive().listen(_onReceive);
   }
 
-  void onReceive(HetiReceiveUdpInfo info) {
+  void _onReceive(HetiReceiveUdpInfo info) {
     print("########");
     print("" + convert.UTF8.decode(info.data));
     print("########");
-    extractLocation(info.data);
+    _extractLocation(info.data);
   }
 
-  void extractLocation(List<int> buffer) {
+  void searchWanPPPDevice() {
+    socket.send(convert.UTF8.encode(SSDP_M_SEARCH_WANPPPConnection), SSDP_ADDRESS, SSDP_PORT).then((HetiUdpSendInfo iii) {
+      print("###send=" + iii.resultCode.toString());
+    }).then((d) {
+      return socket.send(convert.UTF8.encode(SSDP_M_SEARCH_WANIPConnection), SSDP_ADDRESS, SSDP_PORT);
+    }).catchError((e){      
+    });
+  }
+
+  void _extractLocation(List<int> buffer) {
     ArrayBuilder builder = new ArrayBuilder();
     EasyParser parser = new EasyParser(builder);
     builder.appendIntList(buffer, 0, buffer.length);
@@ -69,14 +78,7 @@ class UpnpPortMapping {
     });
   }
 
-  void searchWanPPPDevice() {
-    socket.send(convert.UTF8.encode(SSDP_M_SEARCH_WANPPPConnection), SSDP_ADDRESS, SSDP_PORT).then((HetiUdpSendInfo iii) {
-      print("###send=" + iii.resultCode.toString());
-    }).then((d) {
-      return socket.send(convert.UTF8.encode(SSDP_M_SEARCH_WANIPConnection), SSDP_ADDRESS, SSDP_PORT);
-    }).catchError((e){      
-    });
-  }
+
 
   void extractService() {
     for (String location in locationList) {
