@@ -10,7 +10,7 @@ class HetiSocketBuilderChrome extends HetiSocketBuilder {
   }
 
   HetiUdpSocket createUdpClient() {
-    return null;
+    return new HetiUdpSocketChrome.empty();
   }
 }
 
