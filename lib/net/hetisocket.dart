@@ -2,6 +2,7 @@ part of hetima;
 
 abstract class HetiSocketBuilder {
   HetiSocket createClient();
+  HetiUdpSocket createUdpClient();
   async.Future<HetiServerSocket> startServer(String address, int port) ;
 }
 
@@ -23,6 +24,13 @@ abstract class HetiSocket {
   }
 }
 
+abstract class HetiUdpSocket {
+  async.Future<int> bind(String address, int port);
+  async.Future<HetiUdpSendInfo> send(List<int> buffer, String address, int port);
+  async.Stream<HetiReceiveUdpInfo> onReceive();
+  async.Future<dynamic> close();
+}
+
 class HetiSendInfo {
   int resultCode = 0;
   HetiSendInfo(int _resultCode) {
@@ -34,5 +42,26 @@ class HetiReceiveInfo {
   List<int> data;
   HetiReceiveInfo(List<int> _data) {
     data = _data;
+  }
+}
+//
+//   print("a:"+s["remoteAddress"]);
+// print("p:"+s["remotePort"]
+//
+class HetiReceiveUdpInfo {
+  List<int> data;
+  String remoteAddress;
+  int port;
+  HetiReceiveUdpInfo(List<int> adata, String aremoteAddress, int aport) {
+    data = adata;
+    remoteAddress = aremoteAddress;
+    port = aport;
+  }
+}
+
+class HetiUdpSendInfo {
+  int resultCode = 0;
+  HetiUdpSendInfo(int _resultCode) {
+    resultCode = _resultCode;
   }
 }

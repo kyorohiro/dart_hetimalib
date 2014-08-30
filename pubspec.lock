@@ -8,7 +8,7 @@ packages:
   chrome:
     description: chrome
     source: hosted
-    version: "0.6.0"
+    version: "0.6.1"
   collection:
     description: collection
     source: hosted
@@ -40,4 +40,4 @@ packages:
   unittest:
     description: unittest
     source: hosted
-    version: "0.11.0+4"
+    version: "0.11.0+5"

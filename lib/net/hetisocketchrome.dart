@@ -8,11 +8,16 @@ class HetiSocketBuilderChrome extends HetiSocketBuilder {
   async.Future<HetiServerSocket> startServer(core.String address, core.int port) {
     return HetiServerSocketChrome.startServer(address, port);
   }
+
+  HetiUdpSocket createUdpClient() {
+    return null;
+  }
 }
 
 class HetiServerSocketManager {
   core.Map<core.int, HetiServerSocket> _serverList = new core.Map();
   core.Map<core.int, HetiSocket> _clientList = new core.Map();
+  core.Map<core.int, HetiUdpSocket> _udpList = new core.Map();
   static final HetiServerSocketManager _instance = new HetiServerSocketManager._internal();
   factory HetiServerSocketManager() {
     return _instance;
@@ -61,6 +66,16 @@ class HetiServerSocketManager {
       core.print("--receive error " + info.socketId.toString() + "," + info.resultCode.toString());
       HetiSocketChrome socket = _clientList[info.socketId];
     });
+    
+    chrome.sockets.udp.onReceive.listen((chrome.ReceiveInfo info) {
+      HetiUdpSocketChrome socket = _udpList[info.socketId];
+      if (socket != null) {
+        socket.onReceiveInternal(info);
+      }
+    });
+    chrome.sockets.udp.onReceiveError.listen((chrome.ReceiveErrorInfo info) {
+      core.print("--receive udp error " + info.socketId.toString() + "," + info.resultCode.toString());
+    });
   }
 
   void addServer(chrome.CreateInfo info, HetiServerSocketChrome socket) {
@@ -77,6 +92,14 @@ class HetiServerSocketManager {
 
   void removeClient(core.int socketId) {
     _serverList.remove(socketId);
+  }
+
+  void addUdp(core.int socketId, HetiUdpSocket socket) {
+    _udpList[socketId] = socket;
+  }
+
+  void removeUsp(core.int socketId) {
+    _udpList.remove(socketId);
   }
 
 }
@@ -195,4 +218,48 @@ class HetiSocketChrome extends HetiSocket {
     _isClose = true;
   }
   core.bool _isClose = false;
+}
+
+class HetiUdpSocketChrome extends HetiUdpSocket {
+  
+  chrome.CreateInfo _info = null;
+  async.StreamController<HetiReceiveUdpInfo> receiveStream = new async.StreamController();
+  HetiUdpSocketChrome.empty() {
+  }
+
+  async.Future<core.int> bind(core.String address, core.int port) {
+    chrome.sockets.udp.onReceive.listen(onReceiveInternal);
+    async.Completer<core.int> completer = new async.Completer();
+    chrome.sockets.udp.create().then((chrome.CreateInfo info) {
+      _info = info;
+      return chrome.sockets.udp.bind(_info.socketId, address, port);
+    }).then((core.int v) {
+      completer.complete(v);
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
+  void onReceiveInternal(chrome.ReceiveInfo info){
+    js.JsObject s= info.toJs();
+    core.String remoteAddress = s["remoteAddress"];
+    core.int remotePort = s["remotePort"];
+    receiveStream.add(new HetiReceiveUdpInfo(info.data.getBytes(), remoteAddress, remotePort));
+  }
+  async.Future close() {
+    return chrome.sockets.udp.close(_info.socketId);
+  }
+
+  async.Stream<HetiReceiveUdpInfo> onReceive() {
+   return receiveStream.stream;
+  }
+
+  async.Future<HetiUdpSendInfo> send(core.List<core.int> buffer, core.String address, core.int port) {
+    async.Completer<HetiUdpSendInfo> completer = new async.Completer();
+    chrome.sockets.udp.send(_info.socketId, new chrome.ArrayBuffer.fromBytes(buffer), address, port).then((chrome.SendInfo info) {
+      completer.complete(new HetiUdpSendInfo(info.resultCode));      
+    });
+    return completer.future;
+  }
 }

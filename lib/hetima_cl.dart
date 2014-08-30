@@ -7,7 +7,7 @@ import 'dart:typed_data' as data;
 import 'dart:html' as html;
 import 'dart:convert' as convert;
 import 'package:chrome/chrome_app.dart' as chrome;
-
+import 'dart:js' as js;
 part 'signal/caller.dart';
 part 'signal/signalclient.dart';
 part 'signal/hetimapeer.dart';
