@@ -44,18 +44,19 @@ class HetiReceiveInfo {
     data = _data;
   }
 }
+
 //
-//   print("a:"+s["remoteAddress"]);
+// print("a:"+s["remoteAddress"]);
 // print("p:"+s["remotePort"]
 //
 class HetiReceiveUdpInfo {
   List<int> data;
   String remoteAddress;
-  int port;
+  int remotePort;
   HetiReceiveUdpInfo(List<int> adata, String aremoteAddress, int aport) {
     data = adata;
     remoteAddress = aremoteAddress;
-    port = aport;
+    remotePort = aport;
   }
 }
 

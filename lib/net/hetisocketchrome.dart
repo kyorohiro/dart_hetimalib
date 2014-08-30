@@ -46,25 +46,29 @@ class HetiChromeSocketManager {
 
     core.bool closeChecking = false;
     chrome.sockets.tcp.onReceive.listen((chrome.ReceiveInfo info) {
-      core.print("--receive " + info.socketId.toString() + "," + info.data.getBytes().length.toString());
+     // core.print("--receive " + info.socketId.toString() + "," + info.data.getBytes().length.toString());
       HetiSocketChrome socket = _clientList[info.socketId];
       if (socket != null) {
         socket.onReceiveInternal(info);
-        if (closeChecking == false) {
+/*        if (closeChecking == false) {
           closeChecking = true;
           chrome.sockets.tcp.getInfo(socket.clientSocketId).then((chrome.SocketInfo inf) {
             closeChecking = false;
-            core.print("###DF# " + inf.connected.toString() + "," + inf.paused.toString());
+          //  core.print("###DF# " + inf.connected.toString() + "," + inf.paused.toString());
             if (inf.connected == false) {
               socket.close();
             }
           });
-        }
+        }*/
       }
     });
     chrome.sockets.tcp.onReceiveError.listen((chrome.ReceiveErrorInfo info) {
       core.print("--receive error " + info.socketId.toString() + "," + info.resultCode.toString());
       HetiSocketChrome socket = _clientList[info.socketId];
+      if (socket != null) {
+        closeChecking = true;
+        socket.close();
+      }
     });
     
     chrome.sockets.udp.onReceive.listen((chrome.ReceiveInfo info) {
@@ -162,7 +166,7 @@ class HetiSocketChrome extends HetiSocket {
   }
 
   void onReceiveInternal(chrome.ReceiveInfo info) {
-    core.print("--receive " + info.socketId.toString());
+    //core.print("--receive " + info.socketId.toString());
     updateTime();
     core.List<core.int> tmp = info.data.getBytes();
     buffer.appendIntList(tmp, 0, tmp.length);

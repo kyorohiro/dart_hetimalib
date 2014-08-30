@@ -59,14 +59,18 @@ class HetiHttpClient {
     }
     builder.appendString("\r\n");
 
-    socket.onReceive().listen((HetiReceiveInfo info) {});
+    socket.onReceive().listen((HetiReceiveInfo info) {
+      print("Length"+path+":"+info.data.length.toString());
+    });
     socket.send(builder.toList()).then((HetiSendInfo info) {});
 
     handleResponse(completer);
     return completer.future;
   }
 
-  // todo
+  //
+  // post
+  //
   async.Future<HetiHttpClientResponse> post(String path, List<int> body, [Map<String, String> header]) {
     async.Completer<HetiHttpClientResponse> completer = new async.Completer();
 
@@ -78,13 +82,16 @@ class HetiHttpClient {
         headerTmp[key] = header[key];
       }
     }
+    headerTmp[RfcTable.HEADER_FIELD_CONTENT_LENGTH] = body.length.toString();
 
     ArrayBuilder builder = new ArrayBuilder();
     builder.appendString("POST" + " " + path + " " + "HTTP/1.1" + "\r\n");
     for (String key in headerTmp.keys) {
       builder.appendString("" + key + ": " + headerTmp[key] + "\r\n");
     }
+
     builder.appendString("\r\n");
+    builder.appendIntList(body, 0, body.length);
 
     socket.onReceive().listen((HetiReceiveInfo info) {});
     socket.send(builder.toList()).then((HetiSendInfo info) {});
@@ -105,6 +112,8 @@ class HetiHttpClient {
          result.body.getByteFuture(message.index + result.message.contentLength-1, 1).then((e){
            result.body.immutable = true;
          });
+        } else {
+          result.body.immutable = true;
         }
       } else {
         result.body = new ChunkedBuilderAdapter(new HetimaBuilderAdapter(socket.buffer, message.index)).start();

@@ -211,7 +211,7 @@ class HetiHttpResponse {
         throw new EasyParseError();
       } else {
         String nn = convert.UTF8.decode(n);
-        print("nn=" + nn);
+      //  print("nn=" + nn);
         v = int.parse(nn, radix: 16);
         return HetiHttpResponse.decodeCrlf(parser);
       }
@@ -279,7 +279,7 @@ class HetiHttpMessageWithoutBody {
 
   HetiHttpResponseHeaderField find(String fieldName) {
     for (HetiHttpResponseHeaderField field in headerField) {
-      print(""+field.fieldName.toLowerCase() +"== "+fieldName.toLowerCase());
+    //  print(""+field.fieldName.toLowerCase() +"== "+fieldName.toLowerCase());
       if (field != null && field.fieldName.toLowerCase() == fieldName.toLowerCase()) {
         return field;
       }
@@ -292,7 +292,7 @@ class HetiHttpMessageWithoutBody {
       return -1;
     }
     try {
-      return int.parse(field.fieldValue);
+      return int.parse(field.fieldValue.replaceAll(" |\r|\n|\t",""));
     } catch(e) {
       return -1;
     }
@@ -317,7 +317,7 @@ class ChunkedBuilderAdapter extends HetimaBuilder {
     _started = true;
     _decodeChunked(new EasyParser(_base)).catchError((e) {
     }).then((e) {
-      print("\r\n#~55www#\r\n");
+     // print("\r\n#~55www#\r\n");
       _buffer.fin();
     });
     return this;
@@ -333,7 +333,7 @@ class ChunkedBuilderAdapter extends HetimaBuilder {
           complter.complete(true);
         } else {
           return HetiHttpResponse.decodeCrlf(parser).then((e) {
-            print("\r\n#~11www#\r\n");
+           // print("\r\n#~11www#\r\n");
             return _decodeChunked(parser);
           }).then((v){
             complter.complete(true);
