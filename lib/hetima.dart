@@ -30,4 +30,4 @@ part 'lo/hetimabuilder.dart';
 part 'lo/hetibencode.dart';
 part 'lo/hetimafile2builder.dart';
 part 'tracker/trackerclient.dart';
-
+part 'upnp/portmapping.dart';
