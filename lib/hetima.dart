@@ -5,6 +5,7 @@ import 'dart:convert' as convert;
 import 'dart:async' as async;
 import 'dart:core';
 import 'package:crypto/crypto.dart' as crypto;
+import 'package:xml/xml.dart' as xml; 
 part 'util/kbucket.dart';
 part 'util/uuid.dart';
 part 'lo/byteorder.dart';

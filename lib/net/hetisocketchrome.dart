@@ -236,6 +236,8 @@ class HetiUdpSocketChrome extends HetiUdpSocket {
     chrome.sockets.udp.create().then((chrome.CreateInfo info) {
       _info = info;
       HetiChromeSocketManager.getInstance().addUdp(info.socketId, this);
+      return chrome.sockets.udp.setMulticastLoopbackMode(_info.socketId, true);
+    }).then((v) {
       return chrome.sockets.udp.bind(_info.socketId, address, port);
     }).then((core.int v) {
       completer.complete(v);

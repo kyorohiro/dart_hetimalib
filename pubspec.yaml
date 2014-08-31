@@ -7,3 +7,4 @@ dependencies:
   chrome: any
   crypto: any
   unittest: any
+  xml: any
