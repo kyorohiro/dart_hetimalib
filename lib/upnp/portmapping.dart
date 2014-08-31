@@ -9,25 +9,28 @@ class UpnpPortMapping {
   static String SSDP_M_SEARCH_WANIPConnection = """M-SEARCH * HTTP/1.1\r\n""" + """MX: 3\r\n""" + """HOST: 239.255.255.250:1900\r\n""" + """MAN: "ssdp:discover"\r\n""" + """ST: urn:schemas-upnp-org:service:WANIPConnection:1\r\n""" + """\r\n""";
 
   List<UPnpDeviceInfo> deviceInfoList = new List();
-  HetiUdpSocket socket = null;
+  HetiUdpSocket _socket = null;
   async.StreamController<UPnpDeviceInfo> _streamer = new async.StreamController();
-
   HetiSocketBuilder _socketBuilder = null;
+
   UpnpPortMapping(HetiSocketBuilder builder) {
     _socketBuilder = builder;
   }
 
   async.Future<int> init() {
-    socket = _socketBuilder.createUdpClient();
-    socket.onReceive().listen((HetiReceiveUdpInfo info) {
+    _socket = _socketBuilder.createUdpClient();
+    _socket.onReceive().listen((HetiReceiveUdpInfo info) {
       print("########");
       print("" + convert.UTF8.decode(info.data));
       print("########");
       extractDeviceInfoFromUdpResponse(info.data);
     });
-    return socket.bind("0.0.0.0", 0);
+    return _socket.bind("0.0.0.0", 0);
   }
 
+  async.Future<int> close() {
+    
+  }
   static async.Future<UpnpPortMapping> createInstance(HetiSocketBuilder builder) {
     async.Completer<UpnpPortMapping> completer = new async.Completer();
     UpnpPortMapping ret = new UpnpPortMapping(builder);
@@ -44,19 +47,18 @@ class UpnpPortMapping {
   }
 
   void searchWanPPPDevice() {
-    socket.send(convert.UTF8.encode(SSDP_M_SEARCH_WANPPPConnection), SSDP_ADDRESS, SSDP_PORT).then((HetiUdpSendInfo iii) {
+    _socket.send(convert.UTF8.encode(SSDP_M_SEARCH_WANPPPConnection), SSDP_ADDRESS, SSDP_PORT).then((HetiUdpSendInfo iii) {
       print("###send[A]=" + iii.resultCode.toString());
     }).then((d) {
-      return socket.send(convert.UTF8.encode(SSDP_M_SEARCH_WANIPConnection), SSDP_ADDRESS, SSDP_PORT);
+      return _socket.send(convert.UTF8.encode(SSDP_M_SEARCH_WANIPConnection), SSDP_ADDRESS, SSDP_PORT);
     }).then((HetiUdpSendInfo iii) {
       print("###send[B]=" + iii.resultCode.toString());
     }).catchError((e) {
     });
   }
 
-
   void extractService(UPnpDeviceInfo deviceInfo) {
-    getServiceList(deviceInfo).then((String serviceXml) {
+    requestServiceList(deviceInfo).then((String serviceXml) {
       print("" + serviceXml);
       xml.XmlDocument document = xml.parse(serviceXml);
       Iterable<xml.XmlElement> elements = document.findAllElements("serviceType");
@@ -69,7 +71,20 @@ class UpnpPortMapping {
     });
   }
 
-  async.Future<String> getServiceList(UPnpDeviceInfo deviceInfo) {
+  void extractDeviceInfoFromUdpResponse(List<int> buffer) {
+    ArrayBuilder builder = new ArrayBuilder();
+    EasyParser parser = new EasyParser(builder);
+    builder.appendIntList(buffer, 0, buffer.length);
+    HetiHttpResponse.decodeHttpMessage(parser).then((HetiHttpMessageWithoutBody message) {
+      UPnpDeviceInfo info = new UPnpDeviceInfo(message.headerField);
+      if (!deviceInfoList.contains(info)) {
+        deviceInfoList.add(info);
+        extractService(info);
+      }
+    });
+  }
+
+  async.Future<String> requestServiceList(UPnpDeviceInfo deviceInfo) {
     async.Completer<String> completer = new async.Completer();
     String location = deviceInfo.getValue(UPnpDeviceInfo.KEY_LOCATION, "");
     if (location == "" || location == null) {
@@ -97,19 +112,6 @@ class UpnpPortMapping {
       completer.completeError(e);
     });
     return completer.future;
-  }
-
-  void extractDeviceInfoFromUdpResponse(List<int> buffer) {
-    ArrayBuilder builder = new ArrayBuilder();
-    EasyParser parser = new EasyParser(builder);
-    builder.appendIntList(buffer, 0, buffer.length);
-    HetiHttpResponse.decodeHttpMessage(parser).then((HetiHttpMessageWithoutBody message) {
-      UPnpDeviceInfo info = new UPnpDeviceInfo(message.headerField);
-      if (!deviceInfoList.contains(info)) {
-        deviceInfoList.add(info);
-        extractService(info);
-      }
-    });
   }
 
 }
