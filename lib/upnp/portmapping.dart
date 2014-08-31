@@ -69,7 +69,6 @@ class UpnpPortMapping {
     });
   }
 
-  
   async.Future<String> getServiceList(UPnpDeviceInfo deviceInfo) {
     async.Completer<String> completer = new async.Completer();
     String location = deviceInfo.getValue(UPnpDeviceInfo.KEY_LOCATION, "");
@@ -99,8 +98,8 @@ class UpnpPortMapping {
     });
     return completer.future;
   }
-  
-  void _extractDeviceInfo(List<int> buffer) {
+
+  void extractDeviceInfoFromUdpResponse(List<int> buffer) {
     ArrayBuilder builder = new ArrayBuilder();
     EasyParser parser = new EasyParser(builder);
     builder.appendIntList(buffer, 0, buffer.length);
