@@ -23,7 +23,7 @@ class UpnpPortMapping {
       print("########");
       print("" + convert.UTF8.decode(info.data));
       print("########");
-      _extractDeviceInfo(info.data);
+      extractDeviceInfoFromUdpResponse(info.data);
     });
     return socket.bind("0.0.0.0", 0);
   }
