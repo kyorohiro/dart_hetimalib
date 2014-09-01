@@ -1,6 +1,6 @@
 part of hetima;
 
-class UpnpPortMapping {
+class UpnpDeviceSearcher {
 
   static String SSDP_ADDRESS = "239.255.255.250";
   static int SSDP_PORT = 1900;
@@ -13,7 +13,7 @@ class UpnpPortMapping {
   async.StreamController<UPnpDeviceInfo> _streamer = new async.StreamController();
   HetiSocketBuilder _socketBuilder = null;
 
-  UpnpPortMapping(HetiSocketBuilder builder) {
+  UpnpDeviceSearcher(HetiSocketBuilder builder) {
     _socketBuilder = builder;
   }
 
@@ -29,11 +29,12 @@ class UpnpPortMapping {
   }
 
   async.Future<int> close() {
-    
+    return _socket.close();
   }
-  static async.Future<UpnpPortMapping> createInstance(HetiSocketBuilder builder) {
-    async.Completer<UpnpPortMapping> completer = new async.Completer();
-    UpnpPortMapping ret = new UpnpPortMapping(builder);
+
+  static async.Future<UpnpDeviceSearcher> createInstance(HetiSocketBuilder builder) {
+    async.Completer<UpnpDeviceSearcher> completer = new async.Completer();
+    UpnpDeviceSearcher ret = new UpnpDeviceSearcher(builder);
     ret.init().then((int v) {
       completer.complete(ret);
     }).catchError((e) {
@@ -57,64 +58,23 @@ class UpnpPortMapping {
     });
   }
 
-  void extractService(UPnpDeviceInfo deviceInfo) {
-    requestServiceList(deviceInfo).then((String serviceXml) {
-      print("" + serviceXml);
-      xml.XmlDocument document = xml.parse(serviceXml);
-      Iterable<xml.XmlElement> elements = document.findAllElements("serviceType");
-      for (xml.XmlElement element in elements) {
-        print("t=" + element.text);
-        print("n=" + element.name.toString());
-        deviceInfo.addService(element.text);
-      }
-      _streamer.add(deviceInfo);
-    });
-  }
-
   void extractDeviceInfoFromUdpResponse(List<int> buffer) {
     ArrayBuilder builder = new ArrayBuilder();
     EasyParser parser = new EasyParser(builder);
     builder.appendIntList(buffer, 0, buffer.length);
     HetiHttpResponse.decodeHttpMessage(parser).then((HetiHttpMessageWithoutBody message) {
-      UPnpDeviceInfo info = new UPnpDeviceInfo(message.headerField);
+      UPnpDeviceInfo info = new UPnpDeviceInfo(message.headerField, _socketBuilder);
       if (!deviceInfoList.contains(info)) {
         deviceInfoList.add(info);
-        extractService(info);
+        info.extractService().then((int v) {
+          _streamer.add(info);
+        });
       }
     });
   }
 
-  async.Future<String> requestServiceList(UPnpDeviceInfo deviceInfo) {
-    async.Completer<String> completer = new async.Completer();
-    String location = deviceInfo.getValue(UPnpDeviceInfo.KEY_LOCATION, "");
-    if (location == "" || location == null) {
-      completer.completeError({});
-      return completer.future;
-    }
-
-    HetiHttpClient client = new HetiHttpClient(_socketBuilder);
-    HttpUrl url = HttpUrlDecoder.decodeUrl(location);
-    client.connect(url.host, url.port).then((int d) {
-      return client.get(url.path);
-    }).then((HetiHttpClientResponse res) {
-      HetiHttpResponseHeaderField field = res.message.find(RfcTable.HEADER_FIELD_CONTENT_LENGTH);
-      return res.body.onFin().then((b) {
-        return res.body.getLength().then((int length) {
-          return res.body.getByteFuture(0, length).then((List<int> v) {
-            print("#####==" + location);
-            completer.complete(convert.UTF8.decode(v));
-            print("####");
-          });
-        });
-      });
-    }).catchError((e) {
-      print("##err SDFSDf");
-      completer.completeError(e);
-    });
-    return completer.future;
-  }
-
 }
+
 
 class UPnpDeviceInfo {
   static String KEY_ST = "ST";
@@ -127,8 +87,9 @@ class UPnpDeviceInfo {
   static String KEY_EXT = "Ext";
   Map<String, String> _map = {};
   List<String> _service = [];
-
-  UPnpDeviceInfo(List<HetiHttpResponseHeaderField> headerField) {
+  HetiSocketBuilder socketBuilder;
+  UPnpDeviceInfo(List<HetiHttpResponseHeaderField> headerField, HetiSocketBuilder builder) {
+    socketBuilder = builder;
     for (HetiHttpResponseHeaderField header in headerField) {
       if (header.fieldName != null) {
         _map[header.fieldName] = header.fieldValue;
@@ -173,5 +134,48 @@ class UPnpDeviceInfo {
 
   void addService(String service) {
     _service.add(service);
+  }
+
+  async.Future<int> extractService() {
+    async.Completer completer = new async.Completer();
+    requestServiceList().then((String serviceXml) {
+      print("" + serviceXml);
+      xml.XmlDocument document = xml.parse(serviceXml);
+      Iterable<xml.XmlElement> elements = document.findAllElements("serviceType");
+      for (xml.XmlElement element in elements) {
+        addService(element.text);
+      }
+      completer.complete(0);
+    }).catchError((e){
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
+  async.Future<String> requestServiceList() {
+    async.Completer<String> completer = new async.Completer();
+    String location = getValue(UPnpDeviceInfo.KEY_LOCATION, "");
+    if (location == "" || location == null) {
+      completer.completeError({});
+      return completer.future;
+    }
+
+    HetiHttpClient client = new HetiHttpClient(socketBuilder);
+    HttpUrl url = HttpUrlDecoder.decodeUrl(location);
+    client.connect(url.host, url.port).then((int d) {
+      return client.get(url.path);
+    }).then((HetiHttpClientResponse res) {
+      HetiHttpResponseHeaderField field = res.message.find(RfcTable.HEADER_FIELD_CONTENT_LENGTH);
+      return res.body.onFin().then((b) {
+        return res.body.getLength().then((int length) {
+          return res.body.getByteFuture(0, length).then((List<int> v) {
+            completer.complete(convert.UTF8.decode(v));
+          });
+        });
+      });
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
   }
 }
