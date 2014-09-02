@@ -75,7 +75,49 @@ class UpnpDeviceSearcher {
 
 }
 
+class UPnpPPPDevice {
+  String KEY = "SOAPACTION";
+  String VALUE = """\"urn:schemas-upnp-org:service:WANPPPConnection:1#GetExternalIPAddress\"""";
+  String BODY = """<?xml version="1.0"?><SOAP-ENV:Envelope xmlns:SOAP-ENV:="http://schemas.xmlsoap.org/soap/envelope/" SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><SOAP-ENV:Body><m:GetExternalIPAddress xmlns:m="urn:schemas-upnp-org:service:WANPPPConnection:1"></m:GetExternalIPAddress></SOAP-ENV:Body></SOAP-ENV:Envelope>""";
 
+  UPnpDeviceInfo _base = null;
+  UPnpPPPDevice(UPnpDeviceInfo base) {
+    _base = base;
+  }
+
+  async.Future<GetExternalIPAddressResult> requestGetExternalIPAddress() {
+    async.Completer<GetExternalIPAddressResult> completer = new async.Completer();
+    HetiSocket socket = _base.getSocketBuilder().createClient();
+    String location = _base.getValue(UPnpDeviceInfo.KEY_LOCATION, "");
+    if ("" == location) {
+      completer.completeError({});
+      return completer.future;
+    }
+
+    HetiHttpClient client = new HetiHttpClient(_base.getSocketBuilder());
+    HttpUrl url = HttpUrlDecoder.decodeUrl(location);
+    client.connect(url.host, url.port).then((int v) {
+      return client.post(url.host, convert.UTF8.encode(BODY), {
+        KEY: VALUE
+      });
+    }).then((HetiHttpClientResponse response) {
+      return response.body.onFin().then((bool v) {
+        return response.body.getLength();
+      }).then((int length) {
+        return response.body.getByteFuture(0, length);
+      }).then((List<int> body) {
+        print(convert.UTF8.decode(body));
+      });
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+
+    return completer.future;
+  }
+}
+class GetExternalIPAddressResult {
+
+}
 class UPnpDeviceInfo {
   static String KEY_ST = "ST";
   static String KEY_USN = "USN";
@@ -95,6 +137,10 @@ class UPnpDeviceInfo {
         _map[header.fieldName] = header.fieldValue;
       }
     }
+  }
+
+  HetiSocketBuilder getSocketBuilder() {
+    return socketBuilder;
   }
 
   String getValue(String key, String defaultValue) {
@@ -146,7 +192,7 @@ class UPnpDeviceInfo {
         addService(element.text);
       }
       completer.complete(0);
-    }).catchError((e){
+    }).catchError((e) {
       completer.completeError(e);
     });
     return completer.future;
