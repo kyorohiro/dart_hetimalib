@@ -76,13 +76,22 @@ class UpnpDeviceSearcher {
 }
 
 class UPnpPPPDevice {
-  String KEY = "SOAPACTION";
-  String VALUE = """\"urn:schemas-upnp-org:service:WANPPPConnection:1#GetExternalIPAddress\"""";
-  String BODY = """<?xml version="1.0"?><SOAP-ENV:Envelope xmlns:SOAP-ENV:="http://schemas.xmlsoap.org/soap/envelope/" SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><SOAP-ENV:Body><m:GetExternalIPAddress xmlns:m="urn:schemas-upnp-org:service:WANPPPConnection:1"></m:GetExternalIPAddress></SOAP-ENV:Body></SOAP-ENV:Envelope>""";
+  String KEY_SOAPACTION = "SOAPACTION";
+  String VALUE_GET_EXTERNAL_IP_ADDRESS = """\"urn:schemas-upnp-org:service:WANPPPConnection:1#GetExternalIPAddress\"""";
+  String VALUE_ADD_PORT_MAPPING = """\"urn:schemas-upnp-org:service:WANPPPConnection:1#AddPortMapping\"""";
+  String VALUE_DELETE_PORT_MAPPING = """\"urn:schemas-upnp-org:service:WANPPPConnection:1#DeletePortMapping\"""";
+  String BODY_GET_EXTERNAL_IP_ADDRESS = """<?xml version="1.0"?><SOAP-ENV:Envelope xmlns:SOAP-ENV:="http://schemas.xmlsoap.org/soap/envelope/" SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><SOAP-ENV:Body><m:GetExternalIPAddress xmlns:m="urn:schemas-upnp-org:service:WANPPPConnection:1"></m:GetExternalIPAddress></SOAP-ENV:Body></SOAP-ENV:Envelope>""";
+  String BODY_ADD_PORT_MAPPING = """<?xml version="1.0"?><SOAP-ENV:Envelope xmlns:SOAP-ENV:="http://schemas.xmlsoap.org/soap/envelope/" SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><SOAP-ENV:Body><m:AddPortMapping xmlns:m="urn:schemas-upnp-org:service:WANPPPConnection:1"><NewRemoteHost></NewRemoteHost><NewExternalPort>8081</NewExternalPort><NewProtocol>TCP</NewProtocol><NewInternalPort>8081</NewInternalPort><NewInternalClient>192.168.0.3</NewInternalClient><NewEnabled>1</NewEnabled><NewPortMappingDescription>test</NewPortMappingDescription><NewLeaseDuration>3600</NewLeaseDuration></m:AddPortMapping></SOAP-ENV:Body></SOAP-ENV:Envelope>""";
+  String BODY_DELETE_PORT_MAPPING = """<?xml version=\"1.0\"?><SOAP-ENV:Envelope xmlns:SOAP-ENV:=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\"><SOAP-ENV:Body><m:DeletePortMapping xmlns:m=\"urn:schemas-upnp-org:service:WANPPPConnection:1\"><NewRemoteHost></NewRemoteHost><NewExternalPort>8081</NewExternalPort><NewProtocol>TCP</NewProtocol></m:DeletePortMapping></SOAP-ENV:Body></SOAP-ENV:Envelope>""";
 
   UPnpDeviceInfo _base = null;
   UPnpPPPDevice(UPnpDeviceInfo base) {
     _base = base;
+    String st = _base.getValue(UPnpDeviceInfo.KEY_ST, "WANIPConnection");
+    if(st.contains("WANIPConnection")) {
+      VALUE_GET_EXTERNAL_IP_ADDRESS.replaceAll("WANPPPConnection", "WANIPConnection");
+      BODY_GET_EXTERNAL_IP_ADDRESS.replaceAll("WANPPPConnection", "WANIPConnection");
+    }
   }
 
   async.Future<String> requestGetExternalIPAddress() {
@@ -97,8 +106,8 @@ class UPnpPPPDevice {
     HetiHttpClient client = new HetiHttpClient(_base.getSocketBuilder());
     HttpUrl url = HttpUrlDecoder.decodeUrl(location);
     client.connect(url.host, url.port).then((int v) {
-      return client.post(url.host, convert.UTF8.encode(BODY), {
-        KEY: VALUE
+      return client.post(url.host, convert.UTF8.encode(BODY_GET_EXTERNAL_IP_ADDRESS), {
+        KEY_SOAPACTION: VALUE_GET_EXTERNAL_IP_ADDRESS
       });
     }).then((HetiHttpClientResponse response) {
       return response.body.onFin().then((bool v) {
