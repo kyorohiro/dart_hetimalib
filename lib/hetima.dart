@@ -31,4 +31,7 @@ part 'lo/hetimabuilder.dart';
 part 'lo/hetibencode.dart';
 part 'lo/hetimafile2builder.dart';
 part 'tracker/trackerclient.dart';
-part 'upnp/portmapping.dart';
+part 'upnp/upnpdevicesearcher.dart';
+part 'upnp/upnppppdevice.dart';
+part 'upnp/upnpdeviceinfo.dart';
+
