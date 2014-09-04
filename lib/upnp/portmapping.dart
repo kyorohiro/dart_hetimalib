@@ -85,8 +85,8 @@ class UPnpPPPDevice {
     _base = base;
   }
 
-  async.Future<GetExternalIPAddressResult> requestGetExternalIPAddress() {
-    async.Completer<GetExternalIPAddressResult> completer = new async.Completer();
+  async.Future<String> requestGetExternalIPAddress() {
+    async.Completer<String> completer = new async.Completer();
     HetiSocket socket = _base.getSocketBuilder().createClient();
     String location = _base.getValue(UPnpDeviceInfo.KEY_LOCATION, "");
     if ("" == location) {
@@ -107,6 +107,13 @@ class UPnpPPPDevice {
         return response.body.getByteFuture(0, length);
       }).then((List<int> body) {
         print(convert.UTF8.decode(body));
+        xml.XmlDocument document = xml.parse(convert.UTF8.decode(body));
+        Iterable<xml.XmlElement> elements = document.findAllElements("NewExternalIPAddress");
+        if (elements.length > 0) {
+          completer.complete(elements.first.text);
+        } else {
+          completer.complete("");
+        }
       });
     }).catchError((e) {
       completer.completeError(e);
@@ -115,9 +122,7 @@ class UPnpPPPDevice {
     return completer.future;
   }
 }
-class GetExternalIPAddressResult {
 
-}
 class UPnpDeviceInfo {
   static String KEY_ST = "ST";
   static String KEY_USN = "USN";
