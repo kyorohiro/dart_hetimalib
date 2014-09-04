@@ -90,11 +90,31 @@ class UPnpPPPDevice {
     String st = _base.getValue(UPnpDeviceInfo.KEY_ST, "WANIPConnection");
     if(st.contains("WANIPConnection")) {
       VALUE_GET_EXTERNAL_IP_ADDRESS.replaceAll("WANPPPConnection", "WANIPConnection");
+      VALUE_ADD_PORT_MAPPING.replaceAll("WANPPPConnection", "WANIPConnection");
+      VALUE_DELETE_PORT_MAPPING.replaceAll("WANPPPConnection", "WANIPConnection");
       BODY_GET_EXTERNAL_IP_ADDRESS.replaceAll("WANPPPConnection", "WANIPConnection");
+      BODY_ADD_PORT_MAPPING.replaceAll("WANPPPConnection", "WANIPConnection");
+      BODY_DELETE_PORT_MAPPING.replaceAll("WANPPPConnection", "WANIPConnection");
     }
   }
 
   async.Future<String> requestGetExternalIPAddress() {
+    async.Completer<String> completer = new async.Completer();
+    request(VALUE_GET_EXTERNAL_IP_ADDRESS, BODY_GET_EXTERNAL_IP_ADDRESS).then((String response) {
+      xml.XmlDocument document = xml.parse(response);
+      Iterable<xml.XmlElement> elements = document.findAllElements("NewExternalIPAddress");
+      if (elements.length > 0) {
+        completer.complete(elements.first.text);
+      } else {
+        completer.complete("");
+      }
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
+  async.Future<String> request(String soapAction, String body) {
     async.Completer<String> completer = new async.Completer();
     HetiSocket socket = _base.getSocketBuilder().createClient();
     String location = _base.getValue(UPnpDeviceInfo.KEY_LOCATION, "");
@@ -106,8 +126,8 @@ class UPnpPPPDevice {
     HetiHttpClient client = new HetiHttpClient(_base.getSocketBuilder());
     HttpUrl url = HttpUrlDecoder.decodeUrl(location);
     client.connect(url.host, url.port).then((int v) {
-      return client.post(url.host, convert.UTF8.encode(BODY_GET_EXTERNAL_IP_ADDRESS), {
-        KEY_SOAPACTION: VALUE_GET_EXTERNAL_IP_ADDRESS
+      return client.post(url.host, convert.UTF8.encode(body), {
+        KEY_SOAPACTION: soapAction
       });
     }).then((HetiHttpClientResponse response) {
       return response.body.onFin().then((bool v) {
@@ -116,18 +136,11 @@ class UPnpPPPDevice {
         return response.body.getByteFuture(0, length);
       }).then((List<int> body) {
         print(convert.UTF8.decode(body));
-        xml.XmlDocument document = xml.parse(convert.UTF8.decode(body));
-        Iterable<xml.XmlElement> elements = document.findAllElements("NewExternalIPAddress");
-        if (elements.length > 0) {
-          completer.complete(elements.first.text);
-        } else {
-          completer.complete("");
-        }
+        completer.complete(convert.UTF8.decode(body));
       });
     }).catchError((e) {
       completer.completeError(e);
     });
-
     return completer.future;
   }
 }
