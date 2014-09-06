@@ -1,15 +1,20 @@
 part of hetima;
 
 class UPnpPPPDevice {
-  String KEY_SOAPACTION = "SOAPACTION";
-  String VALUE_GET_EXTERNAL_IP_ADDRESS = """\"urn:schemas-upnp-org:service:WANPPPConnection:1#GetExternalIPAddress\"""";
-  String VALUE_ADD_PORT_MAPPING = """\"urn:schemas-upnp-org:service:WANPPPConnection:1#AddPortMapping\"""";
-  String VALUE_DELETE_PORT_MAPPING = """\"urn:schemas-upnp-org:service:WANPPPConnection:1#DeletePortMapping\"""";
-  String VALUE_GET_GENERIC_PORT_MAPPING = """"\"urn:schemas-upnp-org:service:WANPPPConnection:1#GetGenericPortMappingEntry\"""";
-  String BODY_GET_EXTERNAL_IP_ADDRESS = """<?xml version="1.0"?><SOAP-ENV:Envelope xmlns:SOAP-ENV:="http://schemas.xmlsoap.org/soap/envelope/" SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><SOAP-ENV:Body><m:GetExternalIPAddress xmlns:m="urn:schemas-upnp-org:service:WANPPPConnection:1"></m:GetExternalIPAddress></SOAP-ENV:Body></SOAP-ENV:Envelope>""";
-  String BODY_ADD_PORT_MAPPING = """<?xml version="1.0"?><SOAP-ENV:Envelope xmlns:SOAP-ENV:="http://schemas.xmlsoap.org/soap/envelope/" SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><SOAP-ENV:Body><m:AddPortMapping xmlns:m="urn:schemas-upnp-org:service:WANPPPConnection:1"><NewRemoteHost></NewRemoteHost><NewExternalPort>newExternalPort</NewExternalPort><NewProtocol>newProtocol</NewProtocol><NewInternalPort>newInternalPort</NewInternalPort><NewInternalClient>newInternalClient</NewInternalClient><NewEnabled>1</NewEnabled><NewPortMappingDescription>newPortMappingDescription</NewPortMappingDescription><NewLeaseDuration>newLeaseDuration</NewLeaseDuration></m:AddPortMapping></SOAP-ENV:Body></SOAP-ENV:Envelope>""";
-  String BODY_DELETE_PORT_MAPPING = """<?xml version=\"1.0\"?><SOAP-ENV:Envelope xmlns:SOAP-ENV:=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\"><SOAP-ENV:Body><m:DeletePortMapping xmlns:m=\"urn:schemas-upnp-org:service:WANPPPConnection:1\"><NewRemoteHost></NewRemoteHost><NewExternalPort>newExternalPort</NewExternalPort><NewProtocol>newProtocol</NewProtocol></m:DeletePortMapping></SOAP-ENV:Body></SOAP-ENV:Envelope>""";
-  String BODY_GET_GENERIC_PORT_MAPPING  = """<?xml version="1.0"?><SOAP-ENV:Envelope xmlns:SOAP-ENV:="http://schemas.xmlsoap.org/soap/envelope/" SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><SOAP-ENV:Body><m:GetGenericPortMappingEntry xmlns:m="urn:schemas-upnp-org:service:WANPPPConnection:1"><NewPortMappingIndex>newPortMappingIndex</NewPortMappingIndex></m:GetGenericPortMappingEntry></SOAP-ENV:Body></SOAP-ENV:Envelope>""";
+  static final String KEY_SOAPACTION = "SOAPACTION";
+  static final String VALUE_GET_EXTERNAL_IP_ADDRESS = """\"urn:schemas-upnp-org:service:WANPPPConnection:1#GetExternalIPAddress\"""";
+  static final String VALUE_ADD_PORT_MAPPING = """\"urn:schemas-upnp-org:service:WANPPPConnection:1#AddPortMapping\"""";
+  static final String VALUE_DELETE_PORT_MAPPING = """\"urn:schemas-upnp-org:service:WANPPPConnection:1#DeletePortMapping\"""";
+  static final String VALUE_GET_GENERIC_PORT_MAPPING = """"\"urn:schemas-upnp-org:service:WANPPPConnection:1#GetGenericPortMappingEntry\"""";
+  static final String BODY_GET_EXTERNAL_IP_ADDRESS = """<?xml version="1.0"?><SOAP-ENV:Envelope xmlns:SOAP-ENV:="http://schemas.xmlsoap.org/soap/envelope/" SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><SOAP-ENV:Body><m:GetExternalIPAddress xmlns:m="urn:schemas-upnp-org:service:WANPPPConnection:1"></m:GetExternalIPAddress></SOAP-ENV:Body></SOAP-ENV:Envelope>""";
+  static final String BODY_ADD_PORT_MAPPING = """<?xml version="1.0"?><SOAP-ENV:Envelope xmlns:SOAP-ENV:="http://schemas.xmlsoap.org/soap/envelope/" SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><SOAP-ENV:Body><m:AddPortMapping xmlns:m="urn:schemas-upnp-org:service:WANPPPConnection:1"><NewRemoteHost></NewRemoteHost><NewExternalPort>newExternalPort</NewExternalPort><NewProtocol>newProtocol</NewProtocol><NewInternalPort>newInternalPort</NewInternalPort><NewInternalClient>newInternalClient</NewInternalClient><NewEnabled>1</NewEnabled><NewPortMappingDescription>newPortMappingDescription</NewPortMappingDescription><NewLeaseDuration>newLeaseDuration</NewLeaseDuration></m:AddPortMapping></SOAP-ENV:Body></SOAP-ENV:Envelope>""";
+  static final String BODY_DELETE_PORT_MAPPING = """<?xml version=\"1.0\"?><SOAP-ENV:Envelope xmlns:SOAP-ENV:=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\"><SOAP-ENV:Body><m:DeletePortMapping xmlns:m=\"urn:schemas-upnp-org:service:WANPPPConnection:1\"><NewRemoteHost></NewRemoteHost><NewExternalPort>newExternalPort</NewExternalPort><NewProtocol>newProtocol</NewProtocol></m:DeletePortMapping></SOAP-ENV:Body></SOAP-ENV:Envelope>""";
+  static final String BODY_GET_GENERIC_PORT_MAPPING = """<?xml version="1.0"?><SOAP-ENV:Envelope xmlns:SOAP-ENV:="http://schemas.xmlsoap.org/soap/envelope/" SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><SOAP-ENV:Body><m:GetGenericPortMappingEntry xmlns:m="urn:schemas-upnp-org:service:WANPPPConnection:1"><NewPortMappingIndex>newPortMappingIndex</NewPortMappingIndex></m:GetGenericPortMappingEntry></SOAP-ENV:Body></SOAP-ENV:Envelope>""";
+  static final String VALUE_PORT_MAPPING_PROTOCOL_UDP = "UDP";
+  static final String VALUE_PORT_MAPPING_PROTOCOL_TCP = "TCP";
+  static final int VALUE_ENABLE = 1;
+  static final int VALUE_DISABLE = 0;
+
   UPnpDeviceInfo _base = null;
   UPnpPPPDevice(UPnpDeviceInfo base) {
     _base = base;
@@ -26,8 +31,7 @@ class UPnpPPPDevice {
 
   async.Future<String> requestGetGenericPortMapping(int newPortMappingIndex) {
     async.Completer<String> completer = new async.Completer();
-    String requestBody = BODY_GET_GENERIC_PORT_MAPPING
-        .replaceAll("newPortMappingIndex", newPortMappingIndex.toString());
+    String requestBody = BODY_GET_GENERIC_PORT_MAPPING.replaceAll("newPortMappingIndex", newPortMappingIndex.toString());
 
     request(VALUE_DELETE_PORT_MAPPING, requestBody).then((UPnpPPPDeviceRequestResult response) {
     }).catchError((e) {
@@ -36,30 +40,33 @@ class UPnpPPPDevice {
     return completer.future;
   }
 
-  async.Future<String> requestAddPortMapping(int newExternalPort, String newProtocol, int NewInternalPort, String NewInternalClient, int NewEnable, int NewPortMappingDescription, int NewLeaseDuration) {
-    async.Completer<String> completer = new async.Completer();
-    String requestBody = BODY_ADD_PORT_MAPPING
-        .replaceAll("newExternalPort", newExternalPort.toString())
-        .replaceAll("newProtocol", newProtocol.toString())
-        .replaceAll("newInternalPort", NewInternalPort.toString())
-        .replaceAll("newInternalClient", NewInternalClient.toString())
-        .replaceAll("newEnabled", NewEnable.toString())
-        .replaceAll("newPortMappingDescription", NewPortMappingDescription.toString())
-        .replaceAll("newLeaseDuration", NewLeaseDuration.toString());
+  async.Future<int> requestAddPortMapping(int newExternalPort, String newProtocol, int NewInternalPort, String NewInternalClient, int NewEnable, String NewPortMappingDescription, int NewLeaseDuration) {
+    async.Completer<int> completer = new async.Completer();
+    String requestBody = BODY_ADD_PORT_MAPPING.replaceAll("newExternalPort", newExternalPort.toString()).replaceAll("newProtocol", newProtocol.toString()).replaceAll("newInternalPort", NewInternalPort.toString()).replaceAll("newInternalClient", NewInternalClient.toString()).replaceAll("newEnabled", NewEnable.toString()).replaceAll("newPortMappingDescription", NewPortMappingDescription.toString()).replaceAll("newLeaseDuration", NewLeaseDuration.toString());
 
     request(VALUE_ADD_PORT_MAPPING, requestBody).then((UPnpPPPDeviceRequestResult response) {
+      if (response.resultCode == 200) {
+        completer.complete(response.resultCode);
+      } else {
+        completer.complete(response.resultCode * -1);
+      }
     }).catchError((e) {
       completer.completeError(e);
     });
     return completer.future;
   }
 
-  async.Future<String> requestDeletePortMapping(int newExternalPort, String newProtocol) {
-    async.Completer<String> completer = new async.Completer();
+  async.Future<int> requestDeletePortMapping(int newExternalPort, String newProtocol) {
+    async.Completer<int> completer = new async.Completer();
     String requestBody = BODY_DELETE_PORT_MAPPING
         .replaceAll("newExternalPort", newExternalPort.toString())
         .replaceAll("newProtocol", newProtocol.toString());
     request(VALUE_DELETE_PORT_MAPPING, requestBody).then((UPnpPPPDeviceRequestResult response) {
+      if (response.resultCode == 200) {
+        completer.complete(response.resultCode);
+      } else {
+        completer.complete(response.resultCode * -1);
+      }
     }).catchError((e) {
       completer.completeError(e);
     });
