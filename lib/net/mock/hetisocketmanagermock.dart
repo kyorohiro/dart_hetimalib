@@ -19,22 +19,22 @@ class HetiSocketManagerMock {
   static HetiSocketManagerMock getInstance() {
     return _sinst;
   }
-  
+
   List<HetiSocketMock> _map = new List();
   void addHetiSocket(HetiSocketMock socket) {
-    if(_map.contains(socket)){
+    if (_map.contains(socket)) {
       _map.remove(socket);
     }
     _map.add(socket);
   }
-  
+
   void removeHetiSocket(HetiSocketMock socket) {
     _map.remove(socket.id);
   }
 
   HetiSocketMock getFromAddress(String host, int port) {
-    for(HetiSocketMock s in _map) {
-      if(s.localAddress == host && s.localPort == port) {
+    for (HetiSocketMock s in _map) {
+      if (s.localAddress == host && s.localPort == port) {
         return s;
       }
     }
@@ -47,11 +47,12 @@ class HetiSocketMock extends HetiSocket {
 
   String id = "";
   String remoteAddress = "";
-  int remotePort = 0; 
+  int remotePort = 0;
   String localAddress = "";
   int localPort = 0;
   async.StreamController _controller = new async.StreamController();
-  
+  HetiSocketMock _remoteSock = null;
+
   HetiSocketMock() {
     id = (_id++).toString();
   }
@@ -59,8 +60,15 @@ class HetiSocketMock extends HetiSocket {
   @override
   async.Future<HetiSocket> connect(String peerAddress, int peerPort) {
     async.Completer<HetiSocket> completer = new async.Completer();
-    HetiSocket socket = new HetiSocketMock();
-    completer.complete(socket);
+    HetiSocketMock mock = HetiSocketManagerMock.getInstance().getFromAddress(remoteAddress, remotePort);
+    if (mock == null) {
+      completer.completeError({});
+    } else {
+      HetiSocketMock socket = new HetiSocketMock();
+      socket._remoteSock = mock;
+      completer.complete(socket);
+    }
+
     return completer.future;
   }
 
@@ -69,8 +77,35 @@ class HetiSocketMock extends HetiSocket {
     return _controller.stream;
   }
 
+  void onReceiveInternal(List<int> buffer) {
+    int length = buffer.length;
+    int start = 0;
+    for (int i = 0; start < length; i++) {
+      int end = start + 4096;
+      if (end > length) {
+        end = length;
+      }
+      _controller.add(new HetiReceiveInfo(buffer.sublist(start, end)));
+      start = end;
+    }
+  }
+
   @override
   async.Future<HetiSendInfo> send(List<int> data) {
-    HetiSocketManagerMock.getInstance();
+    async.Completer completer = new async.Completer();
+    if(isClosed || _remoteSock.isClosed) {
+      completer.completeError({});
+    } else {
+      _remoteSock.onReceiveInternal(data);
+      completer.complete(new HetiSendInfo(0));
+    }
+    return completer.future;
+  }
+
+  @override
+  void close() {
+    super.close();
+    HetiSocketManagerMock.getInstance().removeHetiSocket(this);
+    _remoteSock = null;
   }
 }
