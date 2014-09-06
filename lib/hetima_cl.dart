@@ -15,7 +15,10 @@ part 'signal/hetimapeer/bucket.dart';
 part 'signal/hetimapeer/adapter.dart';
 part 'signal/hetimapeer/directcommand.dart';
 part 'lo/hetimafilecl.dart';
-part 'net/hetisocketchrome.dart';
+part 'net/chrome/hetisocketchrome.dart';
+part 'net/chrome/hetiudpsocketchrome.dart';
+part 'net/chrome/hetiserversocketchrome.dart';
+part 'net/chrome/hetisocketmanager.dart';
 
 
 
