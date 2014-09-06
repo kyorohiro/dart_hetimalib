@@ -30,6 +30,7 @@ class HetiUdpSocketChrome extends HetiUdpSocket {
     core.int remotePort = s["remotePort"];
     receiveStream.add(new HetiReceiveUdpInfo(info.data.getBytes(), remoteAddress, remotePort));
   }
+
   async.Future close() {
     HetiChromeSocketManager.getInstance().removeUdp(_info.socketId);
     return chrome.sockets.udp.close(_info.socketId);
