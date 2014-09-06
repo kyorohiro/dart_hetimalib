@@ -12,6 +12,7 @@ class UPnpDeviceInfo {
   Map<String, String> _map = {};
   List<String> _service = [];
   HetiSocketBuilder socketBuilder;
+
   UPnpDeviceInfo(List<HetiHttpResponseHeaderField> headerField, HetiSocketBuilder builder) {
     socketBuilder = builder;
     for (HetiHttpResponseHeaderField header in headerField) {

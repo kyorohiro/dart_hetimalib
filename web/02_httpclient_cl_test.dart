@@ -7,6 +7,12 @@ import 'dart:html' as html;
 import 'dart:async' as async;
 
 void main() {
+  print("--#--");
+  hetima_cl.HetiSocketBuilderChrome builder = new hetima_cl.HetiSocketBuilderChrome();
+  builder.startServer("0.0.0.0", 8089).then((hetima.HetiServerSocket socket) {
+    print("--#--");
+  });
+  /*
   print("--##-");
   hetima_cl.HetiSocketBuilderChrome builder = new hetima_cl.HetiSocketBuilderChrome();
   hetima.HetiHttpClient client = new hetima.HetiHttpClient(builder);
@@ -43,4 +49,5 @@ void main() {
       });
     });
   });
+   */
 }
