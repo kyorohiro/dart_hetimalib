@@ -35,7 +35,7 @@ part 'upnp/upnpdevicesearcher.dart';
 part 'upnp/upnppppdevice.dart';
 part 'upnp/upnpdeviceinfo.dart';
 
-part 'net/simulator/hetisocketmanager.dart';
+part 'net/mock/hetisocketmanagermock.dart';
 
 
 
