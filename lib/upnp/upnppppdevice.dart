@@ -19,13 +19,17 @@ class UPnpPPPDevice {
     }
   }
 
-  async.Future<String> requestGetGenericPortMapping(int newPortMappingIndex) {
+
+
+
+  async.Future<UPnpGetGenericPortMappingResponse> requestGetGenericPortMapping(int newPortMappingIndex) {
     async.Completer<String> completer = new async.Completer();
 
     String requestBody = """<?xml version="1.0"?><SOAP-ENV:Envelope xmlns:SOAP-ENV:="http://schemas.xmlsoap.org/soap/envelope/" SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><SOAP-ENV:Body><m:GetGenericPortMappingEntry xmlns:m="urn:schemas-upnp-org:service:${_serviceName}:1"><NewPortMappingIndex>${newPortMappingIndex}</NewPortMappingIndex></m:GetGenericPortMappingEntry></SOAP-ENV:Body></SOAP-ENV:Envelope>""";
     String headerValue = """\"urn:schemas-upnp-org:service:${_serviceName}:1#GetGenericPortMappingEntry\"""";
 
     request(headerValue, requestBody).then((UPnpPPPDeviceRequestResult response) {
+      completer.complete(new UPnpGetGenericPortMappingResponse(response));
     }).catchError((e) {
       completer.completeError(e);
     });
@@ -124,4 +128,39 @@ class UPnpPPPDeviceRequestResult {
   }
   String body;
   int resultCode;
+}
+
+class UPnpGetGenericPortMappingResponse {
+  static final String KEY_NewRemoteHost = "NewRemoteHost";
+  static final String KEY_NewExternalPort = "NewExternalPort";
+  static final String KEY_NewProtocol = "NewProtocol";
+  static final String KEY_NewInternalPort = "NewInternalPort";
+  static final String KEY_NewInternalClient = "NewInternalClient";
+  static final String KEY_NewEnabled = "NewEnabled";
+  static final String KEY_NewPortMappingDescription = "NewPortMappingDescription";
+  static final String KEY_NewLeaseDuration = "NewLeaseDuration";
+
+  UPnpPPPDeviceRequestResult _response = null;
+  UPnpGetGenericPortMappingResponse(UPnpPPPDeviceRequestResult response) {
+    _response = response;
+  }
+  
+  int get resultCode => _response.resultCode;
+
+  String getValue(String key, String defaultValue) {
+    if(_response.resultCode != 200) {
+      return defaultValue;
+    }
+    xml.XmlDocument document = xml.parse(_response.body);
+    Iterable<xml.XmlElement> elements = document.findElements("NewRemoteHost");
+    if(elements == null || elements.length <=0) {
+      return defaultValue;
+    }
+    return elements.first.text;
+  }
+
+  @override
+  String toString(){
+    return _response.body.toString();
+  }
 }
