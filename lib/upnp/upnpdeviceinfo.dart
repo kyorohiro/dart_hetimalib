@@ -1,23 +1,24 @@
 part of hetima;
 
 class UPnpDeviceInfo {
-  static String KEY_ST = "ST";
-  static String KEY_USN = "USN";
-  static String KEY_LOCATION = "Location";
-  static String KEY_OPT = "OPT";
-  static String KEY_01_NLS = "01-NLS";
-  static String KEY_CACHE_CONTROL = "Cache-Control";
-  static String KEY_SERVER = "Server";
-  static String KEY_EXT = "Ext";
-  Map<String, String> _map = {};
-  List<String> _service = [];
+  static final String KEY_ST = "ST";
+  static final String KEY_USN = "USN";
+  static final String KEY_LOCATION = "Location";
+  static final String KEY_OPT = "OPT";
+  static final String KEY_01_NLS = "01-NLS";
+  static final String KEY_CACHE_CONTROL = "Cache-Control";
+  static final String KEY_SERVER = "Server";
+  static final String KEY_EXT = "Ext";
+
+  Map<String, String> _headerMap = {};
+  List<String> _serviceList = [];
   HetiSocketBuilder socketBuilder;
 
   UPnpDeviceInfo(List<HetiHttpResponseHeaderField> headerField, HetiSocketBuilder builder) {
     socketBuilder = builder;
     for (HetiHttpResponseHeaderField header in headerField) {
       if (header.fieldName != null) {
-        _map[header.fieldName] = header.fieldValue;
+        _headerMap[header.fieldName] = header.fieldValue;
       }
     }
   }
@@ -31,12 +32,12 @@ class UPnpDeviceInfo {
       return defaultValue;
     }
 
-    for (String k in _map.keys) {
+    for (String k in _headerMap.keys) {
       if (k == null) {
         continue;
       }
       if (k.toLowerCase() == key.toLowerCase()) {
-        return _map[k];
+        return _headerMap[k];
       }
     }
     return defaultValue;
@@ -47,14 +48,14 @@ class UPnpDeviceInfo {
       return false;
     }
     UPnpDeviceInfo otherAs = other as UPnpDeviceInfo;
-    if (this._map.keys.length != otherAs._map.keys.length) {
+    if (this._headerMap.keys.length != otherAs._headerMap.keys.length) {
       return false;
     }
-    for (String k in this._map.keys) {
-      if (!otherAs._map.containsKey(k)) {
+    for (String k in this._headerMap.keys) {
+      if (!otherAs._headerMap.containsKey(k)) {
         return false;
       }
-      if (otherAs._map[k] != this._map[k]) {
+      if (otherAs._headerMap[k] != this._headerMap[k]) {
         return false;
       }
     }
@@ -62,7 +63,7 @@ class UPnpDeviceInfo {
   }
 
   void addService(String service) {
-    _service.add(service);
+    _serviceList.add(service);
   }
 
   async.Future<int> extractService() {

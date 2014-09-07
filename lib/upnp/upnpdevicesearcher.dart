@@ -13,11 +13,12 @@ class UpnpDeviceSearcher {
   async.StreamController<UPnpDeviceInfo> _streamer = new async.StreamController();
   HetiSocketBuilder _socketBuilder = null;
 
-  UpnpDeviceSearcher(HetiSocketBuilder builder) {
+  
+  UpnpDeviceSearcher._internal(HetiSocketBuilder builder) {
     _socketBuilder = builder;
   }
 
-  async.Future<int> init() {
+  async.Future<int> _init() {
     _socket = _socketBuilder.createUdpClient();
     _socket.onReceive().listen((HetiReceiveUdpInfo info) {
       print("########");
@@ -34,8 +35,8 @@ class UpnpDeviceSearcher {
 
   static async.Future<UpnpDeviceSearcher> createInstance(HetiSocketBuilder builder) {
     async.Completer<UpnpDeviceSearcher> completer = new async.Completer();
-    UpnpDeviceSearcher ret = new UpnpDeviceSearcher(builder);
-    ret.init().then((int v) {
+    UpnpDeviceSearcher ret = new UpnpDeviceSearcher._internal(builder);
+    ret._init().then((int v) {
       completer.complete(ret);
     }).catchError((e) {
       completer.completeError(e);

@@ -36,7 +36,7 @@ part 'upnp/upnppppdevice.dart';
 part 'upnp/upnpdeviceinfo.dart';
 
 part 'net/mock/hetisocketmanagermock.dart';
-
+part 'utp/utp_packet.dart';
 
 
 
