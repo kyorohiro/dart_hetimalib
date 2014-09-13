@@ -33,6 +33,9 @@ class UPnpPPPDevice {
     return completer.future;
   }
 
+  /**
+   * return resultCode. if success then. return 200. ;
+   */
   async.Future<int> requestAddPortMapping(int newExternalPort, String newProtocol, int newInternalPort, String newInternalClient, int newEnabled, String newPortMappingDescription, int newLeaseDuration) {
     async.Completer<int> completer = new async.Completer();
 

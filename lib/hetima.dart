@@ -34,7 +34,7 @@ part 'tracker/trackerclient.dart';
 part 'upnp/upnpdevicesearcher.dart';
 part 'upnp/upnppppdevice.dart';
 part 'upnp/upnpdeviceinfo.dart';
-
+part 'upnp/upnpportmapping.dart';
 part 'net/mock/hetisocketmanagermock.dart';
 part 'utp/utp_packet.dart';
 
