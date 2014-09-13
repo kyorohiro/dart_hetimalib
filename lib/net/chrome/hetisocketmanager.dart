@@ -1,6 +1,7 @@
 part of hetima_cl;
 
 class HetiSocketBuilderChrome extends HetiSocketBuilder {
+
   HetiSocket createClient() {
     return new HetiSocketChrome.empty();
   }
@@ -11,6 +12,23 @@ class HetiSocketBuilderChrome extends HetiSocketBuilder {
 
   HetiUdpSocket createUdpClient() {
     return new HetiUdpSocketChrome.empty();
+  }
+
+  async.Future<core.List<HetiNetworkInterface>> getNetworkInterfaces() {
+    async.Completer<core.List<HetiNetworkInterface>> completer = new async.Completer();
+    core.List<HetiNetworkInterface> interfaceList = new core.List();
+    chrome.system.network.getNetworkInterfaces().then((core.List<chrome.NetworkInterface> nl) {
+      for (chrome.NetworkInterface i in nl) {
+        HetiNetworkInterface inter = new HetiNetworkInterface();
+        inter.address = i.address;
+        inter.prefixLength = i.prefixLength;
+        interfaceList.add(inter);
+      }
+      completer.complete(interfaceList);
+    }).catchError((e){
+      completer.completeError(e);
+    });
+    return completer.future;
   }
 }
 

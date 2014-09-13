@@ -37,6 +37,7 @@ part 'upnp/upnpdeviceinfo.dart';
 part 'upnp/upnpportmapping.dart';
 part 'net/mock/hetisocketmanagermock.dart';
 part 'utp/utp_packet.dart';
+part 'torrent/torrentclient.dart';
 
 
 

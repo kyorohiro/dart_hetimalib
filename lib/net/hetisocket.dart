@@ -4,6 +4,7 @@ abstract class HetiSocketBuilder {
   HetiSocket createClient();
   HetiUdpSocket createUdpClient();
   async.Future<HetiServerSocket> startServer(String address, int port) ;
+  async.Future<List<HetiNetworkInterface>> getNetworkInterfaces(); 
 }
 
 abstract class HetiServerSocket {
@@ -32,6 +33,12 @@ abstract class HetiUdpSocket {
   async.Future<HetiUdpSendInfo> send(List<int> buffer, String address, int port);
   async.Stream<HetiReceiveUdpInfo> onReceive();
   async.Future<dynamic> close();
+}
+
+class HetiNetworkInterface
+{
+  String address;
+  int prefixLength;
 }
 
 class HetiSendInfo {

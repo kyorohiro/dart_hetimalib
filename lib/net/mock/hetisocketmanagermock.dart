@@ -4,11 +4,11 @@ class HetiSocketBuilderMock extends HetiSocketBuilder {
     return null;
   }
 
-  async.Future<HetiServerSocket> startServer(String address, int port) {
+  HetiUdpSocket createUdpClient() {
     return null;
   }
 
-  HetiUdpSocket createUdpClient() {
+  async.Future<HetiServerSocket> startServer(String address, int port) {
     return null;
   }
 }
@@ -16,22 +16,14 @@ class HetiSocketBuilderMock extends HetiSocketBuilder {
 class HetiSocketManagerMock {
   static HetiSocketManagerMock _sinst = new HetiSocketManagerMock();
 
-  static HetiSocketManagerMock getInstance() {
-    return _sinst;
-  }
-
   List<HetiSocketMock> _map = new List();
+
   void addHetiSocket(HetiSocketMock socket) {
     if (_map.contains(socket)) {
       _map.remove(socket);
     }
     _map.add(socket);
   }
-
-  void removeHetiSocket(HetiSocketMock socket) {
-    _map.remove(socket.id);
-  }
-
   HetiSocketMock getFromAddress(String host, int port) {
     for (HetiSocketMock s in _map) {
       if (s.localAddress == host && s.localPort == port) {
@@ -39,6 +31,14 @@ class HetiSocketManagerMock {
       }
     }
     return null;
+  }
+
+  void removeHetiSocket(HetiSocketMock socket) {
+    _map.remove(socket.id);
+  }
+
+  static HetiSocketManagerMock getInstance() {
+    return _sinst;
   }
 }
 
@@ -55,6 +55,13 @@ class HetiSocketMock extends HetiSocket {
 
   HetiSocketMock() {
     id = (_id++).toString();
+  }
+
+  @override
+  void close() {
+    super.close();
+    HetiSocketManagerMock.getInstance().removeHetiSocket(this);
+    _remoteSock = null;
   }
 
   @override
@@ -93,19 +100,12 @@ class HetiSocketMock extends HetiSocket {
   @override
   async.Future<HetiSendInfo> send(List<int> data) {
     async.Completer completer = new async.Completer();
-    if(isClosed || _remoteSock.isClosed) {
+    if (isClosed || _remoteSock.isClosed) {
       completer.completeError({});
     } else {
       _remoteSock.onReceiveInternal(data);
       completer.complete(new HetiSendInfo(0));
     }
     return completer.future;
-  }
-
-  @override
-  void close() {
-    super.close();
-    HetiSocketManagerMock.getInstance().removeHetiSocket(this);
-    _remoteSock = null;
   }
 }

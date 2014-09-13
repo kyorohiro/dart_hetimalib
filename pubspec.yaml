@@ -5,7 +5,6 @@ description: A pub package
 homepage: https://github.com/kyorohiro/dart_hetimalib
 dependencies:
   chrome: any
-  chrome_ext: any
   crypto: any
   unittest: any
   xml: any

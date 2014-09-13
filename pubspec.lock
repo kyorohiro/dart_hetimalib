@@ -48,4 +48,4 @@ packages:
   xml:
     description: xml
     source: hosted
-    version: "2.1.4"
+    version: "2.1.5"

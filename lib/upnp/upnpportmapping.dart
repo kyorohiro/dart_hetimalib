@@ -2,11 +2,15 @@ part of hetima;
 
 class UpnpPortMappingSample {
   List<UPnpPPPDevice> foundPPPDevice = new List();
-
-  async.Future<UpnpPortMappingResult> addPortMapping(HetiSocketBuilder builder, String localIp, int localPort, int remotePort, String protocol, [int timeoutSecound = 10, int durationMinute = 24 * 60, String label = "test"]) {
+  HetiSocketBuilder _builder;
+  UpnpPortMappingSample(HetiSocketBuilder builder)
+  {
+    _builder = builder;
+  }
+  async.Future<UpnpPortMappingResult> addPortMapping(String localIp, int localPort, int remotePort, String protocol, [int timeoutSecound = 10, int durationMinute = 24 * 60, String label = "test"]) {
     async.Completer<UpnpPortMappingResult> completer = new async.Completer();
     List<UPnpPPPDevice> portMappedDevice = new List();
-    UpnpDeviceSearcher.createInstance(builder).then((UpnpDeviceSearcher searcher) {
+    UpnpDeviceSearcher.createInstance(_builder).then((UpnpDeviceSearcher searcher) {
 
       searcher.onReceive().listen((UPnpDeviceInfo deviceInfo) {
         UPnpPPPDevice pppDevice = new UPnpPPPDevice(deviceInfo);
@@ -38,10 +42,10 @@ class UpnpPortMappingSample {
     return completer.future;
   }
 
-  async.Future<UpnpPortMappingResult> delPortMapping(HetiSocketBuilder builder, int remotePort, String protocol, [int timeoutSecound = 10]) {
+  async.Future<UpnpPortMappingResult> delPortMapping(int remotePort, String protocol, [int timeoutSecound = 10]) {
     async.Completer<UpnpPortMappingResult> completer = new async.Completer();
     List<UPnpPPPDevice> portMappedDevice = new List();
-    UpnpDeviceSearcher.createInstance(builder).then((UpnpDeviceSearcher searcher) {
+    UpnpDeviceSearcher.createInstance(_builder).then((UpnpDeviceSearcher searcher) {
 
       searcher.onReceive().listen((UPnpDeviceInfo deviceInfo) {
         UPnpPPPDevice pppDevice = new UPnpPPPDevice(deviceInfo);
