@@ -8,18 +8,24 @@ class TorrentClient {
 
   String initialIP = "0.0.0.0";
   String localIP = "0.0.0.0";
+  String remoteIP = "0.0.0.0";
   int localPort = LOCAL_PORT_MIN;
   int remotePort = LOCAL_PORT_MIN;
 
   HetiSocketBuilder _socketBuilder;
+  UpnpPortMappingSample _portMapping;
+
   TorrentClient(HetiSocketBuilder builder) {
     _socketBuilder = builder;
+    _portMapping = new UpnpPortMappingSample(_socketBuilder);
   }
 
   void start() {
     startServer().then((d){
       startPortMapping().then((e){
-        print("#### server : portmapping");
+        print("#### server : remote:"+remoteIP+":"+remotePort.toString());
+        print("#### server : local:"+localIP+":"+localPort.toString());
+        
       });
     });
   }
@@ -28,6 +34,7 @@ class TorrentClient {
     async.Completer<Object> completer = new async.Completer();
     bind() {
       _socketBuilder.startServer(localIP, localPort).then((HetiServerSocket socket) {
+        completer.complete({});
         socket.onAccept().listen((HetiSocket s) {
           s.onReceive().listen((HetiReceiveInfo i) {
             s.send(convert.UTF8.encode("test")).then((HetiSendInfo i) {
@@ -51,13 +58,16 @@ class TorrentClient {
 
   async.Future<Object> startPortMapping() {
     async.Completer<Object> completer = new async.Completer();
-
-    UpnpPortMappingSample mapping = new UpnpPortMappingSample(_socketBuilder);
     portMapping() {
-      return mapping.addPortMapping(localIP, localPort, remotePort, UPnpPPPDevice.VALUE_PORT_MAPPING_PROTOCOL_TCP)
+      return _portMapping.addPortMapping(localIP, localPort, remotePort, UPnpPPPDevice.VALUE_PORT_MAPPING_PROTOCOL_TCP)
            .then((UpnpPortMappingResult r) {
-         if(r.result == 200) {
-           completer.complete({});
+         if(r.result == UpnpPortMappingResult.OK_MAPPING) {
+           r.deviceList.first.requestGetExternalIPAddress().then((String address) {
+             remoteIP = address;
+             completer.complete(address);             
+           }).catchError((e){
+             completer.completeError(e);
+           });
            return;
          }
          if(remotePort < LOCAL_PORT_MAX) {
@@ -74,7 +84,7 @@ class TorrentClient {
     _socketBuilder.getNetworkInterfaces().then((List<HetiNetworkInterface> il) {
       bool foundNetworkInterfalce = false;
       for (HetiNetworkInterface i in il) {
-        if ("127.0.0.7" == i.address || "0.0.0.0" == i.address || i.address.substring(0, 7) == "192.168") {
+        if ("127.0.0.7" == i.address || "0.0.0.0" == i.address) {
           continue;
         }
         if (i.prefixLength == 24) {
