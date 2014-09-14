@@ -93,6 +93,13 @@ class HetiHttpClient {
     builder.appendString("\r\n");
     builder.appendIntList(body, 0, body.length);
 
+    //
+    builder.getLength().then((int len) {
+    builder.getByteFuture(0,len).then((List<int> data) {
+      print("request\r\n"+convert.UTF8.decode(data));
+    });
+    });
+    //
     socket.onReceive().listen((HetiReceiveInfo info) {});
     socket.send(builder.toList()).then((HetiSendInfo info) {});
 
@@ -105,6 +112,13 @@ class HetiHttpClient {
     HetiHttpResponse.decodeHttpMessage(parser).then((HetiHttpMessageWithoutBody message) {
       HetiHttpClientResponse result = new HetiHttpClientResponse();
       result.message = message;
+      //
+      {
+        socket.buffer.getByteFuture(0, message.index).then((List<int> buffer){
+          print("response\r\n"+convert.UTF8.decode(buffer));
+        });
+      }
+       //
       HetiHttpResponseHeaderField transferEncodingField = message.find("Transfer-Encoding");
       if (transferEncodingField == null || transferEncodingField.fieldValue != "chunked") {
         result.body = new HetimaBuilderAdapter(socket.buffer, message.index);

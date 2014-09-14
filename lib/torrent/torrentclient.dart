@@ -14,7 +14,8 @@ class TorrentClient {
 
   HetiSocketBuilder _socketBuilder;
   UpnpPortMappingSample _portMapping;
-
+  //client.event = hetima.TrackerUrl.VALUE_EVENT_STARTED;
+  //client.peerID = peerId;
   TorrentClient(HetiSocketBuilder builder) {
     _socketBuilder = builder;
     _portMapping = new UpnpPortMappingSample(_socketBuilder);
@@ -25,7 +26,6 @@ class TorrentClient {
       startPortMapping().then((e){
         print("#### server : remote:"+remoteIP+":"+remotePort.toString());
         print("#### server : local:"+localIP+":"+localPort.toString());
-        
       });
     });
   }

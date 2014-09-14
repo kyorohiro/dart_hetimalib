@@ -99,11 +99,4 @@ class UpnpPortMappingResult {
     message = "timeout";
   }
 }
-/*
-hetima.UpnpDeviceSearcher.createInstance(new hetimacl.HetiSocketBuilderChrome()).then((hetima.UpnpDeviceSearcher searcher) {
-  ssdp = searcher;
-  ssdp.onReceive().listen((hetima.UPnpDeviceInfo info) {
-    deviceInfoMemo.text = "device:" + info.getValue(hetima.UPnpDeviceInfo.KEY_LOCATION, "not found");
-  });
-});
-*/
+
