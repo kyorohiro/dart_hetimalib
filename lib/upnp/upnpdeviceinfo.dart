@@ -26,8 +26,13 @@ class UPnpDeviceInfo {
   @override
   String toString() {
      StringBuffer buffer = new StringBuffer();
+     buffer.write("#header;\r\n");
      for(String key in _headerMap.keys) {
-       buffer.write(""+key+":"+_headerMap[key]+"\r\n");
+       buffer.write(""+key+":"+_headerMap[key]+";\r\n");
+     }
+     buffer.write("#service;\r\n");
+     for(String service in _serviceList) {
+       buffer.write(""+service+";\r\n");       
      }
      return buffer.toString();
   }
