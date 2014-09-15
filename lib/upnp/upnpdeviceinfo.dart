@@ -23,6 +23,15 @@ class UPnpDeviceInfo {
     }
   }
 
+  @override
+  String toString() {
+     StringBuffer buffer = new StringBuffer();
+     for(String key in _headerMap.keys) {
+       buffer.write(""+key+":"+_headerMap[key]+"\r\n");
+     }
+     return buffer.toString();
+  }
+
   HetiSocketBuilder getSocketBuilder() {
     return socketBuilder;
   }
