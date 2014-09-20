@@ -31,8 +31,8 @@ class UPnpDeviceInfo {
        buffer.write("__"+key+":"+_headerMap[key]+";\r\n");
      }
      buffer.write("#service;\r\n");
-     for(String service in _serviceList) {
-       buffer.write("__"+service+";\r\n");       
+     for(UPnpDeviceServiceInfo service in _serviceList) {
+       buffer.write("__"+service.serviceId+";\r\n");       
      }
      return buffer.toString();
   }
