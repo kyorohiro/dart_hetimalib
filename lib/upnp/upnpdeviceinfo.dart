@@ -11,7 +11,7 @@ class UPnpDeviceInfo {
   static final String KEY_EXT = "Ext";
 
   Map<String, String> _headerMap = {};
-  List<String> _serviceList = [];
+  List<UPnpDeviceServiceInfo> _serviceList = [];
   HetiSocketBuilder socketBuilder;
 
   UPnpDeviceInfo(List<HetiHttpResponseHeaderField> headerField, HetiSocketBuilder builder) {
@@ -76,19 +76,41 @@ class UPnpDeviceInfo {
     return true;
   }
 
-  void addService(String service) {
-    _serviceList.add(service);
+
+  List<UPnpDeviceServiceInfo> get serviceList => _serviceList;
+  String URLBase = "";
+
+  void _updateServiceXml() {
+    _serviceList.clear();
+    xml.XmlDocument document = xml.parse(_serviceXml);
+    URLBase = _extractFirstValue(document.root, "URLBase", "");
+    Iterable<xml.XmlElement> elements = document.findAllElements("service");
+    for (xml.XmlElement element in elements) {
+      UPnpDeviceServiceInfo info = new UPnpDeviceServiceInfo();
+      info.controlURL = _extractFirstValue(element, "controlURL", "");
+      info.eventSubURL = _extractFirstValue(element, "eventSubURL", "");
+      info.SCPDURL = _extractFirstValue(element, "SCPDURL", "");
+      info.serviceType = _extractFirstValue(element, "serviceType", "");
+      info.serviceId = _extractFirstValue(element, "serviceId", "");
+      _serviceList.add(info);
+    }
   }
 
+  String _extractFirstValue(xml.XmlElement element, String key, String defaultValue) {
+    Iterable<xml.XmlElement> elements = element.findAllElements(key);
+    if(null == elements.first || elements.first.text == null) {
+      return defaultValue;
+    } 
+    
+    return elements.first.text;
+  }
+  String _serviceXml = "";
   async.Future<int> extractService() {
     async.Completer completer = new async.Completer();
     requestServiceList().then((String serviceXml) {
       print("" + serviceXml);
-      xml.XmlDocument document = xml.parse(serviceXml);
-      Iterable<xml.XmlElement> elements = document.findAllElements("serviceType");
-      for (xml.XmlElement element in elements) {
-        addService(element.text);
-      }
+      _serviceXml = serviceXml;
+      _updateServiceXml();
       completer.complete(0);
     }).catchError((e) {
       completer.completeError(e);
@@ -123,4 +145,14 @@ class UPnpDeviceInfo {
     return completer.future;
   }
 
+}
+
+
+class UPnpDeviceServiceInfo 
+{
+  String serviceType = "";
+  String serviceId = "";
+  String controlURL = "";
+  String eventSubURL = "";
+  String SCPDURL = "";
 }

@@ -44,8 +44,8 @@ class HetiHttpClient {
     async.Completer<HetiHttpClientResponse> completer = new async.Completer();
 
     Map<String, String> headerTmp = {};
-    headerTmp["Host"] = host;
-    headerTmp["Connection"] = "close";
+    headerTmp["Host"] = host+":"+port.toString();
+    headerTmp["Connection"] = "Close";
     if (header != null) {
       for (String key in header.keys) {
         headerTmp[key] = header[key];
@@ -75,8 +75,8 @@ class HetiHttpClient {
     async.Completer<HetiHttpClientResponse> completer = new async.Completer();
 
     Map<String, String> headerTmp = {};
-    headerTmp["Host"] = host;
-    headerTmp["Connection"] = "close";
+    headerTmp["Host"] = host+":"+port.toString();
+    headerTmp["Connection"] = "Close";
     if (header != null) {
       for (String key in header.keys) {
         headerTmp[key] = header[key];
