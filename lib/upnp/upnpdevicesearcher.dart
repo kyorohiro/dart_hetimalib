@@ -10,10 +10,10 @@ class UpnpDeviceSearcher {
 
   List<UPnpDeviceInfo> deviceInfoList = new List();
   HetiUdpSocket _socket = null;
-  async.StreamController<UPnpDeviceInfo> _streamer = new async.StreamController();
+  async.StreamController<UPnpDeviceInfo> _streamer = new async.StreamController.broadcast();
   HetiSocketBuilder _socketBuilder = null;
 
-  
+
   UpnpDeviceSearcher._internal(HetiSocketBuilder builder) {
     _socketBuilder = builder;
   }
@@ -48,7 +48,9 @@ class UpnpDeviceSearcher {
     return _streamer.stream;
   }
 
-  void searchWanPPPDevice() {
+  async.Future<int> searchWanPPPDevice() {
+    async.Completer completer = new async.Completer();
+
     _socket.send(convert.UTF8.encode(SSDP_M_SEARCH_WANPPPConnection), SSDP_ADDRESS, SSDP_PORT).then((HetiUdpSendInfo iii) {
       print("###send[A]=" + iii.resultCode.toString());
     }).then((d) {
@@ -56,7 +58,13 @@ class UpnpDeviceSearcher {
     }).then((HetiUdpSendInfo iii) {
       print("###send[B]=" + iii.resultCode.toString());
     }).catchError((e) {
+      completer.completeError(e);
     });
+
+    new async.Future.delayed(new Duration(seconds: 4), () {
+      completer.complete(0);
+    });
+    return completer.future;
   }
 
   void extractDeviceInfoFromUdpResponse(List<int> buffer) {
