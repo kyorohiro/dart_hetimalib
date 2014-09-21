@@ -209,7 +209,7 @@ class UPnpGetGenericPortMappingResponse {
       return defaultValue;
     }
     xml.XmlDocument document = xml.parse(_response.body);
-    Iterable<xml.XmlElement> elements = document.findElements("NewRemoteHost");
+    Iterable<xml.XmlElement> elements = document.findElements(key);
     if (elements == null || elements.length <= 0) {
       return defaultValue;
     }
