@@ -209,7 +209,7 @@ class UPnpGetGenericPortMappingResponse {
       return defaultValue;
     }
     xml.XmlDocument document = xml.parse(_response.body);
-    Iterable<xml.XmlElement> elements = document.findElements(key);
+    Iterable<xml.XmlElement> elements = document.findAllElements(key);
     if (elements == null || elements.length <= 0) {
       return defaultValue;
     }
@@ -220,4 +220,5 @@ class UPnpGetGenericPortMappingResponse {
   String toString() {
     return _response.body.toString();
   }
+  
 }
