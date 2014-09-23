@@ -103,8 +103,8 @@ class UPnpPPPDevice {
   }
 
 
-  async.Future<String> requestGetExternalIPAddress([int mode = MODE_POST, UPnpDeviceServiceInfo serviceInfo = null]) {
-    async.Completer<String> completer = new async.Completer();
+  async.Future<UPnpGetExternalIPAddressResponse> requestGetExternalIPAddress([int mode = MODE_POST, UPnpDeviceServiceInfo serviceInfo = null]) {
+    async.Completer<UPnpGetExternalIPAddressResponse> completer = new async.Completer();
     if (getPPPService().length == 0) {
       completer.completeError({});
       return completer.future;
@@ -119,9 +119,13 @@ class UPnpPPPDevice {
       xml.XmlDocument document = xml.parse(response.body);
       Iterable<xml.XmlElement> elements = document.findAllElements("NewExternalIPAddress");
       if (elements.length > 0) {
-        completer.complete(elements.first.text);
+        UPnpGetExternalIPAddressResponse r = 
+            new UPnpGetExternalIPAddressResponse(response.resultCode, elements.first.text);
+        completer.complete(r);
       } else {
-        completer.complete("");
+        UPnpGetExternalIPAddressResponse r = 
+            new UPnpGetExternalIPAddressResponse(-1*response.resultCode, "");
+        completer.complete(r);
       }
     }).catchError((e) {
       completer.completeError(e);
@@ -201,6 +205,15 @@ class UPnpPPPDeviceRequestResponse {
   }
   String body;
   int resultCode;
+}
+
+class UPnpGetExternalIPAddressResponse {
+  int resultCode = 200;
+  String externalIp = "";
+  UPnpGetExternalIPAddressResponse(int _resultCode, String _externalIp) {
+    resultCode = _resultCode;
+    externalIp = _externalIp;
+  }
 }
 
 class UPnpGetGenericPortMappingResponse {
