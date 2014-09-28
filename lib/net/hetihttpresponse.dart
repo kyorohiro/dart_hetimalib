@@ -248,6 +248,21 @@ class HetiHttpResponse {
     return completer.future;
   }
 
+  static async.Future<HetiHttpRequestMessageWithoutBody> decodeRequestMessage(EasyParser parser) {
+    async.Completer<HetiHttpRequestMessageWithoutBody> completer = new async.Completer();
+    HetiHttpRequestMessageWithoutBody result = new HetiHttpRequestMessageWithoutBody();
+    decodeRequestLine(parser).then((HetiRequestLine line) {
+      result.line = line;
+      return decodeHeaderFields(parser);
+    }).then((List<HetiHttpResponseHeaderField> httpfields) {
+      result.headerField = httpfields;
+      result.index = parser.index;
+      completer.complete(result);
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
   // metod = token = 1*tchar
   static async.Future<String> decodeMethod(EasyParser parser) {
     async.Completer<String> completer = new async.Completer();
@@ -319,6 +334,22 @@ class HetiRequestLine
   String method = "";
   String requestTarget = "";
   String httpVersion = ""; 
+}
+
+class HetiHttpRequestMessageWithoutBody {
+  int index = 0;
+  HetiRequestLine line = new HetiRequestLine();
+  List<HetiHttpResponseHeaderField> headerField = new List();
+  
+  HetiHttpResponseHeaderField find(String fieldName) {
+    for (HetiHttpResponseHeaderField field in headerField) {
+    //  print(""+field.fieldName.toLowerCase() +"== "+fieldName.toLowerCase());
+      if (field != null && field.fieldName.toLowerCase() == fieldName.toLowerCase()) {
+        return field;
+      }
+    }
+    return null;
+  }
 }
 
 // HTTP-message   = start-line
