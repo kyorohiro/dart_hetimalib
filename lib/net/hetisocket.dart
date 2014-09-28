@@ -9,6 +9,7 @@ abstract class HetiSocketBuilder {
 
 abstract class HetiServerSocket {
   async.Stream<HetiSocket> onAccept();
+  void close();
 }
 
 abstract class HetiSocket {
