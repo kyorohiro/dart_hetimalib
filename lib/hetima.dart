@@ -26,6 +26,7 @@ part 'tracker/trackerrequest.dart';
 part 'net/hetisocket.dart';
 part 'net/hetihttpclient.dart';
 part 'net/hetihttpresponse.dart';
+part 'net/hetihttpserver.dart';
 part 'test/hetitest.dart';
 part 'lo/hetimabuilder.dart';
 part 'lo/hetibencode.dart';

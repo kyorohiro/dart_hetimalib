@@ -79,6 +79,7 @@ class HetiHttpResponse {
     });
     return completer.future;
   }
+
   //
   // Http-version
   static async.Future<String> decodeHttpVersion(EasyParser parser) {
@@ -155,7 +156,6 @@ class HetiHttpResponse {
     return completer.future;
   }
 
-
   static async.Future<String> decodeOWS(EasyParser parser) {
     async.Completer completer = new async.Completer();
     parser.nextBytePatternByUnmatch(new EasyParserIncludeMatcher(RfcTable.OWS)).then((List<int> v) {
@@ -222,6 +222,52 @@ class HetiHttpResponse {
     });
     return completer.future;
   }
+
+  //  request-line   = method SP request-target SP HTTP-version CRLF
+  static async.Future<HetiRequestLine> decodeRequestLine(EasyParser parser) {
+    async.Completer<HetiRequestLine> completer = new async.Completer();
+    HetiRequestLine result = new HetiRequestLine();
+    decodeMethod(parser).then((String method){
+      result.method = method;
+      return decodeSP(parser);
+    }).then((t) {
+      return decodeRequestTarget(parser);
+    }).then((String requestTarget) {
+      result.requestTarget = requestTarget;
+      return decodeSP(parser);
+    }).then((t) {
+      return decodeHttpVersion(parser);
+    }).then((String httpVersion) {
+      result.httpVersion = httpVersion;
+      return decodeCrlf(parser);
+    }).then((String crlf){
+      completer.complete(result);
+    }).catchError((e){
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
+  // metod = token = 1*tchar
+  static async.Future<String> decodeMethod(EasyParser parser) {
+    async.Completer<String> completer = new async.Completer();
+    parser.nextBytePatternByUnmatch(new EasyParserIncludeMatcher(RfcTable.TCHAR)).then((List<int> v) {
+      completer.complete(convert.UTF8.decode(v));
+    });
+    return completer.future;
+  }
+
+  // CHAR_STRING
+  static async.Future<String> decodeRequestTarget(EasyParser parser) {
+    async.Completer<String> completer = new async.Completer();
+    parser.nextBytePatternByUnmatch(new EasyParserIncludeMatcher(RfcTable.VCHAR)).then((List<int> v) {
+      completer.complete(convert.UTF8.decode(v));
+    });
+    return completer.future;
+  }
+  
+  // request-target = origin-form / absolute-form / authority-form / asterisk-form
+  // absolute-URI  = scheme ":" hier-part [ "?" query ]
 }
 
 // reason-phrase  = *( HTAB / SP / VCHAR / obs-text )
@@ -266,6 +312,13 @@ class HetiHttpResponseStatusLine {
 class HetiHttpResponseHeaderField {
   String fieldName = "";
   String fieldValue = "";
+}
+
+class HetiRequestLine
+{
+  String method = "";
+  String requestTarget = "";
+  String httpVersion = ""; 
 }
 
 // HTTP-message   = start-line
