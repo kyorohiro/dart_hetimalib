@@ -22,6 +22,7 @@ class HetiSocketBuilderChrome extends HetiSocketBuilder {
         HetiNetworkInterface inter = new HetiNetworkInterface();
         inter.address = i.address;
         inter.prefixLength = i.prefixLength;
+        inter.name = i.name;
         interfaceList.add(inter);
       }
       completer.complete(interfaceList);

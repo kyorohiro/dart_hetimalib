@@ -40,6 +40,7 @@ class HetiNetworkInterface
 {
   String address;
   int prefixLength;
+  String name;
 }
 
 class HetiSendInfo {
