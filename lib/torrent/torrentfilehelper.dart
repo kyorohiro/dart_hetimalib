@@ -17,7 +17,7 @@ class TorrentFileCreator {
       info[TorrentFile.KEY_NAME] = name;
       info[TorrentFile.KEY_PIECE_LENGTH] = piececSize;
       info[TorrentFile.KEY_LENGTH] = targetLength;
-      info[TorrentFile.KEY_PIECE] = r.pieceBuffer.toUint8List();
+      info[TorrentFile.KEY_PIECES] = r.pieceBuffer.toUint8List();
       TorrentFileCreatorResult result = new TorrentFileCreatorResult(TorrentFileCreatorResult.OK);
       result.torrentFile = new TorrentFile.torentmap(file);
       ret.complete(result);

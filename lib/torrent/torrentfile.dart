@@ -7,7 +7,7 @@ class TorrentFile {
   static final String KEY_FILES = "files";
   static final String KEY_LENGTH = "length";
   static final String KEY_PIECE_LENGTH = "piece length";
-  static final String KEY_PIECE = "piece";
+  static final String KEY_PIECES = "pieces";
   static final String KEY_PATH = "path";
 
   Map mMetadata = {};
@@ -81,8 +81,8 @@ class TorrentFileInfo {
     return mInfo[TorrentFile.KEY_PIECE_LENGTH];
   }
   
-  data.Uint8List get piece {
-    return mInfo[TorrentFile.KEY_PIECE];
+  data.Uint8List get pieces {
+    return mInfo[TorrentFile.KEY_PIECES];
   }
 
   TorrentFileFiles get files {
@@ -109,7 +109,7 @@ class TorrentFileFiles {
     return ret;
   }
 
-  int get size {
+  int get numOfFiles {
     if (mInfo.mInfo.containsKey(TorrentFile.KEY_FILES)) {
       return (mInfo.mInfo[TorrentFile.KEY_FILES] as List).length;
     }
@@ -117,7 +117,7 @@ class TorrentFileFiles {
   }
 
   List<TorrentFileFile> get path {
-    if (1 == this.size) {
+    if (1 == this.numOfFiles) {
       mInfo.name;
       List<TorrentFileFile> ret = new List();
       ret.add(new TorrentFileFile([mInfo.name], mInfo.mInfo[TorrentFile.KEY_LENGTH]));
@@ -157,7 +157,7 @@ String objectToString(Object v) {
     return v;
   } else {
     if(v is data.Uint8List) {
-      return convert.UTF8.decode((v as data.Uint8List).toList());
+      return convert.UTF8.decode(v.toList());
     } else {
       return convert.UTF8.decode(v);      
     }

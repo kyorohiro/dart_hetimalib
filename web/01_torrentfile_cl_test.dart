@@ -95,13 +95,13 @@ void main() {
       e.torrentFile;
       List<int> expect = [196, 42, 125, 9, 64, 47, 78, 143, 209, 15, 188, 87, 124, 199, 203, 157, 198, 52, 62, 142];
       unit.test("006 create torrent", () {
-        unit.expect(20, e.torrentFile.info.piece.length);
-        for (int i = 0; i < e.torrentFile.info.piece.length; i++) {
-          unit.expect(expect[i], e.torrentFile.info.piece[i]);
+        unit.expect(20, e.torrentFile.info.pieces.length);
+        for (int i = 0; i < e.torrentFile.info.pieces.length; i++) {
+          unit.expect(expect[i], e.torrentFile.info.pieces[i]);
         }
         unit.expect(16 * 1024, e.torrentFile.info.piece_length);
         unit.expect("http://www.example.com/tracker:6969", e.torrentFile.announce);
-        unit.expect(1, e.torrentFile.info.files.size);
+        unit.expect(1, e.torrentFile.info.files.numOfFiles);
         unit.expect(1024, e.torrentFile.info.files.path[0].length);
         unit.expect("1k.txt", e.torrentFile.info.files.path[0].pathAsString);
       });
