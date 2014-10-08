@@ -108,6 +108,7 @@ class HetimaFileGet extends HetimaFile {
 class HetimaFileFS extends HetimaFile {
   core.String fileName = "";
   html.FileEntry _fileEntry = null;
+
   HetimaFileFS(core.String name) {
     fileName = name;
   }
@@ -115,6 +116,7 @@ class HetimaFileFS extends HetimaFile {
   async.Future<html.Entry> getEntry() {
     return init();
   }
+
   async.Future<html.Entry> init() {
     async.Completer<html.Entry> completer = new async.Completer();
     if (_fileEntry != null) {
@@ -125,12 +127,13 @@ class HetimaFileFS extends HetimaFile {
       e.root.createFile(fileName).then((html.Entry e) {
         _fileEntry = (e as html.FileEntry);
         completer.complete(_fileEntry);
-      }).catchError((es){
+      }).catchError((es) {
         completer.complete(null);
       });
     });
     return completer.future;
   }
+
 
   async.Future<core.int> getLength() {
     async.Completer<core.int> completer = new async.Completer();
@@ -156,6 +159,19 @@ class HetimaFileFS extends HetimaFile {
         }
         writer.write(new html.Blob([buffer]));
       });
+    });
+    return completer.future;
+  }
+
+  async.Future<core.int> truncate(core.int fileSize) {
+    async.Completer<core.int> completer = new async.Completer();
+    init().then((e) {
+      return _fileEntry.createWriter();
+    }).then((html.FileWriter writer) {
+      writer.truncate(fileSize);
+      completer.complete(fileSize);
+    }).catchError((e) {
+      completer.completeError(e);
     });
     return completer.future;
   }

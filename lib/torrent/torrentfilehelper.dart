@@ -3,19 +3,19 @@ part of hetima;
 class TorrentFileCreator {
   String announce = "http://127.0.0.1:6969";
   String name = "name";
-  int piececSize = 16 * 1024;
+  int piececLength = 16 * 1024;
 
   async.Future<TorrentFileCreatorResult> createFromSingleFile(HetimaFile target) {
     async.Completer<TorrentFileCreatorResult> ret = new async.Completer();
     TorrentPieceHashCreator helper = new TorrentPieceHashCreator();
     target.getLength().then((int targetLength){
-    helper.createPieceHash(target, piececSize).then((CreatePieceHashResult r) {
+    helper.createPieceHash(target, piececLength).then((CreatePieceHashResult r) {
       Map file = {};
       Map info = {};
       file[TorrentFile.KEY_ANNOUNCE] = announce;
       file[TorrentFile.KEY_INFO] = info;
       info[TorrentFile.KEY_NAME] = name;
-      info[TorrentFile.KEY_PIECE_LENGTH] = piececSize;
+      info[TorrentFile.KEY_PIECE_LENGTH] = piececLength;
       info[TorrentFile.KEY_LENGTH] = targetLength;
       info[TorrentFile.KEY_PIECES] = r.pieceBuffer.toUint8List();
       TorrentFileCreatorResult result = new TorrentFileCreatorResult(TorrentFileCreatorResult.OK);
@@ -28,7 +28,7 @@ class TorrentFileCreator {
   async.Future<WriteResult> saveTorrentFile(TorrentFile target, HetimaFile output) {
     async.Completer<WriteResult> c = new async.Completer();
     data.Uint8List buffer = Bencode.encode(target.mMetadata);
-    output.write(buffer, -1).then((WriteResult ret) {
+    output.write(buffer, 0).then((WriteResult ret) {
       c.complete(ret);
     });
     return c.future;
@@ -83,7 +83,7 @@ class TorrentPieceHashCreator {
       }
       result.targetFile.read(start, end).then((ReadResult e) {
         crypto.SHA1 sha1 = new crypto.SHA1();
-        sha1.add(e.buffer.sublist(start, end));
+        sha1.add(e.buffer.sublist(0, end-start));
         result.add(sha1.close());
         result._tmpStart = end;
         if (end == length) {
