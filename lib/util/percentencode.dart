@@ -46,9 +46,14 @@ class PercentEncode
     builder.clear();
     int count = target.length;
     for(int i=0;i<count;i++) {
+      if(45== target[i]||46==target[i]||(48<=target[i]&&target[i]<=57)||
+        (65<=target[i]&&target[i]<=90) ||target[i]==95|| (97<=target[i]&&target[i]<=122)||target[i]==126){
+        builder.appendByte(target[i]);
+      } else {
         int f = ((0xf0&target[i])>>4);
         int e = ((0x0f&target[i]));
         builder.appendString("%"+ENCODE_TABLE[f] + ENCODE_TABLE[e]);
+      }
     }    
     return builder.toText();
   }
