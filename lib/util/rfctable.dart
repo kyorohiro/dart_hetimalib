@@ -1,10 +1,9 @@
 part of hetima;
 
 class RfcTable {
-
-  static String HEADER_FIELD_CONTENT_LENGTH = "Content-Length";
-  static String HEADER_FIELD_CONTENT_TYPE = "Content-Type";
-  
+  static const String HEADER_FIELD_CONTENT_LENGTH = "Content-Length";
+  static const String HEADER_FIELD_CONTENT_TYPE = "Content-Type";
+  static const String HEADER_FIELD_RANGE = "Range";
   //0x21-0x7E
   static String VCHAR_STRING = 
       """!#\$%&'()*+,-./"""

@@ -211,7 +211,7 @@ class HetiHttpResponse {
         throw new EasyParseError();
       } else {
         String nn = convert.UTF8.decode(n);
-      //  print("nn=" + nn);
+        //  print("nn=" + nn);
         v = int.parse(nn, radix: 16);
         return HetiHttpResponse.decodeCrlf(parser);
       }
@@ -227,7 +227,7 @@ class HetiHttpResponse {
   static async.Future<HetiRequestLine> decodeRequestLine(EasyParser parser) {
     async.Completer<HetiRequestLine> completer = new async.Completer();
     HetiRequestLine result = new HetiRequestLine();
-    decodeMethod(parser).then((String method){
+    decodeMethod(parser).then((String method) {
       result.method = method;
       return decodeSP(parser);
     }).then((t) {
@@ -240,9 +240,9 @@ class HetiHttpResponse {
     }).then((String httpVersion) {
       result.httpVersion = httpVersion;
       return decodeCrlf(parser);
-    }).then((String crlf){
+    }).then((String crlf) {
       completer.complete(result);
-    }).catchError((e){
+    }).catchError((e) {
       completer.completeError(e);
     });
     return completer.future;
@@ -280,11 +280,47 @@ class HetiHttpResponse {
     });
     return completer.future;
   }
-  
+
   // request-target = origin-form / absolute-form / authority-form / asterisk-form
   // absolute-URI  = scheme ":" hier-part [ "?" query ]
+
+  //rfc2616
+  static async.Future<HetiHttpRequestRange> decodeRequestRangeValue(EasyParser parser) {
+    HetiHttpResponseStatusLine result = new HetiHttpResponseStatusLine();
+    HetiHttpRequestRange ret = new HetiHttpRequestRange();
+    async.Completer<HetiHttpRequestRange> completer = new async.Completer();
+    parser.nextString("bytes=").then((String v) {
+      return parser.nextBytePatternByUnmatch(new EasyParserIncludeMatcher(RfcTable.DIGIT));
+    }).then((List<int> startAsList) {
+      ret.start = 0;
+      for (int d in startAsList) {
+        ret.start = (d - 48) + ret.start * 10;
+      }
+      return parser.nextString("-");
+    }).then((String v) {
+      return parser.nextBytePatternByUnmatch(new EasyParserIncludeMatcher(RfcTable.DIGIT));
+    }).then((List<int> endAsList) {
+      if (endAsList.length == 0) {
+        ret.end = -1;
+      } else {
+        ret.end = 0;
+        for (int d in endAsList) {
+          ret.end = (d - 48) + ret.end * 10;
+        }
+      }
+      completer.complete(ret);
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
 }
 
+// Range: bytes=0-499
+class HetiHttpRequestRange {
+  int start = 0;
+  int end = 0;
+}
 // reason-phrase  = *( HTAB / SP / VCHAR / obs-text )
 class TextMatcher extends EasyParserMatcher {
   @override
@@ -329,21 +365,20 @@ class HetiHttpResponseHeaderField {
   String fieldValue = "";
 }
 
-class HetiRequestLine
-{
+class HetiRequestLine {
   String method = "";
   String requestTarget = "";
-  String httpVersion = ""; 
+  String httpVersion = "";
 }
 
 class HetiHttpRequestMessageWithoutBody {
   int index = 0;
   HetiRequestLine line = new HetiRequestLine();
   List<HetiHttpResponseHeaderField> headerField = new List();
-  
+
   HetiHttpResponseHeaderField find(String fieldName) {
     for (HetiHttpResponseHeaderField field in headerField) {
-    //  print(""+field.fieldName.toLowerCase() +"== "+fieldName.toLowerCase());
+      //  print(""+field.fieldName.toLowerCase() +"== "+fieldName.toLowerCase());
       if (field != null && field.fieldName.toLowerCase() == fieldName.toLowerCase()) {
         return field;
       }
@@ -363,7 +398,7 @@ class HetiHttpMessageWithoutBody {
 
   HetiHttpResponseHeaderField find(String fieldName) {
     for (HetiHttpResponseHeaderField field in headerField) {
-    //  print(""+field.fieldName.toLowerCase() +"== "+fieldName.toLowerCase());
+      //  print(""+field.fieldName.toLowerCase() +"== "+fieldName.toLowerCase());
       if (field != null && field.fieldName.toLowerCase() == fieldName.toLowerCase()) {
         return field;
       }
@@ -372,15 +407,15 @@ class HetiHttpMessageWithoutBody {
   }
   int get contentLength {
     HetiHttpResponseHeaderField field = find(RfcTable.HEADER_FIELD_CONTENT_LENGTH);
-    if(field == null) {
+    if (field == null) {
       return -1;
     }
     try {
-      return int.parse(field.fieldValue.replaceAll(" |\r|\n|\t",""));
-    } catch(e) {
+      return int.parse(field.fieldValue.replaceAll(" |\r|\n|\t", ""));
+    } catch (e) {
       return -1;
     }
-    
+
   }
 }
 
@@ -401,7 +436,7 @@ class ChunkedBuilderAdapter extends HetimaBuilder {
     _started = true;
     _decodeChunked(new EasyParser(_base)).catchError((e) {
     }).then((e) {
-     // print("\r\n#~55www#\r\n");
+      // print("\r\n#~55www#\r\n");
       _buffer.fin();
     });
     return this;
@@ -417,9 +452,9 @@ class ChunkedBuilderAdapter extends HetimaBuilder {
           complter.complete(true);
         } else {
           return HetiHttpResponse.decodeCrlf(parser).then((e) {
-           // print("\r\n#~11www#\r\n");
+            // print("\r\n#~11www#\r\n");
             return _decodeChunked(parser);
-          }).then((v){
+          }).then((v) {
             complter.complete(true);
           });
         }
