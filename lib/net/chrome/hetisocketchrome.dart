@@ -31,7 +31,7 @@ class HetiSocketChrome extends HetiSocket {
     async.Completer<HetiSendInfo> completer = new async.Completer();
     new async.Future.sync(() {
       chrome.ArrayBuffer buffer = new chrome.ArrayBuffer.fromBytes(data);
-      chrome.sockets.tcp.send(clientSocketId, buffer).then((chrome.SendInfo info) {
+      return chrome.sockets.tcp.send(clientSocketId, buffer).then((chrome.SendInfo info) {
         updateTime();
         completer.complete(new HetiSendInfo(info.resultCode));
       });
