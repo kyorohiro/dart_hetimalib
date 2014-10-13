@@ -27,10 +27,15 @@ class HetiHttpServer {
       serverSocket.onAccept().listen((HetiSocket socket){
         EasyParser parser = new EasyParser(socket.buffer);
         HetiHttpResponse.decodeRequestMessage(parser).then((HetiHttpRequestMessageWithoutBody body){
-          HetiHttpServerRequest request = new HetiHttpServerRequest();
+          HetiHttpServerRequest request = new HetiHttpServerRequest();          
           request.socket = socket;
           request.info = body;
           server._controllerOnNewRequest.add(request);
+          parser.buffer.getByteFuture(0, body.index).then((List v) {
+            print(convert.UTF8.decode(v));
+          }).catchError((e){
+            ;
+          });
         });
       });
     }).catchError((e){
