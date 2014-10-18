@@ -22,6 +22,10 @@ class HetiHttpServer {
   static async.Future<HetiHttpServer> bind(HetiSocketBuilder builder, String address, int port) {
     async.Completer<HetiHttpServer> completer = new async.Completer();
     builder.startServer(address, port).then((HetiServerSocket serverSocket){
+      if(serverSocket == null) {
+        completer.completeError({});
+        return;
+      }
       HetiHttpServer server = new HetiHttpServer._internal(serverSocket);
       completer.complete(server);
       serverSocket.onAccept().listen((HetiSocket socket){
