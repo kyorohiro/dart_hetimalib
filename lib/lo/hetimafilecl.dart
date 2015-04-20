@@ -60,7 +60,7 @@ class HetimaFileGet extends HetimaFile {
     request.send();
     return ret.future;
   }
-
+/*
   async.Future<core.int> getLength() {
     async.Completer<core.int> ret = new async.Completer();
     if (_mBlob == null) {
@@ -72,16 +72,36 @@ class HetimaFileGet extends HetimaFile {
     }
     return ret.future;
   }
+*/
+  
+//  data.Uint8List bbbuffer = null;
+  async.Future<core.int> getLength() {
+    async.Completer<core.int> ret = new async.Completer();
+    if (_mBlob == null) {
+      getBlob().then((html.Blob b) {
+//        read(0, b.size).then((ReadResult re){
+//          bbbuffer = re.buffer;
+          ret.complete(b.size);          
+//        });
+      });
+    } else {
+      ret.complete(_mBlob.size);
+    }
+    return ret.future;
+  }
 
   async.Future<ReadResult> read(core.int start, core.int end) {
     async.Completer<ReadResult> ret = new async.Completer<ReadResult>();
     if (_mBlob != null) {
-      return readBase(ret, start, end);
+//      if(bbbuffer != null) {
+//        //core.print("-read read-\n");
+//        ret.complete(new ReadResult(ReadResult.OK, bbbuffer.sublist(start, end)));
+//        return ret.future;
+//      } else {
+        return readBase(ret, start, end);
+//      }
     } else {
-      html.HttpRequest request = new html.HttpRequest();
-      request.responseType = "blob";
-      request.open("GET", "testdata/1kb.torrent");
-      request.onLoad.listen((html.ProgressEvent e) {
+      getBlob().then((html.Blob b) {
         readBase(ret, start, end);
       });
       return ret.future;

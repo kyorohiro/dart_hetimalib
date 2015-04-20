@@ -7,6 +7,6 @@ import 'dart:typed_data' as type;
 import 'dart:convert' as convert;
 import 'dart:async' as async;
 part 'signal/signalserver.dart';
-part 'net/httpserver.dart';
+part 'http/httpserver.dart';
 part 'tracker/trackerserver.dart';
 part 'tracker/trackerclient_sv.dart';

@@ -58,18 +58,18 @@ class PeerAddress {
     port = _port;
   }
 
-  bool operator == (other) {
-    if(other is PeerAddress) {
-      if(other.peerId.length != peerId.length) {
+  bool operator ==(other) {
+    if (other is PeerAddress) {
+      if (other.peerId.length != peerId.length) {
         return false;
       }
-      for(int i=0;i<peerId.length;i++) {
-        if(other.peerId[i] != peerId[i]) {
+      for (int i = 0; i < peerId.length; i++) {
+        if (other.peerId[i] != peerId[i]) {
           return false;
         }
       }
       return true;
-    }else {
+    } else {
       return false;
     }
   }
@@ -77,8 +77,7 @@ class PeerAddress {
   String get peerIdAsString => PercentEncode.encode(peerId);
   String get portdAsString => port.toString();
   String get ipAsString {
-    return ""+ip[0].toString()+"."+ip[1].toString()
-        +"."+ip[2].toString()+"."+ip[3].toString();
+    return "" + ip[0].toString() + "." + ip[1].toString() + "." + ip[2].toString() + "." + ip[3].toString();
   }
 }
 
@@ -90,8 +89,8 @@ class PeerIdCreator {
       output[i] = _random.nextInt(0xFF);
     }
     List<int> idAsCode = id.codeUnits;
-    for(int i=0;i<5&&i<idAsCode.length;i++) {
-      output[i+1] = idAsCode[i];
+    for (int i = 0; i < 5 && i < idAsCode.length; i++) {
+      output[i + 1] = idAsCode[i];
     }
     return output;
   }

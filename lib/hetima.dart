@@ -24,9 +24,9 @@ part 'tracker/trackerpeermanager.dart';
 part 'tracker/trackerresponse.dart';
 part 'tracker/trackerrequest.dart';
 part 'net/hetisocket.dart';
-part 'net/hetihttpclient.dart';
-part 'net/hetihttpresponse.dart';
-part 'net/hetihttpserver.dart';
+part 'http/hetihttpclient.dart';
+part 'http/hetihttpresponse.dart';
+part 'http/hetihttpserver.dart';
 part 'test/hetitest.dart';
 part 'lo/hetimabuilder.dart';
 part 'lo/hetibencode.dart';
@@ -38,6 +38,12 @@ part 'upnp/upnpportmapping.dart';
 part 'net/mock/hetisocketmanagermock.dart';
 part 'utp/utp_packet.dart';
 part 'torrent/torrentclient.dart';
-
-
-
+part 'ttf/ttf.dart';
+part 'ttf/ttftable.dart';
+part 'ttf/ttftablecmap.dart';
+part 'ttf/ttftableloca.dart';
+part 'ttf/ttftableglyf.dart';
+part 'ttf/ttftablehead.dart';
+part 'ttf/ttftablemaxp.dart';
+part 'ttf/ttftabledirectory.dart';
+part 'ttf/ttfconv.dart';
