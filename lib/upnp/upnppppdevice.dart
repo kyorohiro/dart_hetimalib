@@ -32,7 +32,7 @@ class UPnpPPPDevice {
    *  713 SpecifiedArrayIndexInvalid The specified array index is out of bounds 
    */
   async.Future<UPnpGetGenericPortMappingResponse> requestGetGenericPortMapping(int newPortMappingIndex, [int mode = MODE_POST, UPnpDeviceServiceInfo serviceInfo = null]) {
-    async.Completer<String> completer = new async.Completer();
+    async.Completer<UPnpGetGenericPortMappingResponse> completer = new async.Completer();
     if (getPPPService().length == 0) {
       completer.completeError({});
       return completer.future;

@@ -11,6 +11,11 @@ class HetiSocketBuilderMock extends HetiSocketBuilder {
   async.Future<HetiServerSocket> startServer(String address, int port) {
     return null;
   }
+
+  @override
+  async.Future<List<HetiNetworkInterface>> getNetworkInterfaces() {
+    return null;
+  }
 }
 
 class HetiSocketManagerMock {

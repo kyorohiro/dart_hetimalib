@@ -62,8 +62,8 @@ class TorrentClient {
       return _portMapping.addPortMapping(localIP, localPort, remotePort, UPnpPPPDevice.VALUE_PORT_MAPPING_PROTOCOL_TCP)
            .then((UpnpPortMappingResult r) {
          if(r.result == UpnpPortMappingResult.OK_MAPPING) {
-           r.deviceList.first.requestGetExternalIPAddress().then((String address) {
-             remoteIP = address;
+           r.deviceList.first.requestGetExternalIPAddress().then((UPnpGetExternalIPAddressResponse address) {
+             remoteIP = address.externalIp;
              completer.complete(address);             
            }).catchError((e){
              completer.completeError(e);
