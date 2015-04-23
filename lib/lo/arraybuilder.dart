@@ -2,7 +2,8 @@ part of hetima;
 
 class ArrayBuilder extends HetimaBuilder {
   int _max = 1024;
-  data.Uint8List _buffer8;
+//  data.Uint8List _buffer8;
+  List<int> _buffer8;
   int _length = 0;
 
   async.Completer completer = new async.Completer();
@@ -12,7 +13,7 @@ class ArrayBuilder extends HetimaBuilder {
     _buffer8 = new data.Uint8List(_max);
   }
 
-  ArrayBuilder.fromList(data.Uint8List buffer) {
+  ArrayBuilder.fromList(List<int> buffer) {
     _buffer8 = buffer;
     _length = buffer.length;
   }
@@ -142,7 +143,7 @@ class ArrayBuilder extends HetimaBuilder {
   }
 
   data.Uint8List toUint8List() {
-    return new data.Uint8List.fromList(toList());
+    return new data.Uint8List.fromList(_buffer8);
   }
 
   String toText() {
