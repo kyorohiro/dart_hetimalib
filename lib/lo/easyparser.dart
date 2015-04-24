@@ -27,12 +27,12 @@ class EasyParser {
   }
 
   //
-  // [TODO] 
+  // [TODO]
   void resetIndex(int _index) {
     index = _index;
   }
   //
-  // [TODO] 
+  // [TODO]
   int getInedx() {
     return index;
   }
@@ -73,8 +73,50 @@ class EasyParser {
     return completer.future;
   }
 
+  //
+  // .*<value>
+  async.Future<String> nextStringByEnd(String value) {
+    async.Completer completer = new async.Completer();
+    List<int> encoded = convert.UTF8.encode(value);
+
+    int next = 0;
+    a() {
+      //print("a${next} ");
+      push();
+      buffer.getByteFuture(index+next, encoded.length)
+      .then((List<int> v) {
+        back();
+        pop();
+        if (v.length != encoded.length) {
+          completer.completeError(new EasyParseError());
+          return null;
+        }
+        int i = 0;
+        for (int e in encoded) {
+          if (e != v[i]) {
+            next++;
+            return a();
+          }
+        }
+        //
+        // index から next までが、欲しいデータ
+        return buffer.getByteFuture(index, next).then((List<int> v) {
+          index+=next;
+          completer.complete(convert.UTF8.decode(v));
+        });
+      }).catchError((e){
+        back();
+        pop();
+      });
+    }
+    ;
+    a();
+    return completer.future;
+  }
+
   async.Future<int> nextBytePattern(EasyParserMatcher matcher) {
     async.Completer completer = new async.Completer();
+    matcher.init();
     buffer.getByteFuture(index, 1).then((List<int> v) {
       if (v.length < 1) {
         throw new EasyParseError();
@@ -89,8 +131,10 @@ class EasyParser {
     return completer.future;
   }
 
-  async.Future<List<int>> nextBytePatternWithLength(EasyParserMatcher matcher, int length) {
+  async.Future<List<int>> nextBytePatternWithLength(
+      EasyParserMatcher matcher, int length) {
     async.Completer completer = new async.Completer();
+    matcher.init();
     buffer.getByteFuture(index, length).then((List<int> va) {
       if (va.length < length) {
         completer.completeError(new EasyParseError());
@@ -108,15 +152,16 @@ class EasyParser {
     return completer.future;
   }
 
-
-  async.Future<List<int>> nextBytePatternByUnmatch(EasyParserMatcher matcher) {
+  async.Future<List<int>> nextBytePatternByUnmatch(EasyParserMatcher matcher,
+      [bool keepWhenMatchIsTrue = true]) {
     async.Completer completer = new async.Completer();
+    matcher.init();
     List<int> ret = new List<int>();
     async.Future<Object> p() {
       return buffer.getByteFuture(index, 1).then((List<int> va) {
         if (va.length < 1) {
           completer.complete(ret);
-        } else if (matcher.match(va[0])) {
+        } else if (keepWhenMatchIsTrue == matcher.match(va[0])) {
           ret.add(va[0]);
           index++;
           return p();
@@ -125,7 +170,6 @@ class EasyParser {
         } else {
           completer.complete(ret);
         }
-
       });
     }
     p();
@@ -141,7 +185,7 @@ class EasyParser {
       if (va.length < length) {
         completer.completeError(new EasyParseError());
       } else {
-        index+=length;
+        index += length;
         completer.complete(convert.UTF8.decode(va));
       }
     }).catchError((e) {
@@ -155,7 +199,7 @@ class EasyParser {
       if (va.length < 2) {
         completer.completeError(new EasyParseError());
       } else {
-        index+=2;
+        index += 2;
         completer.complete(ByteOrder.parseShort(va, 0, byteorder));
       }
     }).catchError((e) {
@@ -166,18 +210,18 @@ class EasyParser {
 
   async.Future<List<int>> readShortArray(int byteorder, int num) {
     async.Completer<List<int>> completer = new async.Completer();
-    if(num == 0) {
+    if (num == 0) {
       completer.complete([]);
       return completer.future;
     }
-    buffer.getByteFuture(index, 2*num).then((List<int> va) {
-      if (va.length < 2*num) {
+    buffer.getByteFuture(index, 2 * num).then((List<int> va) {
+      if (va.length < 2 * num) {
         completer.completeError(new EasyParseError());
       } else {
-        index+=2*num;
+        index += 2 * num;
         List<int> l = new List();
-        for(int i=0;i<num;i++) {
-          l.add(ByteOrder.parseShort(va, i*2, byteorder));
+        for (int i = 0; i < num; i++) {
+          l.add(ByteOrder.parseShort(va, i * 2, byteorder));
         }
         completer.complete(l);
       }
@@ -193,7 +237,7 @@ class EasyParser {
       if (va.length < 4) {
         completer.completeError(new EasyParseError());
       } else {
-        index+=4;
+        index += 4;
         completer.complete(ByteOrder.parseInt(va, 0, byteorder));
       }
     }).catchError((e) {
@@ -208,7 +252,7 @@ class EasyParser {
       if (va.length < 8) {
         completer.completeError(new EasyParseError());
       } else {
-        index+=8;
+        index += 8;
         completer.complete(ByteOrder.parseLong(va, 0, byteorder));
       }
     }).catchError((e) {
@@ -217,13 +261,13 @@ class EasyParser {
     return completer.future;
   }
 
-  async.Future<int> readByte(int byteorder) {
+  async.Future<int> readByte([int byteorder]) {
     async.Completer<int> completer = new async.Completer();
     buffer.getByteFuture(index, 1).then((List<int> va) {
       if (va.length < 1) {
         completer.completeError(new EasyParseError());
       } else {
-        index+=1;
+        index += 1;
         completer.complete(va[0]);
       }
     }).catchError((e) {
@@ -234,7 +278,13 @@ class EasyParser {
 }
 
 abstract class EasyParserMatcher {
+  void init() {
+    ;
+  }
   bool match(int target);
+  bool matchAll() {
+    return true;
+  }
 }
 
 class EasyParserIncludeMatcher extends EasyParserMatcher {
@@ -248,6 +298,21 @@ class EasyParserIncludeMatcher extends EasyParserMatcher {
   }
 }
 
+class EasyParserStringMatcher extends EasyParserMatcher {
+  List<int> include = null;
+  int index = 0;
+  EasyParserIncludeMatcher(String v) {
+    include = convert.UTF8.encode(v);
+  }
+
+  void init() {
+    index = 0;
+  }
+
+  bool match(int target) {
+    return include.contains(target);
+  }
+}
 class EasyParseError extends Error {
   EasyParseError();
 }
